@@ -49,6 +49,8 @@ public:
 	 * If health recovery is possible after failing (requires two players),
 	 * this is only set if both players were failing at the same time. */
 	bool		m_bFailed;
+	bool		m_bReachedLifeZero;		// StepP1 Revival --bSilver
+
 
 	int		m_iPossibleDancePoints;
 	int		m_iCurPossibleDancePoints;

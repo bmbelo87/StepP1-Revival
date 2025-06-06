@@ -65,6 +65,9 @@ void PlayerStageStats::Init()
 	m_bDisqualified = false;
 	m_rc = RankingCategory_Invalid;
 	m_HighScore = HighScore();
+
+	m_bReachedLifeZero = false; // StepP1 Revival
+
 }
 
 void PlayerStageStats::AddStats( const PlayerStageStats& other )
@@ -346,6 +349,12 @@ void PlayerStageStats::SetLifeRecordAt( float fLife, float fStepsSecond )
 	if( fStepsSecond < 0 )
 		return;
 
+	// ----- StepP1 Revival
+	if (fLife <= 0 && !m_bReachedLifeZero) {
+		m_bReachedLifeZero = true;
+	}
+	// ------------------------
+
 	m_fFirstSecond = min( fStepsSecond, m_fFirstSecond );
 	m_fLastSecond = max( fStepsSecond, m_fLastSecond );
 	//LOG->Trace( "fLastSecond = %f", m_fLastSecond );
@@ -414,6 +423,12 @@ float PlayerStageStats::GetLifeRecordLerpAt( float fStepsSecond ) const
 
 	// earlier <= pos <= later
 	return SCALE( fStepsSecond, earlier->first, later->first, earlier->second, later->second );
+}
+
+static int GetReachedLifeZero(PlayerStageStats* p, lua_State* L)
+{
+	lua_pushboolean(L, p->m_bReachedLifeZero ? 1 : 0);
+	return 1;
 }
 
 void PlayerStageStats::GetLifeRecord( float *fLifeOut, int iNumSamples, float fStepsEndSecond ) const
@@ -866,6 +881,7 @@ public:
 		ADD_METHOD( FailPlayer );
 		ADD_METHOD( GetSongsPassed );
 		ADD_METHOD( GetSongsPlayed );
+		ADD_METHOD(GetReachedLifeZero); // StepP1 Revival
 	}
 };
 
