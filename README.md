@@ -1,4 +1,5 @@
-StepP1 Revival --- StepPNX Initial 
+StepP1 Revival --- StepPNX Initial
+========
 StepP1 original code by xMAx
 Phoenix Theme by Team Phyrebird
 =========
