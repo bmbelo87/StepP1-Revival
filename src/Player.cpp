@@ -46,12 +46,6 @@ static Preference<float> m_fTimingWindowHold		("TimingWindowHold", 0.25);
 static Preference<float> m_fMaxInputLatencySeconds	("MaxInputLatencySeconds", 0.0);
 static Preference<bool> g_bEnableMineSoundPlayback	("EnableMineHitSound", true);
 
-/** @brief How much life is in a hold note when you start on it? */
-ThemeMetric<float> INITIAL_HOLD_LIFE("Player", "InitialHoldLife");
-/**
- * @brief How much hold life is possible to have when holding a hold note?
- *
- * This was an sm-ssc addition. */
 ThemeMetric<float> MAX_HOLD_LIFE("Player", "MaxHoldLife");
 ThemeMetric<bool> PENALIZE_TAP_SCORE_NONE("Player", "PenalizeTapScoreNone");
 ThemeMetric<bool> JUDGE_HOLD_NOTES_ON_SAME_ROW_TOGETHER("Player", "JudgeHoldNotesOnSameRowTogether");
@@ -2805,183 +2799,64 @@ void Player::FlashGhostRow( int iRow )
 
 void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 {
-	//LOG->Trace( "Player::CrossedRows   %d    %d", iFirstRowCrossed, iLastRowCrossed );
-
 	NoteData::all_tracks_iterator &iter = *m_pIterUncrossedRows;
+	bool bIsJudgableAtRow = true;
 	int iLastSeenRow = -1;
+
 	for( ; !iter.IsAtEnd()  &&  iter.Row() <= iLastRowCrossed; ++iter )
 	{
-		// Apply InitialHoldLife.
 		TapNote &tn = *iter;
 		int iRow = iter.Row();
 		int iTrack = iter.Track();
+
+		// Check if this row can be judged or not. Check it only once per row
+		if (iLastSeenRow != iRow)
+		{
+			iLastSeenRow = iRow;
+			bIsJudgableAtRow = this->m_Timing->IsJudgableAtRow(iRow);
+		}
+
+		// Ignore fake notes
+		// Ignore note during fake or warp segments, but not holds
+		if (tn.type == TapNote::fake || bIsJudgableAtRow) // Change to tn.judge later, there are many files to change too.
+		{
+			continue;
+		}
+
 		switch( tn.type )
 		{
-			case TapNote::hold_head:
-			{
-				tn.HoldResult.fLife = INITIAL_HOLD_LIFE;
-				if( !REQUIRE_STEP_ON_HOLD_HEADS )
-				{
-					PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-					GameInput GameI = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( iTrack, pn );
-					if( PREFSMAN->m_fPadStickSeconds > 0.f )
-					{
-						float fSecsHeld = INPUTMAPPER->GetSecsHeld( GameI, m_pPlayerState->m_mp );
-						if( fSecsHeld >= PREFSMAN->m_fPadStickSeconds )
-							Step( iTrack, -1, now - PREFSMAN->m_fPadStickSeconds, true, false );
-					}
-					else if( INPUTMAPPER->IsBeingPressed(GameI, m_pPlayerState->m_mp) )
-					{
-						Step( iTrack, -1, now, true, false );
-					}
-				}
-				break;
-			}
+			case TapNote::autoKeysound:
+			case TapNote::hold_tail:
+			case TapNote::empty:
 			case TapNote::mine:
-			{
-				// Hold the panel while crossing a mine will cause the mine to explode
-				// TODO: Remove use of PlayerNumber.
-				PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-				GameInput GameI = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( iTrack, pn );
-				if( PREFSMAN->m_fPadStickSeconds > 0 )
-				{
-					float fSecsHeld = INPUTMAPPER->GetSecsHeld( GameI, m_pPlayerState->m_mp );
-					if( fSecsHeld >= PREFSMAN->m_fPadStickSeconds )
-						Step( iTrack, -1, now - PREFSMAN->m_fPadStickSeconds, true, false );
-				}
-				else
-				{
-					if( INPUTMAPPER->IsBeingPressed(GameI, m_pPlayerState->m_mp) )
-						Step( iTrack, iRow, now, true, false );
-				}
+			case TapNote::hold_head:
+				continue;
 				break;
-			}
-			default: break;
-		}
-
-		// check to see if there's a note at the crossed row
-		if( m_pPlayerState->m_PlayerController != PC_HUMAN )
-		{
-			if (tn.type != TapNote::empty &&
-				tn.type != TapNote::fake &&
-				tn.type != TapNote::autoKeysound &&
-				tn.result.tns == TNS_None &&
-				this->m_Timing->IsJudgableAtRow(iRow) )
+			/*case TapNote::autoKeysound:
 			{
-				Step( iTrack, iRow, now, false, false );
-				if( m_pPlayerState->m_PlayerController == PC_AUTOPLAY )
-				{
-					if( m_pPlayerStageStats )
-						m_pPlayerStageStats->m_bDisqualified = true;
-				}
-			}
-		}
-
-		// TODO: Can we remove the iLastSeenRow logic and the
-		// autokeysound for loop, since the iterator in this loop will
-		// already be iterating over all of the tracks?
-		if( iRow != iLastSeenRow )
-		{
-			// crossed a new not-empty row
-			iLastSeenRow = iRow;
-
 			// handle autokeysounds here (if not in the editor).
-			if (!GAMESTATE->m_bInStepEditor)
+			if( !GAMESTATE->m_bInStepEditor )
 			{
-				for (int t = 0; t < m_NoteData.GetNumTracks(); ++t)
+				PlayKeysound(tn, TNS_None);
+			}
+			}; break;*/
+			default:
+			{
+				if( m_pPlayerState->m_PlayerController != PC_HUMAN )
 				{
-					const TapNote &tap = m_NoteData.GetTapNote(t, iRow);
-					if (tap.type == TapNote::autoKeysound)
+					// xMAx: TODO - find a quick way to process the autoplay on Taps (not using Step function)
+					Step( iTrack, iRow, now, false, false ); // Remove the fourth bool in this expression after
+
+					STATSMAN->m_CurStageStats.m_bUsedAutoplay = true;
+					if (m_pPlayerStageStats && !(m_pPlayerStageStats->m_bDisqualified))
 					{
-						PlayKeysound(tap, TNS_None);
+						m_pPlayerStageStats->m_bDisqualified = true;
 					}
 				}
 			}
+			break;
 		}
 	}
-
-
-	/* Update hold checkpoints
-	 *
-	 * TODO: Move this to a separate function. */
-	if( m_bTickHolds && m_pPlayerState->m_PlayerController != PC_AUTOPLAY )
-	{
-		int tickCurrent = m_Timing->GetTickcountAtRow( iLastRowCrossed );
-		// There are some charts that don't want tickcounts involved at all.
-		int iCheckpointFrequencyRows = ( tickCurrent > 0 ? ROWS_PER_BEAT / tickCurrent : 0 );
-
-		if( iCheckpointFrequencyRows > 0 )
-		{
-			// "the first row after the start of the range that lands on a beat"
-			int iFirstCheckpointInRange = ((m_iFirstUncrossedRow+iCheckpointFrequencyRows-1)
-				/iCheckpointFrequencyRows) * iCheckpointFrequencyRows;
-
-			// "the last row or first row earlier that lands on a beat"
-			int iLastCheckpointInRange = ((iLastRowCrossed)/iCheckpointFrequencyRows)
-				* iCheckpointFrequencyRows;
-
-			for( int r = iFirstCheckpointInRange; r <= iLastCheckpointInRange; r += iCheckpointFrequencyRows )
-			{
-				//LOG->Trace( "%d...", r );
-				vector<int> viColsWithHold;
-				int iNumHoldsHeldThisRow = 0;
-				int iNumHoldsMissedThisRow = 0;
-
-				// start at r-1 so that we consider holds whose end rows are equal to the checkpoint row
-				NoteData::all_tracks_iterator nIter = m_NoteData.GetTapNoteRangeAllTracks( r-1, r, true );
-				for( ; !nIter.IsAtEnd(); ++nIter )
-				{
-					TapNote &tn = *nIter;
-					if( tn.type != TapNote::hold_head )
-						continue;
-
-					int iStartRow = nIter.Row();
-					int iEndRow = iStartRow + tn.iDuration;
-					int iTrack = nIter.Track();
-
-					// "the first row after the hold head that lands on a beat"
-					int iFirstCheckpointOfHold = ((iStartRow+iCheckpointFrequencyRows)/iCheckpointFrequencyRows)
-						* iCheckpointFrequencyRows;
-
-					// "the end row or the first earlier row that lands on a beat"
-					int iLastCheckpointOfHold = ((iEndRow)/iCheckpointFrequencyRows)
-						* iCheckpointFrequencyRows;
-
-					// count the end of the hold as a checkpoint
-					bool bHoldOverlapsRow = iFirstCheckpointOfHold <= r  &&   r <= iLastCheckpointOfHold;
-					if( !bHoldOverlapsRow )
-						continue;
-					
-					
-
-					viColsWithHold.push_back( iTrack );
-					
-					if( tn.HoldResult.fLife > 0 )
-					{
-						++iNumHoldsHeldThisRow;
-						++tn.HoldResult.iCheckpointsHit;
-					}
-					else
-					{
-						++iNumHoldsMissedThisRow;
-						++tn.HoldResult.iCheckpointsMissed;
-					}
-				}
-				GAMESTATE->SetProcessedTimingData(this->m_Timing);
-
-				// TODO: Find a better way of handling hold checkpoints with other taps.
-				if( !viColsWithHold.empty() && ( CHECKPOINTS_TAPS_SEPARATE_JUDGMENT || m_NoteData.GetNumTapNotesInRow( iLastRowCrossed ) == 0 ) )
-				{
-					HandleHoldCheckpoint(r, 
-							     iNumHoldsHeldThisRow, 
-							     iNumHoldsMissedThisRow, 
-							     viColsWithHold );
-				}
-			}
-		}
-	}
-
-	m_iFirstUncrossedRow = iLastRowCrossed+1;
 }
 
 void Player::HandleTapRowScore( unsigned row )

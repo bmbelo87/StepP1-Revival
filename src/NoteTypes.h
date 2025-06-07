@@ -100,6 +100,16 @@ struct TapNote
 		NUM_SubType,
 		SubType_Invalid
 	};
+
+	enum Judge
+	{
+		normal_judge,
+		bonus,
+		NUM_Judge,
+		Judge_Invalid
+	};
+
+
 	/** @brief The different places a TapNote could come from. */
 	enum Source
 	{
@@ -116,6 +126,13 @@ struct TapNote
 	TapNoteResult	result;
 	/** @brief The Player that is supposed to hit this note. This is mainly for Routine Mode. */
 	PlayerNumber	pn;
+	/* xMAx - noteskin player = para separar los tipos de noteskins en los double performance */
+	//NoteSkinPlayer		nsp; // 0 - default, 1 = player1, etc...
+	//Appearance			appearance;
+	Judge				judge;
+
+
+
 	/** @brief Can this note be hammered on or pulled off? This is set before gameplay begins. */
 	bool		bHopoPossible;
 
