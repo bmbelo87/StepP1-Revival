@@ -112,3 +112,7 @@ UserInterfaceState.xcuserstate
 contents.xcworkspacedata
 xcschememanagement.plist
 *.swp
+/src/libtomcrypt
+/src/.vs
+/src/libtommath
+/Program
