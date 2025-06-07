@@ -73,7 +73,6 @@ public:
 	void HandleHoldScore( const TapNote &tn );
 	void HandleHoldActiveSeconds( float /* fMusicSecondsHeld */ ) {};
 	void HandleHoldCheckpointScore( const NoteData &nd, int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow );
-	void HandleTapScoreNone();
 
 	// This must be calculated using only cached radar values so that we can 
 	// do it quickly.

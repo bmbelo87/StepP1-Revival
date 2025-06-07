@@ -47,8 +47,6 @@ static Preference<float> m_fMaxInputLatencySeconds	("MaxInputLatencySeconds", 0.
 static Preference<bool> g_bEnableMineSoundPlayback	("EnableMineHitSound", true);
 
 ThemeMetric<float> MAX_HOLD_LIFE("Player", "MaxHoldLife");
-ThemeMetric<bool> PENALIZE_TAP_SCORE_NONE("Player", "PenalizeTapScoreNone");
-ThemeMetric<bool> JUDGE_HOLD_NOTES_ON_SAME_ROW_TOGETHER("Player", "JudgeHoldNotesOnSameRowTogether");
 ThemeMetric<bool> CHECKPOINTS_FLASH_ON_HOLD("Player", "CheckpointsFlashOnHold"); // sm-ssc addition
 ThemeMetric<bool> IMMEDIATE_HOLD_LET_GO("Player", "ImmediateHoldLetGo");
 /**
@@ -965,15 +963,6 @@ void Player::Update( float fDeltaTime )
 				break;
 			*/
 
-			if( iRow != iRowOfLastHoldNote  ||  !JUDGE_HOLD_NOTES_ON_SAME_ROW_TOGETHER )
-			{
-				if( !vHoldNotesToGradeTogether.empty() )
-				{
-					//LOG->Trace( ssprintf("UpdateHoldNotes; %i != %i || !judge holds on same row together",iRow,iRowOfLastHoldNote) );
-					UpdateHoldNotes( iSongRow, fDeltaTime, vHoldNotesToGradeTogether );
-					vHoldNotesToGradeTogether.clear();
-				}
-			}
 			iRowOfLastHoldNote = iRow;
 			vHoldNotesToGradeTogether.push_back( trtn );
 		}
@@ -1806,51 +1795,12 @@ void Player::DoTapScoreNone()
 	PlayerNumber pn = PLAYER_INVALID;
 	if( m_pCombinedLifeMeter )
 		m_pCombinedLifeMeter->HandleTapScoreNone( pn );
-
-	if( PENALIZE_TAP_SCORE_NONE )
-	{
-		SetJudgment( TNS_Miss, -1, 0 );
-		// the ScoreKeeper will subtract points later.
-	}
 }
 
 void Player::DoStrumMiss()
 {
 	m_pPlayerState->m_fLastStrumMusicSeconds = -1;
 	DoTapScoreNone();
-
-	ScoreAllActiveHoldsLetGo();
-}
-
-void Player::ScoreAllActiveHoldsLetGo()
-{
-	if( PENALIZE_TAP_SCORE_NONE )
-	{
-		const float fSongBeat = m_pPlayerState->m_Position.m_fSongBeat;
-		const int iSongRow = BeatToNoteRow( fSongBeat );
-
-		// Score all active holds to NotHeld
-		for( int iTrack=0; iTrack<m_NoteData.GetNumTracks(); ++iTrack )
-		{
-			// Since this is being called every frame, let's not check the whole array every time.
-			// Instead, only check 1 beat back.  Even 1 is overkill.
-			const int iStartCheckingAt = max( 0, iSongRow-BeatToNoteRow(1) );
-			NoteData::TrackMap::iterator begin, end;
-			m_NoteData.GetTapNoteRangeInclusive( iTrack, iStartCheckingAt, iSongRow+1, begin, end );
-			for( ; begin != end; ++begin )
-			{
-				TapNote &tn = begin->second;
-				if( tn.HoldResult.bActive )
-				{
-					tn.HoldResult.hns = HNS_LetGo;
-					tn.HoldResult.fLife = 0;
-
-					SetHoldJudgment( tn.result.tns, tn.HoldResult.hns, iTrack );
-					HandleHoldScore( tn );
-				}
-			}
-		}
-	}
 }
 
 void Player::PlayKeysound( const TapNote &tn, TapNoteScore score )

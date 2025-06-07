@@ -241,19 +241,7 @@ void ScoreKeeperNormal::AddTapRowScore( TapNoteScore score, const NoteData &nd, 
 	AddScoreInternal( score );
 }
 
-extern ThemeMetric<bool> PENALIZE_TAP_SCORE_NONE;
-void ScoreKeeperNormal::HandleTapScoreNone()
-{
-	if( PENALIZE_TAP_SCORE_NONE )
-	{
-		m_pPlayerStageStats->m_iCurCombo = 0;
 
-		if( m_pPlayerState->m_PlayerNumber != PLAYER_INVALID )
-			MESSAGEMAN->Broadcast( enum_add2(Message_CurrentComboChangedP1,m_pPlayerState->m_PlayerNumber) );
-	}
-
-	// TODO: networking code
-}
 
 void ScoreKeeperNormal::AddScoreInternal( TapNoteScore score )
 {

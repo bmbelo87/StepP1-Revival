@@ -78,13 +78,6 @@ void ScoreKeeperShared::HandleHoldCheckpointScore( const NoteData &nd, int iRow,
 	ScoreKeeperNormal::HandleHoldCheckpointScore( nd, iRow, iNumHoldsHeldThisRow,  iNumHoldsMissedThisRow );
 }
 
-void ScoreKeeperShared::HandleTapScoreNone()
-{
-	if( m_pPlayerState->m_PlayerNumber != GAMESTATE->GetMasterPlayerNumber() )
-		return;
-	ScoreKeeperNormal::HandleTapScoreNone();
-}
-
 /*
  * (c) 2006-2010 Steve Checkoway, Glenn Maynard
  * All rights reserved.

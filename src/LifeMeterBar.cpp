@@ -241,13 +241,6 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 	AfterLifeChanged();
 }
 
-extern ThemeMetric<bool> PENALIZE_TAP_SCORE_NONE;
-void LifeMeterBar::HandleTapScoreNone()
-{
-	if( PENALIZE_TAP_SCORE_NONE )
-		ChangeLife( TNS_None );
-}
-
 void LifeMeterBar::AfterLifeChanged()
 {
 	m_pStream->SetPercent( m_fLifePercentage );
