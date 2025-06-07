@@ -73,7 +73,6 @@ Player::JudgeData &Player::JudgeData::operator=( const JudgeData &judgeData )
 
 float Player::GetWindowSeconds ( TimingWindow tw )
 {
-
 	float fSecs = 0;
 	switch ( tw )
 	{
@@ -91,10 +90,9 @@ Player::Player( NoteData &nd, bool bVisibleParts ) : m_NoteData(nd)
 {
 	m_bLoaded = false;
 
+	// Imported stuff
 	m_pPlayerState = NULL;
 	m_pPlayerStageStats = NULL;
-	m_fNoteFieldHeight = 0;
-
 	m_pLifeMeter = NULL;
 	m_pCombinedLifeMeter = NULL;
 	m_pScoreDisplay = NULL;
@@ -102,120 +100,34 @@ Player::Player( NoteData &nd, bool bVisibleParts ) : m_NoteData(nd)
 	m_pPrimaryScoreKeeper = NULL;
 	m_pSecondaryScoreKeeper = NULL;
 	m_pInventory = NULL;
+
+	// Local stuff
 	m_pIterNeedsTapJudging = NULL;
-	m_pIterNeedsHoldJudging = NULL;
 	m_pIterUncrossedRows = NULL;
-	m_pIterUnjudgedRows = NULL;
-	m_pIterUnjudgedMineRows = NULL;
+	m_pIterNeedsHoldJudging = NULL;
+	m_pNoteField = NULL;
 
 	m_bPaused = false;
 	m_bDelay = false;
 
-	m_pAttackDisplay = NULL;
-	if( bVisibleParts )
-	{
-		m_pAttackDisplay = new AttackDisplay;
-		this->AddChild( m_pAttackDisplay );
-	}
-
-	m_pNoteField = NULL;
 	if( bVisibleParts )
 	{
 		m_pNoteField = new NoteField;
 		m_pNoteField->SetName( "NoteField" );
 	}
 
-
 	m_bSendJudgmentAndComboMessages = true;
+	m_bCountNotesSeparately = false;
 }
-
-
-/**
- * @brief Does repeatedly stepping on a roll to keep it alive increment the combo?
- *
- * If set to true, repeatedly stepping on a roll will increment the combo.
- * If set to false, only the roll head causes the combo to be incremented.
- *
- * For those wishing to make a theme very accurate to In The Groove 2, set this to false. */
-ThemeMetric<bool> ROLL_BODY_INCREMENTS_COMBO("Player", "RollBodyIncrementsCombo");
-/**
- * @brief Does not stepping on a mine increase the combo?
- *
- * If set to true, every mine missed will increment the combo.
- * If set to false, missing a mine will not affect the combo. */
-ThemeMetric<bool> AVOID_MINE_INCREMENTS_COMBO("Gameplay", "AvoidMineIncrementsCombo");
-/**
- * @brief Does stepping on a mine increment the miss combo?
- *
- * If set to true, every mine stepped on will break the combo and increment the miss combo.
- * If set to false, stepping on a mine will not affect the combo. */
-ThemeMetric<bool> MINE_HIT_INCREMENTS_MISS_COMBO("Gameplay", "MineHitIncrementsMissCombo");
-/**
- * @brief Are checkpoints and taps considered separate judgments?
- *
- * If set to true, they are considered separate.
- * If set to false, they are considered the same. */
-ThemeMetric<bool> CHECKPOINTS_TAPS_SEPARATE_JUDGMENT("Player", "CheckpointsTapsSeparateJudgment");
-/**
- * @brief Do we score missed holds and rolls with HoldNoteScores?
- *
- * If set to true, missed holds and rolls are given LetGo judgments.
- * If set to false, missed holds and rolls are given no judgment on the hold side of things. */
-ThemeMetric<bool> SCORE_MISSED_HOLDS_AND_ROLLS("Player", "ScoreMissedHoldsAndRolls");
-/** @brief How much of the song/course must have gone by before a Player's combo is colored? */
-ThemeMetric<float> PERCENT_UNTIL_COLOR_COMBO("Player", "PercentUntilColorCombo");
-/** @brief How much combo must be earned before the announcer says "Combo Stopped"? */
-ThemeMetric<int> COMBO_STOPPED_AT("Player", "ComboStoppedAt");
-
-RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
-void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
-
-
-
-RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? RString("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
-
-/**
- * @brief Distance to search for a note in Step(), in seconds.
- *
- * TODO: This should be calculated based on the max size of the current judgment windows. */
-static const float StepSearchDistance = 1.0f;
-
-void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
-{
-	sNameOut = "TimingWindowSeconds" + TimingWindowToString( (TimingWindow)i );
-	switch( i )
-	{
-	default:
-		FAIL_M(ssprintf("Invalid timing window: %i", i));
-	case TW_W1:	defaultValueOut = 0.0225f;	break;
-	case TW_W2:	defaultValueOut = 0.045f;	break;
-	case TW_W3:	defaultValueOut = 0.090f;	break;
-	case TW_W4:	defaultValueOut = 0.135f;	break;
-	case TW_W5:	defaultValueOut = 0.180f;	break;
-	case TW_Mine:	defaultValueOut = 0.090f;	break;	// same as great
-	case TW_Hold:	defaultValueOut = 0.250f;	break;	// allow enough time to take foot off and put back on
-	case TW_Roll:	defaultValueOut = 0.500f;	break;
-	case TW_Attack:	defaultValueOut = 0.135f;	break;
-	}
-}
-
-
-
-
 
 Player::~Player()
 {
-	SAFE_DELETE( m_pAttackDisplay );
 	SAFE_DELETE( m_pNoteField );
 	for( unsigned i = 0; i < m_vpHoldJudgment.size(); ++i )
 		SAFE_DELETE( m_vpHoldJudgment[i] );
-	SAFE_DELETE( m_pJudgedRows );
 	SAFE_DELETE( m_pIterNeedsTapJudging );
 	SAFE_DELETE( m_pIterNeedsHoldJudging );
-	SAFE_DELETE( m_pIterUncrossedRows );
-	SAFE_DELETE( m_pIterUnjudgedRows );
-	SAFE_DELETE( m_pIterUnjudgedMineRows );
-	
+	SAFE_DELETE( m_pIterUncrossedRows );	
 }
 
 /* Init() does the expensive stuff: load sounds and noteskins.  Load() just loads a NoteData. */
@@ -233,9 +145,6 @@ void Player::Init(
 {
 	GRAY_ARROWS_Y_STANDARD.Load(			sType, "ReceptorArrowsYStandard" );
 	GRAY_ARROWS_Y_REVERSE.Load(			sType, "ReceptorArrowsYReverse" );
-	ATTACK_DISPLAY_X.Load(				sType, ATTACK_DISPLAY_X_NAME, NUM_PLAYERS, 2 );
-	ATTACK_DISPLAY_Y.Load(				sType, "AttackDisplayY" );
-	ATTACK_DISPLAY_Y_REVERSE.Load(			sType, "AttackDisplayYReverse" );
 	HOLD_JUDGMENT_Y_STANDARD.Load(			sType, "HoldJudgmentYStandard" );
 	HOLD_JUDGMENT_Y_REVERSE.Load(			sType, "HoldJudgmentYReverse" );
 	BRIGHT_GHOST_COMBO_THRESHOLD.Load(		sType, "BrightGhostComboThreshold" );
@@ -626,8 +535,6 @@ void Player::Load()
 	}
 
 	bool bPlayerUsingBothSides = GAMESTATE->GetCurrentStyle()->GetUsesCenteredArrows();
-	if( m_pAttackDisplay )
-		m_pAttackDisplay->SetX( ATTACK_DISPLAY_X.GetValue(pn, bPlayerUsingBothSides) - 40 );
 	// set this in Update //m_pAttackDisplay->SetY( bReverse ? ATTACK_DISPLAY_Y_REVERSE : ATTACK_DISPLAY_Y );
 
 	// set this in Update 
@@ -673,21 +580,10 @@ void Player::Load()
 
 	SAFE_DELETE( m_pIterUncrossedRows );
 	m_pIterUncrossedRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
-
-	SAFE_DELETE( m_pIterUnjudgedRows );
-	m_pIterUnjudgedRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
-
-	SAFE_DELETE( m_pIterUnjudgedMineRows );
-	m_pIterUnjudgedMineRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 }
 
 void Player::SendComboMessages( int iOldCombo, int iOldMissCombo )
 {
-	const int iCurCombo = m_pPlayerStageStats ? m_pPlayerStageStats->m_iCurCombo : 0;
-	if( iOldCombo > COMBO_STOPPED_AT && iCurCombo < COMBO_STOPPED_AT )
-	{
-		SCREENMAN->PostMessageToTopScreen( SM_ComboStopped, 0 );
-	}
 
 	if( m_bSendJudgmentAndComboMessages )
 	{
@@ -961,7 +857,7 @@ void Player::Update( float fDeltaTime )
 	}
 
 	// Check for completely judged rows.
-	UpdateJudgedRows();
+	//UpdateJudgedRows();
 
 	// Check for TapNote misses
 	if (!GAMESTATE->m_bInStepEditor)
@@ -1263,10 +1159,6 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, vector<TrackRowTap
 			{
 				//LOG->Trace("initiated note and let go :(");
 			}
-		}
-		else if( SCORE_MISSED_HOLDS_AND_ROLLS )
-		{
-			hns = HNS_LetGo;
 		}
 		else 
 		{
@@ -1816,7 +1708,6 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 					// Increase life
 					tn.HoldResult.fLife = 1;
 
-					if( ROLL_BODY_INCREMENTS_COMBO )
 					{
 						// increment combo
 						const int iOldCombo = m_pPlayerStageStats ? m_pPlayerStageStats->m_iCurCombo : 0;
@@ -1894,8 +1785,8 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 	 * "jack hammers." Hmm.
 	 */
 	const int iStepSearchRows = max(
-		BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds + StepSearchDistance ) ) - iSongRow,
-		iSongRow - BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds - StepSearchDistance ) )
+		BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds ) ) - iSongRow,
+		iSongRow - BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds ) )
 	) + ROWS_PER_BEAT;
 	int iRowOfOverlappingNoteOrRow = row;
 	if( row == -1 )
@@ -2476,146 +2367,6 @@ void Player::UpdateTapNotesMissedOlderThan( float fMissIfOlderThanSeconds )
 	}
 }
 
-void Player::UpdateJudgedRows()
-{
-	const int iEndRow = BeatToNoteRow( m_pPlayerState->m_Position.m_fSongBeat );
-	bool bAllJudged = true;
-	const bool bSeparately = GAMESTATE->GetCurrentGame()->m_bCountNotesSeparately;
-
-	{
-		NoteData::all_tracks_iterator iter = *m_pIterUnjudgedRows;
-		int iLastSeenRow = -1;
-		for( ; !iter.IsAtEnd()  &&  iter.Row() <= iEndRow; ++iter )
-		{
-			int iRow = iter.Row();
-
-			// Do not judge arrows in WarpSegments or FakeSegments
-			if (!m_Timing->IsJudgableAtRow(iRow))
-				continue;
-
-			if( iLastSeenRow != iRow )
-			{
-				iLastSeenRow = iRow;
-
-				// crossed a nonempty row
-				if( !NoteDataWithScoring::IsRowCompletelyJudged(m_NoteData, iRow) )
-				{
-					bAllJudged = false;
-					continue;
-				}
-				
-				const TapNoteResult &lastTNR = NoteDataWithScoring::LastTapNoteWithResult( m_NoteData, iRow ).result;
-
-				if( lastTNR.tns < TNS_Miss )
-					continue;
-				if( bSeparately )
-				{
-					for( int iTrack = 0; iTrack < m_NoteData.GetNumTracks(); ++iTrack )
-					{
-						const TapNote &tn = m_NoteData.GetTapNote( iTrack, iRow );
-						if (tn.type == TapNote::empty ||
-							tn.type == TapNote::mine ||
-							tn.type == TapNote::autoKeysound) continue;
-						SetJudgment( tn.result.tns, iTrack, tn.result.fTapNoteOffset );
-					}
-				}
-				else
-				{
-					SetJudgment( lastTNR.tns, m_NoteData.GetFirstTrackWithTapOrHoldHead(iRow), lastTNR.fTapNoteOffset );
-				}
-				HandleTapRowScore( iRow );
-			}
-		}
-	}
-
-	// handle mines.
-	{
-		bAllJudged = true;
-		set<RageSound *> setSounds;
-		NoteData::all_tracks_iterator iter = *m_pIterUnjudgedMineRows;	// copy
-		int iLastSeenRow = -1;
-		for( ; !iter.IsAtEnd()  &&  iter.Row() <= iEndRow; ++iter )
-		{
-			int iRow = iter.Row();
-
-			// Do not worry about mines in WarpSegments or FakeSegments
-			if (!m_Timing->IsJudgableAtRow(iRow))
-				continue;
-
-			TapNote &tn = *iter;
-
-			if( iRow != iLastSeenRow )
-			{
-				iLastSeenRow = iRow;
-				if( bAllJudged )
-					*m_pIterUnjudgedMineRows = iter;
-			}
-
-			bool bMineNotHidden = tn.type == TapNote::mine && !tn.result.bHidden;
-			if( !bMineNotHidden )
-				continue;
-
-			switch( tn.result.tns )
-			{
-			DEFAULT_FAIL( tn.result.tns );
-			case TNS_None:
-				bAllJudged = false;
-				continue;
-			case TNS_AvoidMine:
-				SetMineJudgment( tn.result.tns );
-				continue;
-			case TNS_HitMine:
-				SetMineJudgment( tn.result.tns );
-				break;
-			}
-			if( m_pNoteField )
-				m_pNoteField->DidTapNote( iter.Track(), tn.result.tns, false );
-
-			if( tn.iKeysoundIndex >= 0 && tn.iKeysoundIndex < (int) m_vKeysounds.size() )
-				setSounds.insert( &m_vKeysounds[tn.iKeysoundIndex] );
-			else if( g_bEnableMineSoundPlayback )
-				setSounds.insert( &m_soundMine );
-
-			/* Attack Mines:
-			 * Only difference is these launch an attack rather than affecting
-			 * the lifebar. All the other mine impacts (score, dance points,
-			 * etc.) are still applied. */
-			if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bTransforms[PlayerOptions::TRANSFORM_ATTACKMINES] )
-			{
-				const float fAttackRunTime = ATTACK_RUN_TIME_MINE;
-
-				Attack attMineAttack;
-				attMineAttack.sModifiers = ApplyRandomAttack();
-				attMineAttack.fStartSecond = ATTACK_STARTS_NOW;
-				attMineAttack.fSecsRemaining = fAttackRunTime;
-
-				m_pPlayerState->LaunchAttack( attMineAttack );
-			}
-			else
-				ChangeLife( tn.result.tns );
-
-			if( m_pScoreDisplay )
-				m_pScoreDisplay->OnJudgment( tn.result.tns );
-			if( m_pSecondaryScoreDisplay )
-				m_pSecondaryScoreDisplay->OnJudgment( tn.result.tns );
-
-			// Make sure hit mines affect the dance points.
-			if( m_pPrimaryScoreKeeper )
-				m_pPrimaryScoreKeeper->HandleTapScore( tn );
-			if( m_pSecondaryScoreKeeper )
-				m_pSecondaryScoreKeeper->HandleTapScore( tn );
-			tn.result.bHidden = true;
-		}
-
-		FOREACHS( RageSound *, setSounds, s )
-		{
-			// Only play one copy of each mine sound at a time per player.
-			(*s)->Stop();
-			(*s)->Play();
-		}
-	}
-}
-
 void Player::FlashGhostRow( int iRow )
 {
 	TapNoteScore lastTNS = NoteDataWithScoring::LastTapNoteWithResult( m_NoteData, iRow ).result.tns;
@@ -2907,24 +2658,6 @@ void Player::CacheAllUsedNoteSkins()
 		m_pNoteField->CacheAllUsedNoteSkins();
 }
 
-void Player::SetMineJudgment( TapNoteScore tns )
-{
-	if( m_bSendJudgmentAndComboMessages )
-	{
-		Message msg("Judgment");
-		msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
-		msg.SetParam( "TapNoteScore", tns );
-		MESSAGEMAN->Broadcast( msg );
-		if( m_pPlayerStageStats &&
-			( ( tns == TNS_AvoidMine && AVOID_MINE_INCREMENTS_COMBO ) || 
-				( tns == TNS_HitMine && MINE_HIT_INCREMENTS_MISS_COMBO ))
-		)
-		{
-			SetCombo( m_pPlayerStageStats->m_iCurCombo, m_pPlayerStageStats->m_iCurMissCombo );
-		}
-	}
-}
-
 void Player::SetJudgment( TapNoteScore tns, int iTrack, float fTapNoteOffset )
 {
 	if( m_bSendJudgmentAndComboMessages )
@@ -3009,18 +2742,6 @@ void Player::SetCombo( int iCombo, int iMisses )
 	 *	TODO: Add a metric that determines Course combo colors logic?
 	 *	Or possibly move the logic to a Lua function? -aj */
 	bool bPastBeginning = false;
-	if( GAMESTATE->IsCourseMode() )
-	{
-		int iSongIndexStartColoring = GAMESTATE->m_pCurCourse->GetEstimatedNumStages();
-		iSongIndexStartColoring = 
-			static_cast<int>(floor(iSongIndexStartColoring*PERCENT_UNTIL_COLOR_COMBO));
-		bPastBeginning = GAMESTATE->GetCourseSongIndex() >= iSongIndexStartColoring;
-	}
-	else
-	{
-		bPastBeginning = m_pPlayerState->m_Position.m_fMusicSeconds 
-			> GAMESTATE->m_pCurSong->m_fMusicLengthSeconds * PERCENT_UNTIL_COLOR_COMBO;
-	}
 
 	if( m_bSendJudgmentAndComboMessages )
 	{
