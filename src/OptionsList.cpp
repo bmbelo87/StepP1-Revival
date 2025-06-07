@@ -14,15 +14,12 @@
 #define LINE(sLineName)				THEME->GetMetric (m_sName,ssprintf("Line%s",sLineName.c_str()))
 #define MAX_ITEMS_BEFORE_SPLIT			THEME->GetMetricI(m_sName,"MaxItemsBeforeSplit")
 #define ITEMS_SPLIT_WIDTH			THEME->GetMetricF(m_sName,"ItemsSplitWidth")
-#define DIRECT_LINES				THEME->GetMetric (m_sName,"DirectLines")
-#define TOP_MENUS				THEME->GetMetric (m_sName,"TopMenus")
 
 static const RString RESET_ROW = "ResetOptions";
 
 void OptionListRow::Load( OptionsList *pOptions, const RString &sType )
 {
 	m_pOptions = pOptions;
-	ITEMS_SPACING_Y	.Load(sType,"ItemsSpacingY");
 
 	m_Text.resize( 1 );
 	m_Text[0].SetName( "Text" );
@@ -183,12 +180,10 @@ OptionsList::~OptionsList()
 
 void OptionsList::Load( RString sType, PlayerNumber pn )
 {
-	TOP_MENU.Load( sType, "TopMenu" );
 
 	m_pn = pn;
 	m_bStartIsDown = false;
 
-	m_Codes.Load( sType );
 
 	m_Cursor.Load( THEME->GetPathG(sType, "cursor") );
 	m_Cursor->SetName( "Cursor" );
@@ -196,12 +191,10 @@ void OptionsList::Load( RString sType, PlayerNumber pn )
 	this->AddChild( m_Cursor );
 
 	vector<RString> asDirectLines;
-	split( DIRECT_LINES, ",", asDirectLines, true );
 	FOREACH( RString, asDirectLines, s )
 		m_setDirectRows.insert( *s );
 
 	vector<RString> setToLoad;
-	split( TOP_MENUS, ",", setToLoad );
 	m_setTopMenus.insert( setToLoad.begin(), setToLoad.end() );
 
 	while( !setToLoad.empty() )
@@ -233,8 +226,6 @@ void OptionsList::Load( RString sType, PlayerNumber pn )
 
 	for( int i = 0; i < 2; ++i )
 	{
-		m_Row[i].SetName( "OptionsList" );
-		m_Row[i].Load( this, "OptionsList" );
 		ActorUtil::LoadAllCommands( m_Row[i], sType );
 		this->AddChild( &m_Row[i] );
 	}
