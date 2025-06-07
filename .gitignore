@@ -117,3 +117,5 @@ xcschememanagement.plist
 /src/libtommath
 /Program
 /Songs
+/CacheP1
+*.cache

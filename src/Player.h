@@ -119,6 +119,28 @@ public:
 	
 	PlayerState * GetPlayerState() { return this->m_pPlayerState; }
 
+	// xMAx ------------------------------------------------------
+	/*
+	JUDGE  PERFECT  DELAY  INTERVAL
+	EJ     7        5      5
+	NJ     5        5      5
+	HJ     3        5      5
+	VJ     2        5      4
+	XJ     1        4      2
+	UJ     0        3      2
+
+	number/120.f*1000
+	*/
+	struct JudgeData
+	{
+		int iPerfect;
+		int iDelay;
+		int iDelta;
+		JudgeData &operator=(const JudgeData &judgeData );
+	};
+
+	float HOLD_TIMING;
+	float PERF_U, PERF_D;
 	float GREAT_U, GREAT_D;
 	float GOOD_U, GOOD_D;
 	float BAD_U, BAD_D;
@@ -136,8 +158,7 @@ protected:
 	void HandleTapRowScore( unsigned row );
 	void HandleHoldScore( const TapNote &tn );
 	void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold );
-	void DrawTapJudgments();
-	void DrawHoldJudgments();
+
 	void SendComboMessages( int iOldCombo, int iOldMissCombo );
 	void PlayKeysound( const TapNote &tn, TapNoteScore score );
 

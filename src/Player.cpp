@@ -44,164 +44,44 @@
 static Preference<float> m_fTimingWindowJump		("TimingWindowJump", 0.25);
 static Preference<float> m_fTimingWindowHold		("TimingWindowHold", 0.25);
 static Preference<float> m_fMaxInputLatencySeconds	("MaxInputLatencySeconds", 0.0);
-static Preference<bool> g_bEnableMineSoundPlayback	("EnableMineHitSound", true);
+static Preference<bool>  g_bEnableMineSoundPlayback	("EnableMineHitSound", true);
 
-ThemeMetric<float> MAX_HOLD_LIFE("Player", "MaxHoldLife");
-ThemeMetric<bool> CHECKPOINTS_FLASH_ON_HOLD("Player", "CheckpointsFlashOnHold"); // sm-ssc addition
-ThemeMetric<bool> IMMEDIATE_HOLD_LET_GO("Player", "ImmediateHoldLetGo");
-/**
- * @brief Must a Player step on a hold head for a hold to activate?
- *
- * If set to true, the Player must step on a hold head in order for the hold to activate.
- * If set to false, merely holding your foot down as the hold head approaches will suffice. */
-ThemeMetric<bool> REQUIRE_STEP_ON_HOLD_HEADS("Player", "RequireStepOnHoldHeads");
-/**
- * @brief Must a Player step on a mine for it to activate?
- *
- * If set to true, the Player must step on a mine for it to blow up.
- * If set to false, merely holding your foot down as the mine approaches will suffice. */
-ThemeMetric<bool> REQUIRE_STEP_ON_MINES("Player", "RequireStepOnMines");
-//ThemeMetric<bool> HOLD_TRIGGERS_TAP_NOTES	( "Player", "HoldTriggersTapNotes" ); // parastar stuff; leave in though
-/**
- * @brief Does repeatedly stepping on a roll to keep it alive increment the combo?
- *
- * If set to true, repeatedly stepping on a roll will increment the combo.
- * If set to false, only the roll head causes the combo to be incremented.
- *
- * For those wishing to make a theme very accurate to In The Groove 2, set this to false. */
-ThemeMetric<bool> ROLL_BODY_INCREMENTS_COMBO("Player", "RollBodyIncrementsCombo");
-/**
- * @brief Does not stepping on a mine increase the combo?
- *
- * If set to true, every mine missed will increment the combo.
- * If set to false, missing a mine will not affect the combo. */
-ThemeMetric<bool> AVOID_MINE_INCREMENTS_COMBO("Gameplay", "AvoidMineIncrementsCombo");
-/**
- * @brief Does stepping on a mine increment the miss combo?
- *
- * If set to true, every mine stepped on will break the combo and increment the miss combo.
- * If set to false, stepping on a mine will not affect the combo. */
-ThemeMetric<bool> MINE_HIT_INCREMENTS_MISS_COMBO("Gameplay", "MineHitIncrementsMissCombo");
-/**
- * @brief Are checkpoints and taps considered separate judgments?
- *
- * If set to true, they are considered separate.
- * If set to false, they are considered the same. */
-ThemeMetric<bool> CHECKPOINTS_TAPS_SEPARATE_JUDGMENT("Player", "CheckpointsTapsSeparateJudgment");
-/**
- * @brief Do we score missed holds and rolls with HoldNoteScores?
- *
- * If set to true, missed holds and rolls are given LetGo judgments.
- * If set to false, missed holds and rolls are given no judgment on the hold side of things. */
-ThemeMetric<bool> SCORE_MISSED_HOLDS_AND_ROLLS("Player", "ScoreMissedHoldsAndRolls");
-/** @brief How much of the song/course must have gone by before a Player's combo is colored? */
-ThemeMetric<float> PERCENT_UNTIL_COLOR_COMBO("Player", "PercentUntilColorCombo");
-/** @brief How much combo must be earned before the announcer says "Combo Stopped"? */
-ThemeMetric<int> COMBO_STOPPED_AT("Player", "ComboStoppedAt");
-ThemeMetric<float> ATTACK_RUN_TIME_RANDOM("Player", "AttackRunTimeRandom");
-ThemeMetric<float> ATTACK_RUN_TIME_MINE("Player", "AttackRunTimeMine");
+ThemeMetric<float>	ATTACK_RUN_TIME_RANDOM		("Player", "AttackRunTimeRandom");
+ThemeMetric<float>	ATTACK_RUN_TIME_MINE		("Player", "AttackRunTimeMine");
+ThemeMetric<float>	MAX_HOLD_LIFE			("Player", "MaxHoldLife");
+ThemeMetric<float>	M_MOD_HIGH_CAP			("Player", "MModHighCap");
+ThemeMetric<bool>	BATTLE_RAVE_MIRROR		("Player", "BattleRaveMirror");
 
-/**
- * @brief What is our highest cap for mMods?
- *
- * If set to 0 or less, assume the song takes over. */
-ThemeMetric<float> M_MOD_HIGH_CAP("Player", "MModHighCap");
+/* xMAx - PIU Timings ----------------------------------------------------*/
+// iPerfect;  iDelay;  iDelta;
+static const Player::JudgeData SJ = { 10, 5, 5 };	// Only for Basic Mode
+static const Player::JudgeData EJ = { 7, 5, 5 };
+static const Player::JudgeData NJ = { 5, 5, 5 };
+static const Player::JudgeData HJ = { 3, 5, 5 };
+static const Player::JudgeData VJ = { 1, 5, 4 };
+static const Player::JudgeData XJ = { 0, 5, 2 };
+static const Player::JudgeData UJ = { 0, 5, 1 };
 
-/** @brief Will battle modes have their steps mirrored or kept the same? */
-ThemeMetric<bool> BATTLE_RAVE_MIRROR("Player", "BattleRaveMirror");
-
-RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
-void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
-
-/**
- * @brief Helper class to ensure that each row is only judged once without taking too much memory.
- */
-class JudgedRows
+Player::JudgeData &Player::JudgeData::operator=( const JudgeData &judgeData )
 {
-	vector<bool> m_vRows;
-	int m_iStart;
-	int m_iOffset;
-
-	void Resize( size_t iMin )
-	{
-		size_t iNewSize = max( 2*m_vRows.size(), iMin );
-		vector<bool> vNewRows( m_vRows.begin() + m_iOffset, m_vRows.end() );
-		vNewRows.reserve( iNewSize );
-		vNewRows.insert( vNewRows.end(), m_vRows.begin(), m_vRows.begin() + m_iOffset );
-		vNewRows.resize( iNewSize, false );
-		m_vRows.swap( vNewRows );
-		m_iOffset = 0;
-	}
-public:
-	JudgedRows() : m_iStart(0), m_iOffset(0) { Resize( 32 ); }
-	// Returns true if the row has already been judged.
-	bool JudgeRow( int iRow )
-	{
-		if( iRow < m_iStart )
-			return true;
-		if( iRow >= m_iStart+int(m_vRows.size()) )
-			Resize( iRow+1-m_iStart );
-		const int iIndex = (iRow - m_iStart + m_iOffset) % m_vRows.size();
-		const bool ret = m_vRows[iIndex];
-		m_vRows[iIndex] = true;
-		while( m_vRows[m_iOffset] )
-		{
-			m_vRows[m_iOffset] = false;
-			++m_iStart;
-			if( ++m_iOffset >= int(m_vRows.size()) )
-				m_iOffset -= m_vRows.size();
-		}
-		return ret;
-	}
-	void Reset( int iStart )
-	{
-		m_iStart = iStart;
-		m_iOffset = 0;
-		m_vRows.assign( m_vRows.size(), false );
-	}
-};
-
-
-RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? RString("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
-
-/**
- * @brief Distance to search for a note in Step(), in seconds.
- *
- * TODO: This should be calculated based on the max size of the current judgment windows. */
-static const float StepSearchDistance = 1.0f;
-
-void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
-{
-	sNameOut = "TimingWindowSeconds" + TimingWindowToString( (TimingWindow)i );
-	switch( i )
-	{
-	default:
-		FAIL_M(ssprintf("Invalid timing window: %i", i));
-	case TW_W1:	defaultValueOut = 0.0225f;	break;
-	case TW_W2:	defaultValueOut = 0.045f;	break;
-	case TW_W3:	defaultValueOut = 0.090f;	break;
-	case TW_W4:	defaultValueOut = 0.135f;	break;
-	case TW_W5:	defaultValueOut = 0.180f;	break;
-	case TW_Mine:	defaultValueOut = 0.090f;	break;	// same as great
-	case TW_Hold:	defaultValueOut = 0.250f;	break;	// allow enough time to take foot off and put back on
-	case TW_Roll:	defaultValueOut = 0.500f;	break;
-	case TW_Attack:	defaultValueOut = 0.135f;	break;
-	}
+	iPerfect = judgeData.iPerfect;
+	iDelay = judgeData.iDelay;
+	iDelta = judgeData.iDelta;
+	return *this;
 }
+/*------------------------------------------------------------------------------------*/
 
-
-
-float Player::GetWindowSeconds( TimingWindow tw )
+float Player::GetWindowSeconds ( TimingWindow tw )
 {
-	
+
 	float fSecs = 0;
-	switch (tw)
+	switch ( tw )
 	{
-		case TW_Mine:	fSecs = GOOD_U;		break;	//same as good top	
-		case TW_Attack: fSecs = GREAT_U;	break;	//same as great top
-		case TW_Hold:	fSecs = 0.23f;		break;	//allow enough time to take foot off and put back on
-		case TW_Roll:	fSecs = 0.350f;		break;
-		default: break;
+	case TW_Mine:	fSecs = GOOD_U;		break;	//same as good top	
+	case TW_Attack: fSecs = GREAT_U;	break;	//same as great top
+	case TW_Hold:	fSecs = 0.23f;		break;	//allow enough time to take foot off and put back on
+	case TW_Roll:	fSecs = 0.350f;		break;
+	default: break;
 	}
 
 	return fSecs;
@@ -244,10 +124,84 @@ Player::Player( NoteData &nd, bool bVisibleParts ) : m_NoteData(nd)
 		m_pNoteField = new NoteField;
 		m_pNoteField->SetName( "NoteField" );
 	}
-	m_pJudgedRows = new JudgedRows;
+
 
 	m_bSendJudgmentAndComboMessages = true;
 }
+
+
+/**
+ * @brief Does repeatedly stepping on a roll to keep it alive increment the combo?
+ *
+ * If set to true, repeatedly stepping on a roll will increment the combo.
+ * If set to false, only the roll head causes the combo to be incremented.
+ *
+ * For those wishing to make a theme very accurate to In The Groove 2, set this to false. */
+ThemeMetric<bool> ROLL_BODY_INCREMENTS_COMBO("Player", "RollBodyIncrementsCombo");
+/**
+ * @brief Does not stepping on a mine increase the combo?
+ *
+ * If set to true, every mine missed will increment the combo.
+ * If set to false, missing a mine will not affect the combo. */
+ThemeMetric<bool> AVOID_MINE_INCREMENTS_COMBO("Gameplay", "AvoidMineIncrementsCombo");
+/**
+ * @brief Does stepping on a mine increment the miss combo?
+ *
+ * If set to true, every mine stepped on will break the combo and increment the miss combo.
+ * If set to false, stepping on a mine will not affect the combo. */
+ThemeMetric<bool> MINE_HIT_INCREMENTS_MISS_COMBO("Gameplay", "MineHitIncrementsMissCombo");
+/**
+ * @brief Are checkpoints and taps considered separate judgments?
+ *
+ * If set to true, they are considered separate.
+ * If set to false, they are considered the same. */
+ThemeMetric<bool> CHECKPOINTS_TAPS_SEPARATE_JUDGMENT("Player", "CheckpointsTapsSeparateJudgment");
+/**
+ * @brief Do we score missed holds and rolls with HoldNoteScores?
+ *
+ * If set to true, missed holds and rolls are given LetGo judgments.
+ * If set to false, missed holds and rolls are given no judgment on the hold side of things. */
+ThemeMetric<bool> SCORE_MISSED_HOLDS_AND_ROLLS("Player", "ScoreMissedHoldsAndRolls");
+/** @brief How much of the song/course must have gone by before a Player's combo is colored? */
+ThemeMetric<float> PERCENT_UNTIL_COLOR_COMBO("Player", "PercentUntilColorCombo");
+/** @brief How much combo must be earned before the announcer says "Combo Stopped"? */
+ThemeMetric<int> COMBO_STOPPED_AT("Player", "ComboStoppedAt");
+
+RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
+void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
+
+
+
+RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? RString("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
+
+/**
+ * @brief Distance to search for a note in Step(), in seconds.
+ *
+ * TODO: This should be calculated based on the max size of the current judgment windows. */
+static const float StepSearchDistance = 1.0f;
+
+void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
+{
+	sNameOut = "TimingWindowSeconds" + TimingWindowToString( (TimingWindow)i );
+	switch( i )
+	{
+	default:
+		FAIL_M(ssprintf("Invalid timing window: %i", i));
+	case TW_W1:	defaultValueOut = 0.0225f;	break;
+	case TW_W2:	defaultValueOut = 0.045f;	break;
+	case TW_W3:	defaultValueOut = 0.090f;	break;
+	case TW_W4:	defaultValueOut = 0.135f;	break;
+	case TW_W5:	defaultValueOut = 0.180f;	break;
+	case TW_Mine:	defaultValueOut = 0.090f;	break;	// same as great
+	case TW_Hold:	defaultValueOut = 0.250f;	break;	// allow enough time to take foot off and put back on
+	case TW_Roll:	defaultValueOut = 0.500f;	break;
+	case TW_Attack:	defaultValueOut = 0.135f;	break;
+	}
+}
+
+
+
+
 
 Player::~Player()
 {
@@ -1121,57 +1075,9 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, vector<TrackRowTap
 		*/
 	}
 
-	bool bInitiatedNote;
-	if( REQUIRE_STEP_ON_HOLD_HEADS )
-	{
-		// XXX HACK: Miniholds (a 64th or 192nd length hold) will not always
-		// register as Held, even if you hit the note. This is considered a
-		// major roadblock to adoption, so until a proper fix is found,
-		// DON'T REMOVE THIS HACK! -aj
-		/*if( iMaxEndRow-iStartRow <= 4 )
-			bInitiatedNote = true;
-		else*/
-			bInitiatedNote = bSteppedOnHead;
-	}
-	else
-	{
-		bInitiatedNote = true;
-		bHeadJudged = true;
-	}
+	bool bInitiatedNote = false;
 
 	bool bIsHoldingButton = true;
-	FOREACH( TrackRowTapNote, vTN, trtn )
-	{
-		/*if this hold is already done, pretend it's always being pressed.
-		fixes/masks the phantom hold issue. -FSX*/
-		// That interacts badly with !IMMEDIATE_HOLD_LET_GO,
-		// causing ALL holds to be judged HNS_Held whether they were or not.
-		if( !IMMEDIATE_HOLD_LET_GO || (iStartRow + trtn->pTN->iDuration) > iSongRow )
-		{
-			int iTrack = trtn->iTrack;
-
-			// TODO: Remove use of PlayerNumber.
-			PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-
-			if( m_pPlayerState->m_PlayerController != PC_HUMAN )
-			{
-			// TODO: Make the CPU miss sometimes.
-				if( m_pPlayerState->m_PlayerController == PC_AUTOPLAY )
-				{
-					STATSMAN->m_CurStageStats.m_bUsedAutoplay = true;
-					if( m_pPlayerStageStats != NULL )
-						m_pPlayerStageStats->m_bDisqualified = true;
-				}
-			}
-			else
-			{
-				GameInput GameI = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( iTrack, pn );
-			// this previously read as bIsHoldingButton &=
-			// was there a specific reason for this? - Friez
-				bIsHoldingButton &= INPUTMAPPER->IsBeingPressed( GameI, m_pPlayerState->m_mp );
-			}
-		}
-	}
 
 	if( bInitiatedNote && fLife != 0 && bHeadJudged )
 	{
@@ -1272,18 +1178,6 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, vector<TrackRowTap
 			m_pPrimaryScoreKeeper->HandleHoldActiveSeconds( fSecondsActiveSinceLastUpdate );
 		if( m_pSecondaryScoreKeeper )
 			m_pSecondaryScoreKeeper->HandleHoldActiveSeconds( fSecondsActiveSinceLastUpdate );
-	}
-
-	// check for LetGo. If the head was missed completely, don't count an LetGo.
-	/* Why? If you never step on the head, then it will be left as HNS_None,
-	 * which doesn't seem correct. */
-	if( IMMEDIATE_HOLD_LET_GO )
-	{
-		if( bInitiatedNote && fLife == 0 && bHeadJudged )	// the player has not pressed the button for a long time!
-		{
-			//LOG->Trace("LetGo from life == 0 (did initiate hold)");
-			hns = HNS_LetGo;
-		}
 	}
 
 	// score hold notes that have passed
@@ -1902,8 +1796,7 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 			// if they got a bad score or haven't stepped on the corresponding tap yet
 			const TapNoteScore tns = tn.result.tns;
 			bool bInitiatedNote = true;
-			if( REQUIRE_STEP_ON_HOLD_HEADS )
-				bInitiatedNote = tns != TNS_None  &&  tns != TNS_Miss;	// did they step on the start?
+			bInitiatedNote = tns != TNS_None  &&  tns != TNS_Miss;	// did they step on the start?
 			const int iEndRow = iRow + tn.iDuration;
 
 			if( bInitiatedNote && tn.HoldResult.fLife != 0 )
@@ -2077,7 +1970,7 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 			{
 			case TapNote::mine:
 				// Stepped too close to mine?
-				if( !bRelease && ( REQUIRE_STEP_ON_MINES == !bHeld ) && 
+				if( !bRelease &&
 				   fSecondsFromExact <= GetWindowSeconds(TW_Mine) &&
 				   m_Timing->IsJudgableAtRow(iSongRow))
 					score = TNS_HitMine;   
@@ -2089,11 +1982,9 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 			case TapNote::hold_head:
 				// oh wow, this was causing the trigger before the hold heads
 				// bug. (It was fNoteOffset > 0.f before) -DaisuMaster
-				if( !REQUIRE_STEP_ON_HOLD_HEADS && ( fNoteOffset <= GetWindowSeconds( TW_W5 ) && GetWindowSeconds( TW_W5 ) != 0 ) )
-				{
+
 					score = TNS_W1;
-					break;
-				}
+
 				// Fall through to default.
 			default:
 				if( (pTN->type == TapNote::lift) == bRelease )
@@ -2612,10 +2503,7 @@ void Player::UpdateJudgedRows()
 					bAllJudged = false;
 					continue;
 				}
-				if( bAllJudged )
-					*m_pIterUnjudgedRows = iter;
-				if( m_pJudgedRows->JudgeRow(iRow) )
-					continue;
+				
 				const TapNoteResult &lastTNR = NoteDataWithScoring::LastTapNoteWithResult( m_NoteData, iRow ).result;
 
 				if( lastTNR.tns < TNS_Miss )
@@ -2947,22 +2835,6 @@ void Player::HandleHoldCheckpoint(int iRow,
 								   iRow, 
 								   iNumHoldsHeldThisRow, 
 								   iNumHoldsMissedThisRow );
-
-	if( iNumHoldsMissedThisRow == 0 )
-	{
-		// added for http://ssc.ajworld.net/sm-ssc/bugtracker/view.php?id=16 -aj
-		if( CHECKPOINTS_FLASH_ON_HOLD )
-		{
-			FOREACH_CONST( int, viColsWithHold, i )
-			{
-				bool bBright = m_pPlayerStageStats 
-					&& m_pPlayerStageStats->m_iCurCombo>(int)BRIGHT_GHOST_COMBO_THRESHOLD;
-				if( m_pNoteField )
-					m_pNoteField->DidHoldNote( *i, HNS_Held, bBright );
-			}
-		}
-	}
-
 	SendComboMessages( iOldCombo, iOldMissCombo );
 
 	if( m_pPlayerStageStats )
