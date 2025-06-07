@@ -480,7 +480,7 @@ struct VideoCardDefaults
 	),
 	VideoCardDefaults(
 		"GeForce|Radeon|Wonder 9|Quadro",
-		"opengl,d3d",
+		"d3d,opengl",
 		640,480,
 		32,32,32,	// 32 bit textures are faster to load
 		2048,

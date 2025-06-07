@@ -104,8 +104,8 @@ public:
 	void ApplyWaitingTransforms();
 	void SetPaused( bool bPaused ) { m_bPaused = bPaused; }
 
-	static float GetMaxStepDistanceSeconds();
-	static float GetWindowSeconds( TimingWindow tw );
+	float GetMaxStepDistanceSeconds();
+	float GetWindowSeconds( TimingWindow tw );
 	const NoteData &GetNoteData() const { return m_NoteData; }
 	bool HasVisibleParts() const { return m_pNoteField != NULL; }
 
@@ -118,6 +118,16 @@ public:
 	virtual void PushSelf( lua_State *L );
 	
 	PlayerState * GetPlayerState() { return this->m_pPlayerState; }
+
+	float GREAT_U, GREAT_D;
+	float GOOD_U, GOOD_D;
+	float BAD_U, BAD_D;
+
+	bool m_bCountNotesSeparately;
+	/** xMAx: use this when using Record mode in the steps editor */
+	/** Else, the game will send Combo/Judging messages when the "Player" were updated in the Update() function in the Editor */
+	/** That will happen only after one Player load (which happens when play in the editor) */
+	inline void Unload() { m_bLoaded = false; };
 
 protected:
 	void UpdateTapNotesMissedOlderThan( float fMissIfOlderThanThisBeat );
@@ -204,6 +214,7 @@ protected:
 
 	vector<bool>	m_vbFretIsDown;
 
+	vector<TrackRowTapNote> vHoldNotesToUpdate; // StepP1
 	vector<RageSound>	m_vKeysounds;
 
 	ThemeMetric<float>	GRAY_ARROWS_Y_STANDARD;

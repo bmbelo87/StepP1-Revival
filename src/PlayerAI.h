@@ -7,8 +7,6 @@
 
 class PlayerState;
 
-const int NUM_SKILL_LEVELS = 6;	// 0-5
-
 class PlayerAI
 {
 public:

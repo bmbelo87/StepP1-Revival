@@ -32,7 +32,7 @@ public:
 	void ResetScoreForLesson();
 
 	bool		m_bJoined;
-  bool    m_bPlayerCanAchieveFullCombo;
+	bool    m_bPlayerCanAchieveFullCombo;
 	vector<Steps*>  m_vpPossibleSteps;
 	int		m_iStepsPlayed; // how many of m_vpPossibleStepshow many of m_vpPossibleSteps were played
 	/**
@@ -50,8 +50,7 @@ public:
 	 * this is only set if both players were failing at the same time. */
 	bool		m_bFailed;
 	bool		m_bReachedLifeZero;		// StepP1 Revival --bSilver
-
-
+	bool		m_bStageIsDoublePerformance;	// StepP1 Revival --bSilver
 	int		m_iPossibleDancePoints;
 	int		m_iCurPossibleDancePoints;
 	int		m_iActualDancePoints;

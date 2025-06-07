@@ -20,6 +20,9 @@ const int MAX_METER = 35;
 /** @brief The maximum number of credits for coin mode. */
 const int MAX_NUM_CREDITS = 20;
 
+// StepP1 Revival
+const int NUM_SKILL_LEVELS = 6;	// 0-5
+
 
 /**
  * @brief The various radar categories available.

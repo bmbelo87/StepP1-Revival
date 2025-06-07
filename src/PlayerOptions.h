@@ -223,6 +223,10 @@ public:
 	// return true if any mods being used will make the song(s) easier
 	bool IsEasierForSongAndSteps( Song* pSong, Steps* pSteps, PlayerNumber pn ) const;
 	bool IsEasierForCourseAndTrail( Course* pCourse, Trail* pTrail ) const;
+
+	// StepP1 Revival -- bSilver
+	bool m_bJudgeByNote;
+	bool m_bNX;
 };
 
 #endif

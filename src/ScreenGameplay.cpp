@@ -35,7 +35,7 @@
 #include "LightsManager.h"
 #include "ProfileManager.h"
 #include "StatsManager.h"
-#include "PlayerAI.h" // for NUM_SKILL_LEVELS
+
 #include "NetworkSyncManager.h"
 #include "Foreach.h"
 #include "DancingCharacters.h"
@@ -1506,7 +1506,7 @@ bool ScreenGameplay::AllAreFailing()
 void ScreenGameplay::GetMusicEndTiming( float &fSecondsToStartFadingOutMusic, float &fSecondsToStartTransitioningOut )
 {
 	float fLastStepSeconds = GAMESTATE->m_pCurSong->GetLastSecond();
-	fLastStepSeconds += Player::GetMaxStepDistanceSeconds();
+	/*fLastStepSeconds += Player::GetMaxStepDistanceSeconds();*/
 
 	float fTransitionLength;
 	if( !GAMESTATE->IsCourseMode() || IsLastSong() )

@@ -15,7 +15,6 @@
 #include "ScoreDisplay.h"
 #include "LifeMeter.h"
 #include "CombinedLifeMeter.h"
-#include "PlayerAI.h"
 #include "NoteField.h"
 #include "NoteDataUtil.h"
 #include "ScreenMessage.h"
@@ -41,6 +40,83 @@
 #include "GameCommand.h"
 #include "LocalizedString.h"
 #include "AdjustSync.h"
+
+static Preference<float> m_fTimingWindowJump		("TimingWindowJump", 0.25);
+static Preference<float> m_fTimingWindowHold		("TimingWindowHold", 0.25);
+static Preference<float> m_fMaxInputLatencySeconds	("MaxInputLatencySeconds", 0.0);
+static Preference<bool> g_bEnableMineSoundPlayback	("EnableMineHitSound", true);
+
+/** @brief How much life is in a hold note when you start on it? */
+ThemeMetric<float> INITIAL_HOLD_LIFE("Player", "InitialHoldLife");
+/**
+ * @brief How much hold life is possible to have when holding a hold note?
+ *
+ * This was an sm-ssc addition. */
+ThemeMetric<float> MAX_HOLD_LIFE("Player", "MaxHoldLife");
+ThemeMetric<bool> PENALIZE_TAP_SCORE_NONE("Player", "PenalizeTapScoreNone");
+ThemeMetric<bool> JUDGE_HOLD_NOTES_ON_SAME_ROW_TOGETHER("Player", "JudgeHoldNotesOnSameRowTogether");
+ThemeMetric<bool> CHECKPOINTS_FLASH_ON_HOLD("Player", "CheckpointsFlashOnHold"); // sm-ssc addition
+ThemeMetric<bool> IMMEDIATE_HOLD_LET_GO("Player", "ImmediateHoldLetGo");
+/**
+ * @brief Must a Player step on a hold head for a hold to activate?
+ *
+ * If set to true, the Player must step on a hold head in order for the hold to activate.
+ * If set to false, merely holding your foot down as the hold head approaches will suffice. */
+ThemeMetric<bool> REQUIRE_STEP_ON_HOLD_HEADS("Player", "RequireStepOnHoldHeads");
+/**
+ * @brief Must a Player step on a mine for it to activate?
+ *
+ * If set to true, the Player must step on a mine for it to blow up.
+ * If set to false, merely holding your foot down as the mine approaches will suffice. */
+ThemeMetric<bool> REQUIRE_STEP_ON_MINES("Player", "RequireStepOnMines");
+//ThemeMetric<bool> HOLD_TRIGGERS_TAP_NOTES	( "Player", "HoldTriggersTapNotes" ); // parastar stuff; leave in though
+/**
+ * @brief Does repeatedly stepping on a roll to keep it alive increment the combo?
+ *
+ * If set to true, repeatedly stepping on a roll will increment the combo.
+ * If set to false, only the roll head causes the combo to be incremented.
+ *
+ * For those wishing to make a theme very accurate to In The Groove 2, set this to false. */
+ThemeMetric<bool> ROLL_BODY_INCREMENTS_COMBO("Player", "RollBodyIncrementsCombo");
+/**
+ * @brief Does not stepping on a mine increase the combo?
+ *
+ * If set to true, every mine missed will increment the combo.
+ * If set to false, missing a mine will not affect the combo. */
+ThemeMetric<bool> AVOID_MINE_INCREMENTS_COMBO("Gameplay", "AvoidMineIncrementsCombo");
+/**
+ * @brief Does stepping on a mine increment the miss combo?
+ *
+ * If set to true, every mine stepped on will break the combo and increment the miss combo.
+ * If set to false, stepping on a mine will not affect the combo. */
+ThemeMetric<bool> MINE_HIT_INCREMENTS_MISS_COMBO("Gameplay", "MineHitIncrementsMissCombo");
+/**
+ * @brief Are checkpoints and taps considered separate judgments?
+ *
+ * If set to true, they are considered separate.
+ * If set to false, they are considered the same. */
+ThemeMetric<bool> CHECKPOINTS_TAPS_SEPARATE_JUDGMENT("Player", "CheckpointsTapsSeparateJudgment");
+/**
+ * @brief Do we score missed holds and rolls with HoldNoteScores?
+ *
+ * If set to true, missed holds and rolls are given LetGo judgments.
+ * If set to false, missed holds and rolls are given no judgment on the hold side of things. */
+ThemeMetric<bool> SCORE_MISSED_HOLDS_AND_ROLLS("Player", "ScoreMissedHoldsAndRolls");
+/** @brief How much of the song/course must have gone by before a Player's combo is colored? */
+ThemeMetric<float> PERCENT_UNTIL_COLOR_COMBO("Player", "PercentUntilColorCombo");
+/** @brief How much combo must be earned before the announcer says "Combo Stopped"? */
+ThemeMetric<int> COMBO_STOPPED_AT("Player", "ComboStoppedAt");
+ThemeMetric<float> ATTACK_RUN_TIME_RANDOM("Player", "AttackRunTimeRandom");
+ThemeMetric<float> ATTACK_RUN_TIME_MINE("Player", "AttackRunTimeMine");
+
+/**
+ * @brief What is our highest cap for mMods?
+ *
+ * If set to 0 or less, assume the song takes over. */
+ThemeMetric<float> M_MOD_HIGH_CAP("Player", "MModHighCap");
+
+/** @brief Will battle modes have their steps mirrored or kept the same? */
+ThemeMetric<bool> BATTLE_RAVE_MIRROR("Player", "BattleRaveMirror");
 
 RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
 void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
@@ -121,93 +197,21 @@ void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, floa
 	}
 }
 
-static Preference<float> m_fTimingWindowScale	( "TimingWindowScale",		1.0f );
-static Preference<float> m_fTimingWindowAdd	( "TimingWindowAdd",		0 );
-static Preference1D<float> m_fTimingWindowSeconds( TimingWindowSecondsInit, NUM_TimingWindow );
-static Preference<float> m_fTimingWindowJump	( "TimingWindowJump",		0.25 );
-static Preference<float> m_fMaxInputLatencySeconds	( "MaxInputLatencySeconds",	0.0 );
-static Preference<bool> g_bEnableAttackSoundPlayback	( "EnableAttackSounds", true );
-static Preference<bool> g_bEnableMineSoundPlayback	( "EnableMineHitSound", true );
 
-Preference<float> g_fTimingWindowHopo		( "TimingWindowHopo",		0.25 );		// max time between notes in a hopo chain
-Preference<float> g_fTimingWindowStrum		( "TimingWindowStrum",		0.1f );		// max time between strum and when the frets must match
-/** @brief How much life is in a hold note when you start on it? */
-ThemeMetric<float> INITIAL_HOLD_LIFE		( "Player", "InitialHoldLife" );
-/**
- * @brief How much hold life is possible to have when holding a hold note?
- *
- * This was an sm-ssc addition. */
-ThemeMetric<float> MAX_HOLD_LIFE		( "Player", "MaxHoldLife" );
-ThemeMetric<bool> PENALIZE_TAP_SCORE_NONE	( "Player", "PenalizeTapScoreNone" );
-ThemeMetric<bool> JUDGE_HOLD_NOTES_ON_SAME_ROW_TOGETHER	( "Player", "JudgeHoldNotesOnSameRowTogether" );
-ThemeMetric<bool> CHECKPOINTS_FLASH_ON_HOLD ( "Player", "CheckpointsFlashOnHold" ); // sm-ssc addition
-ThemeMetric<bool> IMMEDIATE_HOLD_LET_GO	( "Player", "ImmediateHoldLetGo" );
-/**
- * @brief Must a Player step on a hold head for a hold to activate?
- *
- * If set to true, the Player must step on a hold head in order for the hold to activate.
- * If set to false, merely holding your foot down as the hold head approaches will suffice. */
-ThemeMetric<bool> REQUIRE_STEP_ON_HOLD_HEADS	( "Player", "RequireStepOnHoldHeads" );
-/**
- * @brief Must a Player step on a mine for it to activate?
- *
- * If set to true, the Player must step on a mine for it to blow up.
- * If set to false, merely holding your foot down as the mine approaches will suffice. */
-ThemeMetric<bool> REQUIRE_STEP_ON_MINES	( "Player", "RequireStepOnMines" );
-//ThemeMetric<bool> HOLD_TRIGGERS_TAP_NOTES	( "Player", "HoldTriggersTapNotes" ); // parastar stuff; leave in though
-/**
- * @brief Does repeatedly stepping on a roll to keep it alive increment the combo?
- *
- * If set to true, repeatedly stepping on a roll will increment the combo.
- * If set to false, only the roll head causes the combo to be incremented.
- *
- * For those wishing to make a theme very accurate to In The Groove 2, set this to false. */
-ThemeMetric<bool> ROLL_BODY_INCREMENTS_COMBO	( "Player", "RollBodyIncrementsCombo" );
-/**
- * @brief Does not stepping on a mine increase the combo?
- *
- * If set to true, every mine missed will increment the combo.
- * If set to false, missing a mine will not affect the combo. */
-ThemeMetric<bool> AVOID_MINE_INCREMENTS_COMBO	( "Gameplay", "AvoidMineIncrementsCombo" );
-/**
- * @brief Does stepping on a mine increment the miss combo?
- *
- * If set to true, every mine stepped on will break the combo and increment the miss combo.
- * If set to false, stepping on a mine will not affect the combo. */
-ThemeMetric<bool> MINE_HIT_INCREMENTS_MISS_COMBO	( "Gameplay", "MineHitIncrementsMissCombo" );
-/**
- * @brief Are checkpoints and taps considered separate judgments?
- *
- * If set to true, they are considered separate.
- * If set to false, they are considered the same. */
-ThemeMetric<bool> CHECKPOINTS_TAPS_SEPARATE_JUDGMENT	( "Player", "CheckpointsTapsSeparateJudgment" );
-/**
- * @brief Do we score missed holds and rolls with HoldNoteScores?
- *
- * If set to true, missed holds and rolls are given LetGo judgments.
- * If set to false, missed holds and rolls are given no judgment on the hold side of things. */
-ThemeMetric<bool> SCORE_MISSED_HOLDS_AND_ROLLS ( "Player", "ScoreMissedHoldsAndRolls" );
-/** @brief How much of the song/course must have gone by before a Player's combo is colored? */
-ThemeMetric<float> PERCENT_UNTIL_COLOR_COMBO ( "Player", "PercentUntilColorCombo" );
-/** @brief How much combo must be earned before the announcer says "Combo Stopped"? */
-ThemeMetric<int> COMBO_STOPPED_AT ( "Player", "ComboStoppedAt" );
-ThemeMetric<float> ATTACK_RUN_TIME_RANDOM ( "Player", "AttackRunTimeRandom" );
-ThemeMetric<float> ATTACK_RUN_TIME_MINE ( "Player", "AttackRunTimeMine" );
-
-/**
- * @brief What is our highest cap for mMods?
- *
- * If set to 0 or less, assume the song takes over. */
-ThemeMetric<float> M_MOD_HIGH_CAP("Player", "MModHighCap");
-
-/** @brief Will battle modes have their steps mirrored or kept the same? */
-ThemeMetric<bool> BATTLE_RAVE_MIRROR ( "Player", "BattleRaveMirror" );
 
 float Player::GetWindowSeconds( TimingWindow tw )
 {
-	float fSecs = m_fTimingWindowSeconds[tw];
-	fSecs *= m_fTimingWindowScale;
-	fSecs += m_fTimingWindowAdd;
+	
+	float fSecs = 0;
+	switch (tw)
+	{
+		case TW_Mine:	fSecs = GOOD_U;		break;	//same as good top	
+		case TW_Attack: fSecs = GREAT_U;	break;	//same as great top
+		case TW_Hold:	fSecs = 0.23f;		break;	//allow enough time to take foot off and put back on
+		case TW_Roll:	fSecs = 0.350f;		break;
+		default: break;
+	}
+
 	return fSecs;
 }
 
@@ -241,8 +245,6 @@ Player::Player( NoteData &nd, bool bVisibleParts ) : m_NoteData(nd)
 		m_pAttackDisplay = new AttackDisplay;
 		this->AddChild( m_pAttackDisplay );
 	}
-
-	PlayerAI::InitFromDisk();
 
 	m_pNoteField = NULL;
 	if( bVisibleParts )
@@ -616,38 +618,47 @@ void Player::Load()
 {
 	m_bLoaded = true;
 
-	// Figured this is probably a little expensive so let's cache it
-	m_bTickHolds = GAMESTATE->GetCurrentGame()->m_bTickHolds;
-	
-	m_LastTapNoteScore = TNS_None;
-	// The editor can start playing in the middle of the song.
-	const int iNoteRow = BeatToNoteRowNotRounded( m_pPlayerState->m_Position.m_fSongBeat );
-	m_iFirstUncrossedRow     = iNoteRow - 1;
-	m_pJudgedRows->Reset( iNoteRow );
-
 	// TODO: Remove use of PlayerNumber.
 	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
-	bool bOniDead = GAMESTATE->m_SongOptions.GetStage().m_LifeType == SongOptions::LIFE_BATTERY  &&  
-		(m_pPlayerStageStats == NULL || m_pPlayerStageStats->m_bFailed);
+	m_bCountNotesSeparately = m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgeByNote || STATSMAN->m_CurStageStats.m_player[pn].m_bStageIsDoublePerformance;
+
+	// Figured this is probably a little expensive so let's cache it
+	m_bTickHolds = GAMESTATE->GetCurrentGame()->m_bTickHolds;
+
+	// Remove cached holds and rolls (added for the editor)
+	// TODO: Update the hold notes list when start from a different point than the start of the song (for the editor)
+	vHoldNotesToUpdate.clear();
+
+
+	// The editor can start playing in the middle of the song.
+	const int iNoteRow = BeatToNoteRowNotRounded(m_pPlayerState->m_Position.m_fSongBeat);
+	m_iFirstUncrossedRow = iNoteRow - 1;
+
 
 	/* The editor reuses Players ... so we really need to make sure everything
 	 * is reset and not tweening.  Perhaps ActorFrame should recurse to subactors;
 	 * then we could just this->StopTweening()? -glenn */
-	// hurr why don't you just set m_bPropagateCommands on it then -aj
-	if( m_sprJudgment )
-		m_sprJudgment->PlayCommand("Reset");
-	if( m_pPlayerStageStats )
-	{
-		SetCombo( m_pPlayerStageStats->m_iCurCombo, m_pPlayerStageStats->m_iCurMissCombo );	// combo can persist between songs and games
-	}
-	if( m_pAttackDisplay )
-		m_pAttackDisplay->Init( m_pPlayerState );
+	 // hurr why don't you just set m_bPropagateCommands on it then -aj
+ /*
+	 if( m_sprJudgment )
+		 m_sprJudgment->PlayCommand("Reset");
+ */
 
-	/* Don't re-init this; that'll reload graphics.  Add a separate Reset() call
-	 * if some ScoreDisplays need it. */
-//	if( m_pScore )
-//		m_pScore->Init( pn );
+ /*
+	 if( m_pPlayerStageStats )
+	 {
+		 SetCombo( m_pPlayerStageStats->m_iCurCombo, m_pPlayerStageStats->m_iCurMissCombo );	// combo can persist between songs and games
+	 }
+
+	 if( m_pAttackDisplay )
+		 m_pAttackDisplay->Init( m_pPlayerState );
+ */ //xMAx- removed
+
+	 /* Don't re-init this; that'll reload graphics.  Add a separate Reset() call
+	  * if some ScoreDisplays need it. */
+	  //	if( m_pScore )
+	  //		m_pScore->Init( pn );
 
 	/* Apply transforms. */
 	NoteDataUtil::TransformNoteData( m_NoteData, m_pPlayerState->m_PlayerOptions.GetStage(), GAMESTATE->GetCurrentStyle()->m_StepsType );
@@ -659,52 +670,12 @@ void Player::Load()
 	// Generate some cache data structure.
 	GenerateCacheDataStructure(m_pPlayerState, m_NoteData);
 
-	switch( GAMESTATE->m_PlayMode )
-	{
-		case PLAY_MODE_RAVE:
-		case PLAY_MODE_BATTLE:
-		{
-			// ugly, ugly, ugly.  Works only w/ dance.
-			// Why does this work only with dance? - Steve
-			// it has to do with there only being four cases. This is a lame
-			// workaround, but since only DDR has ever really implemented those
-			// modes, it's stayed like this. -aj
-			StepsType st = GAMESTATE->GetCurrentStyle()->m_StepsType;
-			NoteDataUtil::TransformNoteData( m_NoteData, m_pPlayerState->m_PlayerOptions.GetStage(), st );
-
-			if (BATTLE_RAVE_MIRROR)
-			{
-				// shuffle either p1 or p2
-				static int count = 0;
-				switch( count )
-				{
-				case 0:
-				case 3:
-					NoteDataUtil::Turn( m_NoteData, st, NoteDataUtil::left);
-					break;
-				case 1:
-				case 2:
-					NoteDataUtil::Turn( m_NoteData, st, NoteDataUtil::right);
-					break;
-				default:
-					FAIL_M(ssprintf("Count %i not in range 0-3", count));
-				}
-				count++;
-				count %= 4;
-			}
-			break;
-		}
-		default: break;
-	}
-
 	int iDrawDistanceAfterTargetsPixels = GAMESTATE->IsEditing() ? -100 : DRAW_DISTANCE_AFTER_TARGET_PIXELS;
 	int iDrawDistanceBeforeTargetsPixels = GAMESTATE->IsEditing() ? 400 : DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
 
-	float fNoteFieldMiddle = (GRAY_ARROWS_Y_STANDARD+GRAY_ARROWS_Y_REVERSE)/2;
-	
-	if( m_pNoteField && !bOniDead )
+	if( m_pNoteField && !IsOniDead())
 	{
-		m_pNoteField->SetY( fNoteFieldMiddle );
+		m_pNoteField->SetY( 70 ); // Original 70 
 		m_pNoteField->Load( &m_NoteData, iDrawDistanceAfterTargetsPixels, iDrawDistanceBeforeTargetsPixels );
 	}
 
@@ -847,13 +818,7 @@ void Player::Update( float fDeltaTime )
 			}
 		}
 
-		if( g_bEnableAttackSoundPlayback )
-		{
-			if( m_pPlayerState->m_bAttackBeganThisUpdate )
-				m_soundAttackLaunch.Play();
-			if( m_pPlayerState->m_bAttackEndedThisUpdate )
-				m_soundAttackEnding.Play();
-		}
+
 
 		if( m_pNoteField )
 			m_pNoteField->Update( fDeltaTime );
@@ -914,13 +879,6 @@ void Player::Update( float fDeltaTime )
 	// during pause.
 	if( m_bPaused )
 		return;
-
-	// Check for a strum miss
-	if( m_pPlayerState->m_fLastStrumMusicSeconds != -1  &&
-		m_pPlayerState->m_fLastStrumMusicSeconds + g_fTimingWindowStrum < m_pPlayerState->m_Position.m_fMusicSeconds )
-	{
-		DoStrumMiss();
-	}
 
 	// update pressed flag
 	const int iNumCols = GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer;
@@ -1504,99 +1462,78 @@ void Player::DrawPrimitives()
 	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
 	// May have both players in doubles (for battle play); only draw primary player.
-	if( GAMESTATE->GetCurrentStyle()->m_StyleType == StyleType_OnePlayerTwoSides  &&
-		pn != GAMESTATE->GetMasterPlayerNumber() )
+	if( GAMESTATE->GetCurrentStyle()->m_StyleType == StyleType_OnePlayerTwoSides  &&  pn != GAMESTATE->GetMasterPlayerNumber() )
 		return;
 
-	// Draw these below everything else.
-	// xxx: if NoteField Board is enabled and COMBO_UNDER_FIELD, we really want
-	// the combo under the field but over the notefield board. -aj
-	if( COMBO_UNDER_FIELD && m_pPlayerState->m_PlayerOptions.GetCurrent().m_fBlind == 0 )
+	if (m_pNoteField) // && !IsOniDead()) // xMAx - removed
 	{
-		if( m_sprCombo )
-			m_sprCombo->Draw();
-	}
+		DISPLAY->CameraPushMatrix();
+		DISPLAY->PushMatrix();
 
-	if( m_pAttackDisplay )
-		m_pAttackDisplay->Draw();
+		if (m_pPlayerState->m_PlayerOptions.GetCurrent().m_bNX)
+		{
+			DISPLAY->LoadMenuPerspective(90, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH / 2, (SCREEN_HEIGHT / 2));
 
-	if( TAP_JUDGMENTS_UNDER_FIELD )
-		DrawTapJudgments();
+			/*
+			m_pNoteField->SetY(SCREEN_HEIGHT/2.0f - 4);
+			m_pNoteField->SetRotationX(-60);
+			m_pNoteField->SetZoom(0.635f);
+			*/
 
-	if( HOLD_JUDGMENTS_UNDER_FIELD )
-		DrawHoldJudgments();
-
-	float fTilt = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fPerspectiveTilt;
-	float fSkew = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fSkew;
-	bool bReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(0)>0.5;
-
-	DISPLAY->CameraPushMatrix();
-	DISPLAY->PushMatrix();
-
-	float fCenterY = this->GetY()+(GRAY_ARROWS_Y_STANDARD+GRAY_ARROWS_Y_REVERSE)/2;
-
-	DISPLAY->LoadMenuPerspective( 45, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE(fSkew,0.f,1.f,this->GetX(),SCREEN_CENTER_X), fCenterY );
-
-	if( m_pNoteField && !IsOniDead() )
-	{
-		float fOriginalY = 	m_pNoteField->GetY();
-
-		float fTiltDegrees = SCALE(fTilt,-1.f,+1.f,+30,-30) * (bReverse?-1:1);
-
-		float fZoom = SCALE( m_pPlayerState->m_PlayerOptions.GetCurrent().m_fEffects[PlayerOptions::EFFECT_MINI], 0.f, 1.f, 1.f, 0.5f );
-		if( fTilt > 0 )
-			fZoom *= SCALE( fTilt, 0.f, 1.f, 1.f, 0.9f );
+			//m_pNoteField->Draw();
+		}
 		else
-			fZoom *= SCALE( fTilt, 0.f, -1.f, 1.f, 0.9f );
+		{
+			float fTilt = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fPerspectiveTilt;
+			float fSkew = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fSkew;
 
-		float fYOffset;
-		if( fTilt > 0 )
-			fYOffset = SCALE( fTilt, 0.f, 1.f, 0.f, -45.f ) * (bReverse?-1:1);
-		else
-			fYOffset = SCALE( fTilt, 0.f, -1.f, 0.f, -20.f ) * (bReverse?-1:1);
+			//xMAx
+			float	fMini = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fEffects[PlayerOptions::EFFECT_MINI];
+			bool	bBumpy = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fEffects[PlayerOptions::EFFECT_BUMPY] != 0;
 
-		m_pNoteField->SetY( fOriginalY + fYOffset );
-		m_pNoteField->SetZoom( fZoom );
-		m_pNoteField->SetRotationX( fTiltDegrees );
+			//float fCenterY = this->GetY()+(GRAY_ARROWS_Y_STANDARD+GRAY_ARROWS_Y_REVERSE)/2; //xMAx - default
+			//DISPLAY->LoadMenuPerspective( 100, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_CENTER_X, fCenterY ); //ESTO ES SOLO PARA NX MOD
+
+			float	fReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(0);
+			bool	bReverse = fReverse != 0;
+			float	fRotX = 0;
+
+			//xMAx - Condiciones agregadas para no cargar un LoadMenuPerspective cuando no es necesario.
+			if (bBumpy || fTilt != 0 || fSkew != 0 || bReverse)
+				DISPLAY->LoadMenuPerspective(45, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE(fSkew, 0.f, 1.f, this->GetX(), SCREEN_CENTER_X), (SCREEN_HEIGHT / 2));
+
+			if (bReverse)
+			{
+				//m_pNoteField->SetRotationX( 180*fReverse );	//ICTB
+				fRotX = 180 * fReverse;
+				//m_pNoteField->SetY( 70 + (SCREEN_HEIGHT-140)*fReverse); 
+				this->SetY((SCREEN_HEIGHT)*fReverse);
+			}
+
+			if (fTilt != 0)
+			{
+				float fTiltDegrees = SCALE(fTilt, -1.f, +1.f, +30, -30) * (bReverse ? -1 : 1);
+				fRotX += fTiltDegrees;
+				//m_pNoteField->SetRotationX( fTiltDegrees );	//ICTB
+			}
+
+			//m_pNoteField->SetRotationX( fRotX );
+			this->SetRotationX(fRotX);
+
+			if (fMini != 0)
+			{
+				float fZoom = SCALE(fMini, 0.f, 1.f, 1.f, 0.5f);
+				m_pNoteField->SetZoom(fZoom);
+			}
+
+			//m_pNoteField->Draw();
+		}
+
 		m_pNoteField->Draw();
-
-		m_pNoteField->SetY( fOriginalY );
+		DISPLAY->CameraPopMatrix();
+		DISPLAY->PopMatrix();
 	}
-
-	DISPLAY->CameraPopMatrix();
-	DISPLAY->PopMatrix();
-
-	// m_pNoteField->m_sprBoard->GetVisible()
-	if( !COMBO_UNDER_FIELD && m_pPlayerState->m_PlayerOptions.GetCurrent().m_fBlind == 0 )
-		if( m_sprCombo )
-			m_sprCombo->Draw();
-
-	if( !(bool)TAP_JUDGMENTS_UNDER_FIELD )
-		DrawTapJudgments();
-
-	if( !(bool)HOLD_JUDGMENTS_UNDER_FIELD )
-		DrawHoldJudgments();
 }
-
-void Player::DrawTapJudgments()
-{
-	if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_fBlind > 0 )
-		return;
-
-	if( m_sprJudgment )
-		m_sprJudgment->Draw();
-}
-
-void Player::DrawHoldJudgments()
-{
-	if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_fBlind > 0 )
-		return;
-
-	for( int c=0; c<m_NoteData.GetNumTracks(); c++ )
-		if( m_vpHoldJudgment[c] )
-			m_vpHoldJudgment[c]->Draw();
-}
-
 
 void Player::ChangeLife( TapNoteScore tns )
 {
@@ -1800,56 +1737,6 @@ void Player::Fret( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 		StepStrumHopo( col, row, tm, bHeld, bRelease, ButtonType_StrumFretsChanged );
 	}
 
-	// Handle hammer-ons and pull-offs
-	const float fPositionSeconds = m_pPlayerState->m_Position.m_fMusicSeconds - tm.Ago();
-	int iHopoCol = -1;
-	bool bDoHopo = 
-		m_pPlayerState->m_fLastHopoNoteMusicSeconds != -1  &&
-		fPositionSeconds <= m_pPlayerState->m_fLastHopoNoteMusicSeconds + g_fTimingWindowHopo;
-	if( bDoHopo )
-	{
-		// do a Hopo:
-		//  - on pressed fret is no higher fret is held
-		//  - on next lowest held fret when the highest held fret is released
-		bool bHigherFretIsDown = false;
-		for( int i=col+1; i<m_NoteData.GetNumTracks(); i++ )
-		{
-			if( m_vbFretIsDown[i] )
-			{
-				bHigherFretIsDown = true;
-				break;
-			}
-		}
-		if( bHigherFretIsDown )
-			bDoHopo = false;
-	}
-
-	if( bDoHopo )
-	{
-		if( !bRelease )
-		{
-			// hammer-on
-			iHopoCol = col;
-		}
-		else
-		{
-			// pull-off
-			// find next lowest fret that is held
-			for( int i=col-1; i>=0; i-- )
-			{
-				if( m_vbFretIsDown[i] )
-				{
-					iHopoCol = i;
-					break;
-				}
-			}
-			if( iHopoCol == -1 )
-				bDoHopo = false;
-		}
-	}
-
-	if( bDoHopo )
-		Hopo( iHopoCol, row, tm, bHeld, bRelease );
 
 	// Check if this fret breaks all active holds.
 	if( !bRelease )
@@ -2279,8 +2166,6 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 
 		case PC_CPU:
 		case PC_AUTOPLAY:
-			score = PlayerAI::GetTapNoteScore( m_pPlayerState );
-
 			/* XXX: This doesn't make sense.
 			 * Step should only be called in autoplay for hit notes. */
 #if 0
@@ -3304,12 +3189,8 @@ void Player::HandleHoldScore( const TapNote &tn )
 
 float Player::GetMaxStepDistanceSeconds()
 {
-	float fMax = 0;
-	fMax = max( fMax, GetWindowSeconds(TW_W5) );
-	fMax = max( fMax, GetWindowSeconds(TW_W4) );
-	fMax = max( fMax, GetWindowSeconds(TW_W3) );
-	fMax = max( fMax, GetWindowSeconds(TW_W2) );
-	fMax = max( fMax, GetWindowSeconds(TW_W1) );
+	float fMax = abs(BAD_D);
+
 	float f = GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate * fMax;
 	return f + m_fMaxInputLatencySeconds;
 }
