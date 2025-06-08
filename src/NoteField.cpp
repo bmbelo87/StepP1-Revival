@@ -173,7 +173,7 @@ void NoteField::Init( const PlayerState* pPlayerState, float fYReverseOffsetPixe
 void NoteField::Load( 
 	const NoteData *pNoteData,
 	int iDrawDistanceAfterTargetsPixels, 
-	int iDrawDistanceBeforeTargetsPixels )
+	int iDrawDistanceBeforeTargetsPixels, bool bIsDoublePerformance )
 {
 	ASSERT( pNoteData != NULL );
 	m_pNoteData = pNoteData;

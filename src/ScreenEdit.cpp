@@ -37,6 +37,8 @@
 #include "TimingData.h"
 #include "Game.h"
 #include "RageSoundReader.h"
+#include "StatsManager.h"
+
 
 static Preference<float> g_iDefaultRecordLength( "DefaultRecordLength", 4 );
 static Preference<bool> g_bEditorShowBGChangesPlay( "EditorShowBGChangesPlay", true );
@@ -1191,13 +1193,13 @@ void ScreenEdit::Init()
 	m_NoteFieldEdit.SetXY( EDIT_X, EDIT_Y );
 	m_NoteFieldEdit.SetZoom( 0.5f );
 	m_NoteFieldEdit.Init( &m_PlayerStateEdit, PLAYER_HEIGHT*2 );
-	m_NoteFieldEdit.Load( &m_NoteDataEdit, -240, 850 );
+	m_NoteFieldEdit.Load( &m_NoteDataEdit, -240, 850, false );
 	this->AddChild( &m_NoteFieldEdit );
 
 	m_NoteDataRecord.SetNumTracks( m_NoteDataEdit.GetNumTracks() );
 	m_NoteFieldRecord.SetXY( RECORD_X, RECORD_Y );
 	m_NoteFieldRecord.Init( GAMESTATE->m_pPlayerState[PLAYER_1], PLAYER_HEIGHT );
-	m_NoteFieldRecord.Load( &m_NoteDataRecord, -120, 425 );
+	m_NoteFieldRecord.Load( &m_NoteDataRecord, -120, 425, false );
 	this->AddChild( &m_NoteFieldRecord );
 
 	m_EditState = EditState_Invalid;

@@ -383,20 +383,26 @@ void Player::Init(
  * @return true if it does, false otherwise. */
 static bool NeedsTapJudging( const TapNote &tn )
 {
-	switch( tn.type )
-	{
-	DEFAULT_FAIL( tn.type );
-	case TapNote::tap:
-	case TapNote::hold_head:
-	case TapNote::mine:
-	case TapNote::lift:
-		return tn.result.tns == TNS_None;
-	case TapNote::hold_tail:
-	case TapNote::attack:
-	case TapNote::autoKeysound:
-	case TapNote::fake:
-	case TapNote::empty:
+	// this is only used for "UpdateTapNotesMissedOlderThan"
+	if ( tn.judge == TapNote::fake )
 		return false;
+
+	switch ( tn.type )
+	{
+		DEFAULT_FAIL ( tn.type );
+		case TapNote::tap:
+		case TapNote::hold_head:
+		//case TapNote::mine:
+		case TapNote::lift:
+		case TapNote::hold_tail:
+			return tn.result.tns == TNS_None;
+		//case TapNote::hold_tail: // added to be judged - xMAx
+		case TapNote::mine:	// we dont care if we miss mines - xMAx
+		case TapNote::attack:
+		case TapNote::autoKeysound:
+		//case TapNote::fake:
+		case TapNote::empty:
+			return false;
 	}
 }
 
@@ -406,20 +412,23 @@ static bool NeedsTapJudging( const TapNote &tn )
  * @return true if it does, false otherwise. */
 static bool NeedsHoldJudging( const TapNote &tn )
 {
+	if( tn.judge == TapNote::fake )
+		return false;
+
 	switch( tn.type )
 	{
-	DEFAULT_FAIL( tn.type );
-	case TapNote::hold_head:
-		return tn.HoldResult.hns == HNS_None;
-	case TapNote::tap:
-	case TapNote::hold_tail:
-	case TapNote::mine:
-	case TapNote::lift:
-	case TapNote::attack:
-	case TapNote::autoKeysound:
-	case TapNote::fake:
-	case TapNote::empty:
-		return false;
+		DEFAULT_FAIL( tn.type );
+		case TapNote::hold_head:
+			return tn.HoldResult.hns == HNS_None;
+		case TapNote::tap:
+		case TapNote::hold_tail:
+		case TapNote::mine:
+		case TapNote::lift:
+		case TapNote::attack:
+		case TapNote::autoKeysound:
+		//case TapNote::fake:
+		case TapNote::empty:
+			return false;
 	}
 }
 
@@ -443,7 +452,7 @@ static void GenerateCacheDataStructure(PlayerState *pPlayerState, const NoteData
 	}
 	
 	pPlayerState->m_CacheNoteStat.clear();
-	
+	/*
 	NoteData::all_tracks_const_iterator it = notes.GetTapNoteRangeAllTracks( 0, MAX_NOTE_ROW, true );
 	int count = 0, lastCount = 0;
 	for( ; !it.IsAtEnd(); ++it )
@@ -456,7 +465,7 @@ static void GenerateCacheDataStructure(PlayerState *pPlayerState, const NoteData
 		lastCount = count;
 		pPlayerState->m_CacheNoteStat.push_back(c);
 	}
-
+	*/ // xMAx: used in NoteField.cpp
 }
 
 void Player::Load()
@@ -516,12 +525,50 @@ void Player::Load()
 	GenerateCacheDataStructure(m_pPlayerState, m_NoteData);
 
 	int iDrawDistanceAfterTargetsPixels = GAMESTATE->IsEditing() ? -100 : DRAW_DISTANCE_AFTER_TARGET_PIXELS;
-	int iDrawDistanceBeforeTargetsPixels = GAMESTATE->IsEditing() ? 400 : DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
+	int iDrawDistanceBeforeTargetsPixels = GAMESTATE->IsEditing() ? 500 : DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
 
 	if( m_pNoteField && !IsOniDead())
 	{
 		m_pNoteField->SetY( 70 ); // Original 70 
-		m_pNoteField->Load( &m_NoteData, iDrawDistanceAfterTargetsPixels, iDrawDistanceBeforeTargetsPixels );
+		m_pNoteField->Load( &m_NoteData, iDrawDistanceAfterTargetsPixels, iDrawDistanceBeforeTargetsPixels, STATSMAN->m_CurStageStats.m_player[pn].m_bStageIsDoublePerformance);
+
+		// xMAx - Estabelece la posicion del NoteField de acuerdo
+		bool bUnderAttack = m_pPlayerState->m_PlayerOptions.GetCurrent ().m_fScrolls [ PlayerOptions::SCROLL_UNDER_ATTACK ] > 0.5f; // xMAx
+		bool bDrop = m_pPlayerState->m_PlayerOptions.GetCurrent ().m_fScrolls [ PlayerOptions::SCROLL_DROP ] > 0.5f; // xMAx
+		bool bNX = m_pPlayerState->m_PlayerOptions.GetCurrent ().m_bNX; // xMAx
+		float xRotation = 0;
+		float yRotation = 0;
+
+		if( bUnderAttack )
+		{
+			xRotation += 180;
+			yRotation += 180;
+			m_pNoteField->SetY ( SCREEN_HEIGHT - 70 );
+		}
+
+		if( bDrop )
+		{
+			xRotation += 180;
+			m_pNoteField->SetY ( SCREEN_HEIGHT - 70 );
+		}
+
+		if( bNX )
+		{
+			float xRot = -60;
+			//xRotation += -60;
+			if( bDrop )
+				xRot = 60;
+			xRotation += xRot;
+			m_pNoteField->SetY ( SCREEN_HEIGHT / 2.0f - 4 );
+			//m_pNoteField->SetRotationX(-60);
+			m_pNoteField->SetZoom ( 0.635f );
+		}
+
+		m_pNoteField->SetBaseRotationY ( yRotation );
+		m_pNoteField->SetBaseRotationX ( xRotation );
+
+		if( bUnderAttack && bDrop && !bNX )
+			m_pNoteField->SetY ( 70 );
 	}
 
 	bool bPlayerUsingBothSides = GAMESTATE->GetCurrentStyle()->GetUsesCenteredArrows();

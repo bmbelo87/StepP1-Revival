@@ -150,6 +150,8 @@ public:
 		SCROLL_ALTERNATE,
 		SCROLL_CROSS,
 		SCROLL_CENTERED,
+		SCROLL_UNDER_ATTACK, // StepP1 Revival -- bSilver
+ 		SCROLL_DROP, // StepP1 Revival -- bSilver
 		NUM_SCROLLS
 	};
 
@@ -161,7 +163,7 @@ public:
 		XTRA_HARD_JUDGMENT,
 		ULTRA_HARD_JUDGMENT,
 		NUM_Judments
-	};
+	}; // StepP1 Revival -- bSilver
 
 	float GetReversePercentForColumn( int iCol ) const; // accounts for all Directions
 

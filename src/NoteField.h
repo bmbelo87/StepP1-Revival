@@ -26,7 +26,7 @@ public:
 	virtual void Load( 
 		const NoteData* pNoteData, 
 		int iDrawDistanceAfterTargetsPixels, 
-		int iDrawDistanceBeforeTargetsPixels );
+		int iDrawDistanceBeforeTargetsPixels, bool bIsDoublePerformance );
 	virtual void Unload();
 
 	virtual void HandleMessage( const Message &msg );
