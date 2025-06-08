@@ -118,17 +118,40 @@ Player::Player( NoteData &nd, bool bVisibleParts ) : m_NoteData(nd)
 
 	m_bSendJudgmentAndComboMessages = true;
 	m_bCountNotesSeparately = false;
+	// xMAx ----------------------------------------
+	PERF_U = 0;
+	PERF_D = 0;
+	GREAT_U = 0;
+	GREAT_D = 0;
+	GOOD_U = 0;
+	GOOD_D = 0;
+	BAD_U = 0;
+	BAD_D = 0;
+	HOLD_TIMING = 0;
+	// ----------------------------------------------
 }
 
 Player::~Player()
 {
+	if ( m_pPlayerState )
+	{
+		m_pPlayerState->m_CacheDisplayedBeat.clear();
+		m_pPlayerState->m_CacheNoteStat.clear();
+	}
+
 	SAFE_DELETE( m_pNoteField );
-	for( unsigned i = 0; i < m_vpHoldJudgment.size(); ++i )
-		SAFE_DELETE( m_vpHoldJudgment[i] );
 	SAFE_DELETE( m_pIterNeedsTapJudging );
+	SAFE_DELETE ( m_pIterUncrossedRows );
 	SAFE_DELETE( m_pIterNeedsHoldJudging );
-	SAFE_DELETE( m_pIterUncrossedRows );	
 }
+
+
+void RoundUpToTwoDecimal ( float &toRound )
+{
+	float temp = toRound;
+	toRound = ((ceil(temp*1000))/1000.0f);
+}
+
 
 /* Init() does the expensive stuff: load sounds and noteskins.  Load() just loads a NoteData. */
 void Player::Init(
@@ -143,90 +166,20 @@ void Player::Init(
 	ScoreKeeper* pPrimaryScoreKeeper, 
 	ScoreKeeper* pSecondaryScoreKeeper )
 {
-	GRAY_ARROWS_Y_STANDARD.Load(			sType, "ReceptorArrowsYStandard" );
-	GRAY_ARROWS_Y_REVERSE.Load(			sType, "ReceptorArrowsYReverse" );
-	HOLD_JUDGMENT_Y_STANDARD.Load(			sType, "HoldJudgmentYStandard" );
-	HOLD_JUDGMENT_Y_REVERSE.Load(			sType, "HoldJudgmentYReverse" );
-	BRIGHT_GHOST_COMBO_THRESHOLD.Load(		sType, "BrightGhostComboThreshold" );
-	TAP_JUDGMENTS_UNDER_FIELD.Load(			sType, "TapJudgmentsUnderField" );
-	HOLD_JUDGMENTS_UNDER_FIELD.Load(		sType, "HoldJudgmentsUnderField" );
-	COMBO_UNDER_FIELD.Load(		sType, "ComboUnderField" );
 	DRAW_DISTANCE_AFTER_TARGET_PIXELS.Load(		sType, "DrawDistanceAfterTargetsPixels" );
 	DRAW_DISTANCE_BEFORE_TARGET_PIXELS.Load(	sType, "DrawDistanceBeforeTargetsPixels" );
 
-	{
-		// Init judgment positions
-		bool bPlayerUsingBothSides = GAMESTATE->GetCurrentStyle()->GetUsesCenteredArrows();
-		Actor TempJudgment;
-		TempJudgment.SetName( "Judgment" );
-		ActorUtil::LoadCommand( TempJudgment, sType, "Transform" );
-
-		Actor TempCombo;
-		TempCombo.SetName( "Combo" );
-		ActorUtil::LoadCommand( TempCombo, sType, "Transform" );
-
-		int iEnabledPlayerIndex = -1;
-		int iNumEnabledPlayers = 0;
-		if( GAMESTATE->m_bMultiplayer )
-		{
-			FOREACH_EnabledMultiPlayer( p )
-			{
-				if( p == pPlayerState->m_mp )
-					iEnabledPlayerIndex = iNumEnabledPlayers;
-				iNumEnabledPlayers++;
-			}
-		}
-		else
-		{
-			FOREACH_EnabledPlayer( p )
-			{
-				if( p == pPlayerState->m_PlayerNumber )
-					iEnabledPlayerIndex = iNumEnabledPlayers;
-				iNumEnabledPlayers++;
-			}
-		}
-
-		if( iNumEnabledPlayers == 0 )	// hack for ScreenHowToPlay where no players are joined
-		{
-			iEnabledPlayerIndex = 0;
-			iNumEnabledPlayers = 1;
-		}
-
-		for( int i=0; i<NUM_REVERSE; i++ )
-		{
-			for( int j=0; j<NUM_CENTERED; j++ )
-			{
-				Message msg( "Transform" );
-				msg.SetParam( "Player", pPlayerState->m_PlayerNumber );
-				msg.SetParam( "MultiPlayer", pPlayerState->m_mp );
-				msg.SetParam( "iEnabledPlayerIndex", iEnabledPlayerIndex );
-				msg.SetParam( "iNumEnabledPlayers", iNumEnabledPlayers );
-				msg.SetParam( "bPlayerUsingBothSides", bPlayerUsingBothSides );
-				msg.SetParam( "bReverse", !!i );
-				msg.SetParam( "bCentered", !!j );
-
-				TempJudgment.HandleMessage( msg );
-				m_tsJudgment[i][j] = TempJudgment.DestTweenState();
-
-				TempCombo.HandleMessage( msg );
-				m_tsCombo[i][j] = TempCombo.DestTweenState();
-			}
-		}
-	}
-
 	this->SortByDrawOrder();
 
-	m_pPlayerState = pPlayerState;
-	m_pPlayerStageStats = pPlayerStageStats;
-	m_pLifeMeter = pLM;
-	m_pCombinedLifeMeter = pCombinedLM;
-	m_pScoreDisplay = pScoreDisplay;
-	m_pSecondaryScoreDisplay = pSecondaryScoreDisplay;
-	m_pInventory = pInventory;
-	m_pPrimaryScoreKeeper = pPrimaryScoreKeeper;
-	m_pSecondaryScoreKeeper = pSecondaryScoreKeeper;
-
-	m_iLastSeenCombo      = -1;
+	m_pPlayerState =		pPlayerState;
+	m_pPlayerStageStats =		pPlayerStageStats;
+	m_pLifeMeter =			pLM;
+	m_pCombinedLifeMeter =		pCombinedLM;
+	m_pScoreDisplay =		pScoreDisplay;
+	m_pSecondaryScoreDisplay =	pSecondaryScoreDisplay;
+	m_pInventory =			pInventory;
+	m_pPrimaryScoreKeeper =		pPrimaryScoreKeeper;
+	m_pSecondaryScoreKeeper =	pSecondaryScoreKeeper;
 
 	// set initial life
 	if( m_pLifeMeter && m_pPlayerStageStats )
@@ -258,7 +211,24 @@ void Player::Init(
 	}
 
 	// calculate M-mod speed here, so we can adjust properly on a per-song basis.
-	// XXX: can we find a better location for this?
+		// XXX: can we find a better location for this?
+		// Always calculate the reading bpm, to allow switching to an mmod mid-song.
+		/*
+		Get Song bpm data
+			|---> Is Specified
+			|				|---> Not secret (and max specified is different to 0) ---> Returns a value (max 600)
+			|				|
+			|				|---> Is secret (or max specified is equal to 0) ---> Get Steps Data
+			|																			|----> Specified & Not secret &  max specified is different to 0 ---> Returns a value (max 600)
+			|																			|
+			|																			|----> Else ---> Searchs SONG BPM changes ---> Returns a value (max 600)
+			|
+			|
+			|---> Not specified (uses SONG BPM changes) ---> Returns a value (max 600)
+
+		In the case there's no data from the song bpm (like no #BPMS).. it will crash
+		*/
+
 	if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_fMaxScrollBPM != 0 )
 	{
 		DisplayBpms bpms;
@@ -374,7 +344,6 @@ void Player::Init(
 		}
 	}
 
-	m_fNoteFieldHeight = GRAY_ARROWS_Y_REVERSE-GRAY_ARROWS_Y_STANDARD;
 	if( m_pNoteField )
 	{
 		m_pNoteField->Init( m_pPlayerState, m_fNoteFieldHeight );
@@ -674,14 +643,10 @@ void Player::Update( float fDeltaTime )
 			for( int c=0; c<GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer; c++ )
 			{
 				float fPercentReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(c);
-				float fHoldJudgeYPos = SCALE( fPercentReverse, 0.f, 1.f, HOLD_JUDGMENT_Y_STANDARD, HOLD_JUDGMENT_Y_REVERSE );
-				//float fGrayYPos = SCALE( fPercentReverse, 0.f, 1.f, GRAY_ARROWS_Y_STANDARD, GRAY_ARROWS_Y_REVERSE );
-
 				float fX = ArrowEffects::GetXPos( m_pPlayerState, c, 0 );
 				const float fZ = ArrowEffects::GetZPos( m_pPlayerState, c, 0 );
 
 				m_vpHoldJudgment[c]->SetX( fX );
-				m_vpHoldJudgment[c]->SetY( fHoldJudgeYPos );
 				m_vpHoldJudgment[c]->SetZ( fZ );
 				m_vpHoldJudgment[c]->SetZoom( fJudgmentZoom );
 			}
@@ -1144,7 +1109,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, vector<TrackRowTap
 				//LOG->Trace("initiated note and didn't let go");
 				fLife = 1; // xxx: should be MAX_HOLD_LIFE instead? -aj
 				hns = HNS_Held;
-				bool bBright = m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo>(int)BRIGHT_GHOST_COMBO_THRESHOLD;
+				bool bBright = m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo;
 				if( m_pNoteField )
 				{
 					FOREACH( TrackRowTapNote, vTN, trtn )
@@ -1723,7 +1688,7 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 						if( m_pPlayerStageStats )
 							SetCombo( m_pPlayerStageStats->m_iCurCombo, m_pPlayerStageStats->m_iCurMissCombo );
 
-						bool bBright = m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo>(int)BRIGHT_GHOST_COMBO_THRESHOLD;
+						bool bBright = m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo;
 						if( m_pNoteField )
 							m_pNoteField->DidHoldNote( col, HNS_Held, bBright );
 					}
@@ -2176,7 +2141,7 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 				const bool bBlind = (m_pPlayerState->m_PlayerOptions.GetCurrent().m_fBlind != 0);
 				// XXX: This is the wrong combo for shared players.
 				// STATSMAN->m_CurStageStats.m_Player[pn] might work, but could be wrong.
-				const bool bBright = ( m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo > int(BRIGHT_GHOST_COMBO_THRESHOLD) ) || bBlind;
+				const bool bBright = ( m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo ) || bBlind;
 				if( m_pNoteField )
 					m_pNoteField->DidTapNote( col, bBlind? TNS_W1:score, bBright );
 				if( score >= TNS_W3 || bBlind )
@@ -2371,7 +2336,7 @@ void Player::FlashGhostRow( int iRow )
 {
 	TapNoteScore lastTNS = NoteDataWithScoring::LastTapNoteWithResult( m_NoteData, iRow ).result.tns;
 	const bool bBlind = (m_pPlayerState->m_PlayerOptions.GetCurrent().m_fBlind != 0);
-	const bool bBright = ( m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo > int(BRIGHT_GHOST_COMBO_THRESHOLD) ) || bBlind;
+	const bool bBright = ( m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo ) || bBlind;
 
 	for( int iTrack = 0; iTrack < m_NoteData.GetNumTracks(); ++iTrack )
 	{

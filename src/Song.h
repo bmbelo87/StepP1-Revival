@@ -442,6 +442,11 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 
+	// xMAx ---------------------------------------------------------------------
+	// Para separar BPMChanges de Los Stops
+
+	DisplayBPM GetDisplayBPM ( ) const { return this->m_DisplayBPMType; };
+
 private:
 	/** @brief the Steps that belong to this Song. */
 	vector<Steps*> m_vpSteps;
