@@ -145,6 +145,8 @@ public:
 
 	// Lua
 	void PushSelf( lua_State *L );
+
+	float m_fReadBPM;
 };
 
 #endif

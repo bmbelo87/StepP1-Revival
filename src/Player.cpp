@@ -195,21 +195,6 @@ void Player::Init(
 	SoundParams.m_bSupportPan = true;
 	m_soundMine.Load( THEME->GetPathS(sType,"mine"), true, &SoundParams );
 
-	/* Attacks can be launched in course modes and in battle modes.  They both come
-	 * here to play, but allow loading a different sound for different modes. */
-	switch( GAMESTATE->m_PlayMode )
-	{
-	case PLAY_MODE_RAVE:
-	case PLAY_MODE_BATTLE:
-		m_soundAttackLaunch.Load( THEME->GetPathS(sType,"battle attack launch"), true, &SoundParams );
-		m_soundAttackEnding.Load( THEME->GetPathS(sType,"battle attack ending"), true, &SoundParams );
-		break;
-	default:
-		m_soundAttackLaunch.Load( THEME->GetPathS(sType,"course attack launch"), true, &SoundParams );
-		m_soundAttackEnding.Load( THEME->GetPathS(sType,"course attack ending"), true, &SoundParams );
-		break;
-	}
-
 	// calculate M-mod speed here, so we can adjust properly on a per-song basis.
 		// XXX: can we find a better location for this?
 		// Always calculate the reading bpm, to allow switching to an mmod mid-song.
@@ -229,10 +214,9 @@ void Player::Init(
 		In the case there's no data from the song bpm (like no #BPMS).. it will crash
 		*/
 
-	if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_fMaxScrollBPM != 0 )
-	{
 		DisplayBpms bpms;
 
+		// First: check for the Song's specified display bpm, if they are specified
 		if( GAMESTATE->IsCourseMode() )
 		{
 			ASSERT( GAMESTATE->m_pCurTrail[pn] != NULL );
@@ -256,7 +240,7 @@ void Player::Init(
 		// all BPMs are listed and available, so try them first.
 		// get the maximum listed value for the song or course.
 		// if the BPMs are < 0, reset and get the actual values.
-		if( !bpms.IsSecret() )
+		if( (GAMESTATE->m_pCurSong->GetDisplayBPM() == DISPLAY_BPM_SPECIFIED) && !bpms.IsSecret() )
 		{
 			fMaxBPM = (M_MOD_HIGH_CAP > 0 ? 
 				   bpms.GetMaxWithin(M_MOD_HIGH_CAP) : 
@@ -283,43 +267,48 @@ void Player::Init(
 			}
 			else
 			{
-				if (M_MOD_HIGH_CAP > 0)
-					GAMESTATE->m_pCurSong->m_SongTiming.GetActualBPM( fThrowAway, fMaxBPM, M_MOD_HIGH_CAP );
-				else
-					GAMESTATE->m_pCurSong->m_SongTiming.GetActualBPM( fThrowAway, fMaxBPM );
+				DisplayBpms stepsbpms;
+				float fStepsMaxBPM = 0;
+
+				// Second: check for the Step's specified display bpm, if they are specified
+				if ( GAMESTATE->m_pCurSteps [ pn ]->GetDisplayBPM ( ) == DISPLAY_BPM_SPECIFIED )
+				{
+					GAMESTATE->m_pCurSteps[pn]->GetDisplayBpms(stepsbpms);
+					if ( !stepsbpms.IsSecret ( ) )
+					{
+						fStepsMaxBPM = (M_MOD_HIGH_CAP > 0 ?
+							stepsbpms.GetMaxWithin(M_MOD_HIGH_CAP) :
+							stepsbpms.GetMax());
+						fStepsMaxBPM = max( 0 , fStepsMaxBPM);
+					}
+				}
+
+			//GAMESTATE->m_pCurSteps[pn]->GetTimingData()->GetActualBPM( fThrowAway, fMaxBPM, M_MOD_HIGH_CAP );
+			// Third: check for the real (actual) bpms in the song
+				if ( fStepsMaxBPM == 0 )
+				{
+					if (M_MOD_HIGH_CAP > 0)
+						//GAMESTATE->m_pCurSong->m_SongTiming.GetActualBPM( fThrowAway, fMaxBPM, M_MOD_HIGH_CAP );
+						GAMESTATE->m_pCurSong->m_SongTiming.GetActualBPM(fThrowAway, fStepsMaxBPM, M_MOD_HIGH_CAP);
+					else
+						//GAMESTATE->m_pCurSong->m_SongTiming.GetActualBPM( fThrowAway, fMaxBPM );
+						GAMESTATE->m_pCurSong->m_SongTiming.GetActualBPM(fThrowAway, fStepsMaxBPM);
+				}
+
+				fMaxBPM = fStepsMaxBPM;
 			}
 		}
 
 		ASSERT( fMaxBPM > 0 );
-
-		// set an X-mod equal to Mnum / fMaxBPM (e.g. M600 with 150 becomes 4x)	
-		PO_GROUP_ASSIGN(m_pPlayerState->m_PlayerOptions, ModsLevel_Preferred, m_fScrollSpeed,
-				m_pPlayerState->m_PlayerOptions.GetPreferred().m_fMaxScrollBPM / fMaxBPM);
-	}
-
-	float fBalance = GameSoundManager::GetPlayerBalance( pn );
-	m_soundMine.SetProperty( "Pan", fBalance );
-	m_soundAttackLaunch.SetProperty( "Pan", fBalance );
-	m_soundAttackEnding.SetProperty( "Pan", fBalance );
-
+		m_pPlayerState->m_fReadBPM = fMaxBPM;
 
 	if( HasVisibleParts() )
 	{
 		LuaThreadVariable var( "Player", LuaReference::Create(m_pPlayerState->m_PlayerNumber) );
 		LuaThreadVariable var2( "MultiPlayer", LuaReference::Create(m_pPlayerState->m_mp) );
 
-		m_sprCombo.Load( THEME->GetPathG(sType,"combo") );
-		m_sprCombo->SetName( "Combo" );
-		m_pActorWithComboPosition = &*m_sprCombo;
-		this->AddChild( m_sprCombo );
-
-		// todo: allow for judgments to be loaded per-column a la pop'n?
-		// see how HoldJudgments are handled below for an example, though
-		// it would need more work. -aj
-		m_sprJudgment.Load( THEME->GetPathG(sType,"judgment") );
-		m_sprJudgment->SetName( "Judgment" );
-		m_pActorWithJudgmentPosition = &*m_sprJudgment;
-		this->AddChild( m_sprJudgment );
+		m_pActorWithComboPosition = NULL;
+		m_pActorWithJudgmentPosition = NULL;
 	}
 	else
 	{
@@ -327,32 +316,12 @@ void Player::Init(
 		m_pActorWithJudgmentPosition = NULL;
 	}
 
-	// Load HoldJudgments
-	m_vpHoldJudgment.resize( GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer );
-	for( int i = 0; i < GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer; ++i )
-		m_vpHoldJudgment[i] = NULL;
-
-	if( HasVisibleParts() )
-	{
-		for( int i = 0; i < GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer; ++i )
-		{
-			HoldJudgment *pJudgment = new HoldJudgment;
-			// xxx: assumes sprite; todo: don't force 1x2 -aj
-			pJudgment->Load( THEME->GetPathG("HoldJudgment","label 1x2") );
-			m_vpHoldJudgment[i] = pJudgment;
-			this->AddChild( m_vpHoldJudgment[i] );
-		}
-	}
-
 	if( m_pNoteField )
 	{
-		m_pNoteField->Init( m_pPlayerState, m_fNoteFieldHeight );
-		ActorUtil::LoadAllCommands( *m_pNoteField, sType );
+		m_pNoteField->Init( m_pPlayerState, 0 );
+		//ActorUtil::LoadAllCommands( *m_pNoteField, sType ); // dont load commands for the notefield
+		this->AddChild(m_pNoteField);
 	}
-
-	m_vbFretIsDown.resize( GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer );
-	FOREACH( bool, m_vbFretIsDown, b )
-		*b = false;
 
 	m_fActiveRandomAttackStart = -1.0f;
 }
@@ -645,10 +614,6 @@ void Player::Update( float fDeltaTime )
 				float fPercentReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(c);
 				float fX = ArrowEffects::GetXPos( m_pPlayerState, c, 0 );
 				const float fZ = ArrowEffects::GetZPos( m_pPlayerState, c, 0 );
-
-				m_vpHoldJudgment[c]->SetX( fX );
-				m_vpHoldJudgment[c]->SetZ( fZ );
-				m_vpHoldJudgment[c]->SetZoom( fJudgmentZoom );
 			}
 		}
 
@@ -2073,7 +2038,7 @@ void Player::StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, b
 		{
 			score = TNS_None;	// don't score this as anything
 
-			m_soundAttackLaunch.Play();
+
 
 			// put attack in effect
 			Attack attack(

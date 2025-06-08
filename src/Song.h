@@ -445,7 +445,7 @@ public:
 	// xMAx ---------------------------------------------------------------------
 	// Para separar BPMChanges de Los Stops
 
-	DisplayBPM GetDisplayBPM ( ) const { return this->m_DisplayBPMType; };
+	DisplayBPM GetDisplayBPM () const { return this->m_DisplayBPMType; };
 
 private:
 	/** @brief the Steps that belong to this Song. */

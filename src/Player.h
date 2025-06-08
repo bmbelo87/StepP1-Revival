@@ -228,8 +228,6 @@ protected:
 	JudgedRows		*m_pJudgedRows;
 
 	RageSound		m_soundMine;
-	RageSound		m_soundAttackLaunch;
-	RageSound		m_soundAttackEnding;
 
 	float			m_fActiveRandomAttackStart;
 
