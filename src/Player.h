@@ -111,11 +111,7 @@ public:
 
 	void SetActorWithJudgmentPosition( Actor *pActor ) { m_pActorWithJudgmentPosition = pActor; }
 	void SetActorWithComboPosition( Actor *pActor ) { m_pActorWithComboPosition = pActor; }
-
 	void SetSendJudgmentAndComboMessages( bool b ) { m_bSendJudgmentAndComboMessages = b; }
-
-	// Lua
-	virtual void PushSelf( lua_State *L );
 	
 	PlayerState * GetPlayerState() { return this->m_pPlayerState; }
 

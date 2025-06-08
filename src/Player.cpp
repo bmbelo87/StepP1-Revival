@@ -324,7 +324,59 @@ void Player::Init(
 	}
 
 	m_fActiveRandomAttackStart = -1.0f;
+
+	// xMAx --------------------------------------------------------------------------------------
+	JudgeData JD;
+
+	if ( GAMESTATE->IsBasicMode ( ) )
+	{
+		JD = SJ; //Added SJ for Basic Mode
+	}
+	else
+	{
+		switch ( m_pPlayerState->m_PlayerOptions.GetCurrent ( ).m_iJudgment )
+		{
+		case 0: JD = EJ; break;
+		case 1: JD = NJ; break;
+		case 2: JD = HJ; break;
+		case 3: JD = VJ; break;
+		case 4: JD = XJ; break;
+		case 5: JD = UJ; break;
+		default: JD = NJ; break;
+		}
+	}
+
+	float m_fTimingDelay =		JD.iDelay/120.0f;
+	float m_fTimingPerfect =	JD.iPerfect/120.0f;
+	float m_fTimingDelta =		JD.iDelta/120.0f;
+
+	RoundUpToTwoDecimal( m_fTimingDelay );
+	RoundUpToTwoDecimal( m_fTimingPerfect );
+	RoundUpToTwoDecimal( m_fTimingDelta );
+
+	PERF_U = -(m_fTimingPerfect + m_fTimingDelay );
+	PERF_D = m_fTimingPerfect;
+
+	GREAT_U = PERF_U - m_fTimingDelta;
+	GREAT_D = PERF_D + m_fTimingDelta;
+
+	GOOD_U = GREAT_U - m_fTimingDelta;
+	GOOD_D = GREAT_D + m_fTimingDelta;
+
+	BAD_U = GOOD_U - m_fTimingDelta;
+	BAD_D = GOOD_D + m_fTimingDelta;
+
+	HOLD_TIMING = m_fTimingPerfect + m_fTimingDelay + m_fTimingDelta*3.0f;
+	/*
+	LOG->Trace( "xMAx::Perfect Timing: %f to %f", PERF_D , PERF_U );
+	LOG->Trace( "xMAx::Great Timing: %f to %f", GREAT_D , GREAT_U );
+	LOG->Trace( "xMAx::Good Timing: %f to %f", GOOD_D , GOOD_U );
+	LOG->Trace( "xMAx::Bad Timing: %f to %f", BAD_D , BAD_U );
+	LOG->Trace( "xMAx::Hold Timing: %f", HOLD_TIMING );
+	*/
 }
+
+
 /**
  * @brief Determine if a TapNote needs a tap note style judgment.
  * @param tn the TapNote in question.
@@ -2705,41 +2757,6 @@ RString Player::ApplyRandomAttack()
 	return GAMESTATE->m_RandomAttacks[iAttackToUse];
 }
 
-// lua start
-#include "LuaBinding.h"
-
-/** @brief Allow Lua to have access to the Player. */ 
-class LunaPlayer: public Luna<Player>
-{
-public:
-	static int SetActorWithJudgmentPosition( T* p, lua_State *L )
-	{ 
-		Actor *pActor = Luna<Actor>::check(L, 1); 
-		p->SetActorWithJudgmentPosition(pActor); 
-		return 0;
-	}
-	static int SetActorWithComboPosition( T* p, lua_State *L )
-	{ 
-		Actor *pActor = Luna<Actor>::check(L, 1); 
-		p->SetActorWithComboPosition(pActor); 
-		return 0; 
-	}
-	static int GetPlayerTimingData( T* p, lua_State *L )
-	{
-		p->GetPlayerTimingData().PushSelf(L);
-		return 1;
-	}
-	
-	LunaPlayer()
-	{
-		ADD_METHOD( SetActorWithJudgmentPosition );
-		ADD_METHOD( SetActorWithComboPosition );
-		ADD_METHOD( GetPlayerTimingData );
-	}
-};
-
-LUA_REGISTER_DERIVED_CLASS( Player, ActorFrame )
-// lua end
 
 /*
  * (c) 2001-2006 Chris Danford, Steve Checkoway

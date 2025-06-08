@@ -388,6 +388,22 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 
+	// xMAx ------------------------------------------------------------------------------------
+
+
+
+
+
+	bool		m_bBasicMode;
+
+
+
+
+
+
+	inline bool IsBasicMode ( ) { return m_bBasicMode; };
+
+
 	// Keep extra stage logic internal to GameState.
 private:
 	EarnedExtraStage	CalculateEarnedExtraStage() const;

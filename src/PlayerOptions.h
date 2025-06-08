@@ -153,6 +153,16 @@ public:
 		NUM_SCROLLS
 	};
 
+	enum Judgment {
+		EASY_JUDGMENT,
+		NORMAL_JUDGMENT,
+		HARD_JUDGMENT,
+		VERY_HARD_JUDGMENT,
+		XTRA_HARD_JUDGMENT,
+		ULTRA_HARD_JUDGMENT,
+		NUM_Judments
+	};
+
 	float GetReversePercentForColumn( int iCol ) const; // accounts for all Directions
 
 	/* All floats have a corresponding speed setting, which determines how fast
@@ -225,8 +235,9 @@ public:
 	bool IsEasierForCourseAndTrail( Course* pCourse, Trail* pTrail ) const;
 
 	// StepP1 Revival -- bSilver
-	bool m_bJudgeByNote;
-	bool m_bNX;
+	bool		m_bJudgeByNote;
+	bool		m_bNX;
+	Judgment	m_iJudgment;
 };
 
 #endif
