@@ -2,11 +2,18 @@
 #define ARROWEFFECTS_H
 
 class PlayerState;
+class PlayerOptions;
 /** @brief Functions that return properties of arrows based on Style and PlayerOptions. */
 class ArrowEffects
 {
 public:
 	static void Update();
+	// SetCurrentOptions and the hidden static variable it set exists so that
+	// ArrowEffects doesn't have to reach through the PlayerState to check
+	// every option.  Also, it will make it easier to implement per-column
+	// mods later. -Kyz - Added from SM5 5.0.10 - xMAx
+	static void SetCurrentOptions ( const PlayerOptions* options );
+	// Used in NoteField (Twice) and in Player (once)
 
 	// fYOffset is a vertical position in pixels relative to the center
 	// (positive if has not yet been stepped on, negative if has already passed).

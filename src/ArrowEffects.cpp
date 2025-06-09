@@ -60,6 +60,9 @@ static ThemeMetric<float>	TINY_PERCENT_BASE( "ArrowEffects", "TinyPercentBase" )
 static ThemeMetric<float>	TINY_PERCENT_GATE( "ArrowEffects", "TinyPercentGate" );
 static ThemeMetric<bool>	DIZZY_HOLD_HEADS( "ArrowEffects", "DizzyHoldHeads" );
 
+static const PlayerOptions *curr_options = NULL;
+// Next steps i'll modify here
+
 float ArrowGetPercentVisible( const PlayerState* pPlayerState, float fYPosWithoutReverse );
 
 static float GetNoteFieldHeight( const PlayerState* pPlayerState )
@@ -210,6 +213,11 @@ void ArrowEffects::Update()
 		} while( false );
 	}
 	fLastTime = fTime;
+}
+
+void ArrowEffects::SetCurrentOptions ( const PlayerOptions* options )
+{
+	curr_options = options;
 }
 
 static float GetDisplayedBeat( const PlayerState* pPlayerState, float beat )

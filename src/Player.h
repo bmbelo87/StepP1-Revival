@@ -36,6 +36,8 @@ AutoScreenMessage( SM_1000Combo );
 AutoScreenMessage( SM_ComboStopped );
 AutoScreenMessage( SM_ComboContinuing );
 
+
+
 /** @brief Accepts input, knocks down TapNotes that were stepped on, and keeps score for the player. */
 class Player: public ActorFrame
 {
@@ -52,8 +54,17 @@ public:
 		int iTrack;
 		int iRow;
 		TapNote *pTN;
+
+		bool operator==( const TrackRowTapNote &other ) const
+		{
+		#define	COMPARE(x)	if(x!=other.x)	return false
+			COMPARE ( iTrack );
+			COMPARE ( iRow );
+			COMPARE ( pTN );
+		#undef  COMPARE
+			return true;
+		}
 	};
-	void UpdateHoldNotes( int iSongRow, float fDeltaTime, vector<TrackRowTapNote> &vTN );
 
 	void Init( 
 		const RString &sType,
@@ -68,6 +79,7 @@ public:
 		ScoreKeeper* pSecondaryScoreKeeper );
 	void Load();
 	void CrossedRows( int iLastRowCrossed, const RageTimer &now );
+	void CrossedHoldsRows ( int iLastRowCrossed, const RageTimer &now, float fDeltaTime );
 	bool IsOniDead() const;
 	
 	/**
@@ -79,6 +91,8 @@ public:
 	{
 		return *(this->m_Timing);
 	}
+
+	void UpdateHoldNote ( int iSongRow, float fDeltaTime, TrackRowTapNote &trtn );
 
 	// Called when a fret, step, or strum type button changes
 	void Fret( int col, int row, const RageTimer &tm, bool bHeld, bool bRelease );
@@ -149,16 +163,13 @@ public:
 
 protected:
 	void UpdateTapNotesMissedOlderThan( float fMissIfOlderThanThisBeat );
-	void UpdateJudgedRows();
 	void FlashGhostRow( int iRow );
 	void HandleTapRowScore( unsigned row );
 	void HandleHoldScore( const TapNote &tn );
 	void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold );
 
-	void SendComboMessages( int iOldCombo, int iOldMissCombo );
 	void PlayKeysound( const TapNote &tn, TapNoteScore score );
 
-	void SetMineJudgment( TapNoteScore tns );
 	void SetJudgment( TapNoteScore tns, int iFirstTrack, float fTapNoteOffset );	// -1 if no track as in TNS_Miss
 	void SetHoldJudgment( TapNoteScore tns, HoldNoteScore hns, int iTrack );
 	void SetCombo( int iCombo, int iMisses );
