@@ -240,6 +240,7 @@ public:
 	bool		m_bJudgeByNote;
 	bool		m_bNX;
 	Judgment	m_iJudgment;
+	bool		m_bFreePerformance;
 };
 
 #endif

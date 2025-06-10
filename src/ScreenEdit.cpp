@@ -2876,7 +2876,6 @@ bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 				{
 				case GameButtonType_Step:
 					if( iCol != -1 )
-						m_Player->Step( iCol, -1, input.DeviceI.ts, false, bRelease );
 					return true;
 				case GameButtonType_Fret:
 					if( iCol != -1 )

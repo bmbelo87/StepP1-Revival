@@ -2263,12 +2263,7 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 	{
 		if( input.mp != MultiPlayer_Invalid  &&  GAMESTATE->IsMultiPlayerEnabled(input.mp)  &&  iCol != -1 )
 		{
-			FOREACH( PlayerInfo, m_vPlayerInfo, pi )
-			{
-				if( input.mp == pi->m_mp )
-					pi->m_pPlayer->Step( iCol, -1, input.DeviceI.ts, false, bRelease );
-			}
-			return true;
+
 		}
 	}
 	else
@@ -2291,7 +2286,6 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 					return false;
 				case GameButtonType_Step:
 					if( iCol != -1 )
-						pi.m_pPlayer->Step( iCol, -1, input.DeviceI.ts, false, bRelease );
 					return true;
 				case GameButtonType_Fret:
 					if( iCol != -1 )

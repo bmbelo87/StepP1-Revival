@@ -107,7 +107,7 @@ public:
 
 	enum ButtonType { ButtonType_Step, ButtonType_StrumFretsChanged, ButtonType_Hopo };
 	void StepStrumHopo( int col, int row, const RageTimer &tm, bool bHeld, bool bRelease, ButtonType gbt );
-	void Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRelease )	{ StepStrumHopo(col, row, tm, bHeld, bRelease, ButtonType_Step); }
+	void Step ( int col, int row, const RageTimer &tm, bool bRelease );
 
 	// called by Fret for Hammer-ons and Pull-offs
 	void Hopo( int col, int row, const RageTimer &tm, bool bHeld, bool bRelease )	{ StepStrumHopo(col, row, tm, bHeld, bRelease, ButtonType_Hopo); }

@@ -235,6 +235,7 @@ static const char *HoldNoteScoreNames[] = {
 	"None",
 	"LetGo",
 	"Held",
+	"Missed",
 };
 XToString( HoldNoteScore );
 LuaXType( HoldNoteScore );

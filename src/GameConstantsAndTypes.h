@@ -252,6 +252,7 @@ enum HoldNoteScore
 	HNS_None,		/**< The HoldNote was not scored yet. */
 	HNS_LetGo,		/**< The HoldNote has passed, but the player missed it. */
 	HNS_Held,		/**< The HoldNote has passed, and was successfully held all the way. */
+	HNS_Missed,
 	NUM_HoldNoteScore,	/**< The number of hold note scores. */
 	HoldNoteScore_Invalid,
 };
