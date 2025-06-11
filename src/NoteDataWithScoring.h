@@ -3,6 +3,7 @@
 
 #include "PlayerNumber.h"
 #include "GameConstantsAndTypes.h"
+#include "NoteTypes.h"
 
 struct RadarValues;
 class NoteData;
@@ -18,8 +19,8 @@ namespace NoteDataWithScoring
 	 * @param iRow the row to check.
 	 * @plnum If valid, only consider notes for that PlayerNumber
 	 * @return true if it has been completley judged, or false otherwise. */
-	bool IsRowCompletelyJudged( const NoteData &in, unsigned iRow, PlayerNumber plnum = PlayerNumber_Invalid );
-	TapNoteScore MinTapNoteScore( const NoteData &in, unsigned iRow, PlayerNumber plnum = PlayerNumber_Invalid );
+	bool IsRowCompletelyJudged( const NoteData &in, unsigned iRow, TapNote::NoteSkinPlayer nsp );
+	TapNoteScore MinTapNoteScore( const NoteData &in, unsigned iRow, TapNote::NoteSkinPlayer nsp );
 	const TapNote &LastTapNoteWithResult( const NoteData &in, unsigned iRow, PlayerNumber plnum = PlayerNumber_Invalid );
 
 	void GetActualRadarValues( const NoteData &in, const PlayerStageStats &pss, 

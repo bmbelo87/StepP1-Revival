@@ -135,7 +135,7 @@ void PlayerInfo::Load( PlayerNumber pn, MultiPlayer mp, bool bShowNoteField, int
 			break;
 		case PLAY_MODE_ONI:
 		case PLAY_MODE_ENDLESS:
-			if( GAMESTATE->m_SongOptions.GetStage().m_LifeType == SongOptions::LIFE_TIME )
+			if( GAMESTATE->m_SongOptions.GetStage().m_LifeType == LifeType_Time )
 				m_pPrimaryScoreDisplay = new ScoreDisplayLifeTime;
 			else
 				m_pPrimaryScoreDisplay = new ScoreDisplayOni;
@@ -569,7 +569,7 @@ void ScreenGameplay::Init()
 				// not 100% sure of that. -freem
 				if( !GAMESTATE->IsPlayerEnabled(pi->m_pn) && SHOW_LIFE_METER_FOR_DISABLED_PLAYERS )
 				{
-					if(GAMESTATE->m_SongOptions.GetStage().m_LifeType == SongOptions::LIFE_BAR)
+					if(GAMESTATE->m_SongOptions.GetStage().m_LifeType == LifeType_Bar)
 						static_cast<LifeMeterBar*>(pi->m_pLifeMeter)->ChangeLife(-1.0f);
 				}
 			}
@@ -1081,7 +1081,7 @@ void ScreenGameplay::LoadNextSong()
 
 	/* If we're in battery mode, force FailImmediate. We assume in Player::Step
 	 * that failed players can't step. */
-	if( GAMESTATE->m_SongOptions.GetCurrent().m_LifeType == SongOptions::LIFE_BATTERY )
+	if( GAMESTATE->m_SongOptions.GetCurrent().m_LifeType == LifeType_Battery )
 	{
 		FOREACH_EnabledPlayerInfo( m_vPlayerInfo, pi )
 			PO_GROUP_ASSIGN( pi->GetPlayerState()->m_PlayerOptions, ModsLevel_Song, m_FailType, PlayerOptions::FAIL_IMMEDIATE );
@@ -1117,10 +1117,10 @@ void ScreenGameplay::LoadNextSong()
 		// reset oni game over graphic
 		SET_XY_AND_ON_COMMAND( pi->m_sprOniGameOver );
 
-		if( GAMESTATE->m_SongOptions.GetCurrent().m_LifeType==SongOptions::LIFE_BATTERY && pi->GetPlayerStageStats()->m_bFailed )	// already failed
+		if( GAMESTATE->m_SongOptions.GetCurrent().m_LifeType==LifeType_Battery && pi->GetPlayerStageStats()->m_bFailed )	// already failed
 			pi->ShowOniGameOver();
 
-		if( GAMESTATE->m_SongOptions.GetCurrent().m_LifeType==SongOptions::LIFE_BAR && pi->m_pLifeMeter )
+		if( GAMESTATE->m_SongOptions.GetCurrent().m_LifeType==LifeType_Bar && pi->m_pLifeMeter )
 			pi->m_pLifeMeter->UpdateNonstopLifebar();
 
 		if( pi->m_pStepsDisplay )
@@ -1633,7 +1633,7 @@ void ScreenGameplay::Update( float fDeltaTime )
 				PlayerNumber pn = pi->GetStepsAndTrailIndex();
 
 				PlayerOptions::FailType ft = GAMESTATE->GetPlayerFailType( pi->GetPlayerState() );
-				SongOptions::LifeType lt = GAMESTATE->m_SongOptions.GetCurrent().m_LifeType;
+				LifeType lt = GAMESTATE->m_SongOptions.GetCurrent().m_LifeType;
 
 				if( ft == PlayerOptions::FAIL_OFF || ft == PlayerOptions::FAIL_AT_END )
 					continue;
@@ -1657,7 +1657,7 @@ void ScreenGameplay::Update( float fDeltaTime )
 				bool bAllowOniDie = false;
 				switch( lt )
 				{
-					case SongOptions::LIFE_BATTERY:
+					case LifeType_Battery:
 						bAllowOniDie = true;
 					default:
 						break;
@@ -2559,14 +2559,6 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 		RString sCropped = ScreenMessageHelpers::ScreenMessageToString(SM).substr(3);
 		sscanf(sCropped.c_str(),"%d%*s",&iCombo);
 		PlayAnnouncer( ssprintf("gameplay %d combo",iCombo), 2 );
-	}
-	else if( SM == SM_ComboStopped )
-	{
-		PlayAnnouncer( "gameplay combo stopped", 2 );
-	}
-	else if( SM == SM_ComboContinuing )
-	{
-		PlayAnnouncer( "gameplay combo overflow", 2 );
 	}
 	else if( SM >= SM_BattleTrickLevel1 && SM <= SM_BattleTrickLevel3 )
 	{

@@ -70,6 +70,10 @@ struct HoldNoteResult
 	/** @brief Is there life in the hold and does it overlap the current beat? */
 	bool		bActive;
 
+	// xMAx 
+	/** xMAx - Counts the checkpoints not judged (after the hold passed the receptor). Use this value when hold is judged as perfect or miss */
+	vector<int> viCheckpointsNotJudged;
+
 	// XML
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
@@ -116,6 +120,20 @@ struct TapNote
 		original,	/**< This note is part of the original NoteData. */
 		addition,	/**< This note is additional note added by a transform. */
 	};
+
+	/** @brief Para distinguir entre los distintos tipos de tap notes. xMAx */
+	enum NoteSkinPlayer
+	{
+		def_nsp = 0,
+		p1_nsp,
+		p2_nsp,
+		p3_nsp,
+		// p4_nsp,
+		// p5_nsp,
+		NUM_NoteSkinPlayer,
+		PlayerNumber_Invalid
+	};
+
 	/** @brief The core note type that is about to cross the target area. */
 	Type		type;
 	/** @brief The sub type of the note. This is only used if the type is hold_head. */
@@ -127,7 +145,7 @@ struct TapNote
 	/** @brief The Player that is supposed to hit this note. This is mainly for Routine Mode. */
 	PlayerNumber	pn;
 	/* xMAx - noteskin player = para separar los tipos de noteskins en los double performance */
-	//NoteSkinPlayer		nsp; // 0 - default, 1 = player1, etc...
+	NoteSkinPlayer		nsp; // 0 - default, 1 = player1, etc...
 	//Appearance			appearance;
 	Judge				judge;
 

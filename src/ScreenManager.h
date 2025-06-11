@@ -23,7 +23,7 @@ public:
 
 	// Main screen stack management
 	void SetNewScreen( const RString &sName );
-	void AddNewScreenToTop( const RString &sName, ScreenMessage SendOnPop=SM_None );
+	void AddNewScreenToTop( const RString &sName, ScreenMessage SendOnPop = SM_None );
 	/**
 	 * @brief Create and cache the requested Screen.
 	 *
@@ -66,8 +66,9 @@ public:
 
 	void	PlaySharedBackgroundOffCommand();
 	void    ZeroNextUpdate();
+
 private:
-	Screen		*m_pInputFocus; // NULL = top of m_ScreenStack
+	Screen *m_pInputFocus; // NULL = top of m_ScreenStack
 
 	// Screen loads, removals, and concurrent prepares are delayed until the next update.
 	RString		m_sDelayedScreen;
@@ -101,8 +102,8 @@ private:
 	RageSound	m_soundInvalid;
 	/** @brief The sound played when a Player wishes to take a picture of their Score. */
 	RageSound	m_soundScreenshot;
-};
 
+};
 
 extern ScreenManager*	SCREENMAN;	// global and accessible from anywhere in our program
 

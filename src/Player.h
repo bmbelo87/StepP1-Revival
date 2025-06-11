@@ -23,18 +23,21 @@ class PlayerStageStats;
 class JudgedRows;
 
 // todo: replace these with a Message and MESSAGEMAN? -aj
-AutoScreenMessage( SM_100Combo );
-AutoScreenMessage( SM_200Combo );
-AutoScreenMessage( SM_300Combo );
-AutoScreenMessage( SM_400Combo );
-AutoScreenMessage( SM_500Combo );
-AutoScreenMessage( SM_600Combo );
-AutoScreenMessage( SM_700Combo );
-AutoScreenMessage( SM_800Combo );
-AutoScreenMessage( SM_900Combo );
-AutoScreenMessage( SM_1000Combo );
-AutoScreenMessage( SM_ComboStopped );
-AutoScreenMessage( SM_ComboContinuing );
+//AutoScreenMessage( SM_100Combo );
+//AutoScreenMessage( SM_200Combo );
+//AutoScreenMessage( SM_300Combo );
+//AutoScreenMessage( SM_400Combo );
+//AutoScreenMessage( SM_500Combo );
+//AutoScreenMessage( SM_600Combo );
+//AutoScreenMessage( SM_700Combo );
+//AutoScreenMessage( SM_800Combo );
+//AutoScreenMessage( SM_900Combo );
+//AutoScreenMessage( SM_1000Combo );
+//AutoScreenMessage( SM_ComboStopped );
+//AutoScreenMessage( SM_ComboContinuing );
+// xMAx - removed
+AutoScreenMessage( SM_Player1HitMine );
+AutoScreenMessage( SM_Player2HitMine );
 
 
 
@@ -163,10 +166,12 @@ public:
 
 protected:
 	void UpdateTapNotesMissedOlderThan( float fMissIfOlderThanThisBeat );
-	void FlashGhostRow( int iRow );
-	void HandleTapRowScore( unsigned row );
+	//void FlashGhostRow( int iRow ); // xMAx - added iNSP
+	void FlashGhostRow( int iRow, int iNSP );
+	void HandleTapRowScore( unsigned row, TapNoteScore tns );
 	void HandleHoldScore( const TapNote &tn );
-	void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold );
+	//void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold ); // xMAx
+	void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold, bool bHoldsAreBeingPressed );
 
 	void PlayKeysound( const TapNote &tn, TapNoteScore score );
 
@@ -175,13 +180,9 @@ protected:
 	void SetCombo( int iCombo, int iMisses );
 
 	void ChangeLife( TapNoteScore tns );
-	void ChangeLife( HoldNoteScore hns, TapNoteScore tns );
-	void ChangeLifeRecord();
 
-	int GetClosestNoteDirectional( int col, int iStartRow, int iMaxRowsAhead, bool bAllowGraded, bool bForward ) const;
-	int GetClosestNote( int col, int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind, bool bAllowGraded ) const;
-	int GetClosestNonEmptyRowDirectional( int iStartRow, int iMaxRowsAhead, bool bAllowGraded, bool bForward ) const;
-	int GetClosestNonEmptyRow( int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind, bool bAllowGraded ) const;
+	int GetClosestNoteDirectional( int col, int iStartRow, int iMaxRowsAhead, bool bAllowGraded, bool bForward, bool bAllowHoldHead ) const;
+	int GetClosestNote( int col, int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind, bool bAllowGraded, bool bAllowHoldHead = true ) const; //xMAx - added "bool bAllowHoldHead"
 
 	RString ApplyRandomAttack();
 

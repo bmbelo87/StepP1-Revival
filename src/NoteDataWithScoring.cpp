@@ -5,6 +5,7 @@
 #include "GameConstantsAndTypes.h"
 #include "ThemeMetric.h"
 #include "RageLog.h"
+#include "NoteTypes.h"
 
 namespace
 {
@@ -248,7 +249,7 @@ const TapNote &NoteDataWithScoring::LastTapNoteWithResult( const NoteData &in, u
 
 /* Return the minimum tap score of a row.  If the row isn't complete (not all
  * taps have been hit), return TNS_None or TNS_Miss. */
-TapNoteScore NoteDataWithScoring::MinTapNoteScore( const NoteData &in, unsigned row, PlayerNumber plnum )
+TapNoteScore NoteDataWithScoring::MinTapNoteScore( const NoteData &in, unsigned row, TapNote::NoteSkinPlayer nsp )
 {
 	//LOG->Trace("Hey I'm NoteDataWithScoring::MinTapNoteScore");
 	TapNoteScore score = TNS_W1;
@@ -260,7 +261,7 @@ TapNoteScore NoteDataWithScoring::MinTapNoteScore( const NoteData &in, unsigned 
 			tn.type == TapNote::mine ||
 			tn.type == TapNote::fake ||
 			tn.type == TapNote::autoKeysound ||
-			( plnum != PlayerNumber_Invalid && tn.pn != plnum ) )
+			( nsp != PlayerNumber_Invalid && tn.pn != nsp ) )
 			continue;
 		score = min( score, tn.result.tns );
 	}
@@ -269,9 +270,9 @@ TapNoteScore NoteDataWithScoring::MinTapNoteScore( const NoteData &in, unsigned 
 	return score;
 }
 
-bool NoteDataWithScoring::IsRowCompletelyJudged( const NoteData &in, unsigned row, PlayerNumber plnum )
+bool NoteDataWithScoring::IsRowCompletelyJudged( const NoteData &in, unsigned row, TapNote::NoteSkinPlayer nsp)
 {
-	return MinTapNoteScore( in, row, plnum ) >= TNS_Miss;
+	return MinTapNoteScore( in, row, nsp ) >= TNS_Miss;
 }
 
 namespace

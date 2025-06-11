@@ -3,16 +3,24 @@
 #ifndef SONG_OPTIONS_H
 #define SONG_OPTIONS_H
 
+#include "EnumHelper.h"
+
+enum LifeType
+{
+	LifeType_Bar,
+	LifeType_Battery,
+	LifeType_Time,
+	NUM_LifeType,
+	LifeType_Invalid
+};
+const RString &LifeTypeToString( LifeType cat );
+const RString &LifeTypeToLocalizedString( LifeType cat );
+LuaDeclareType( LifeType );
+
 class SongOptions
 {
 public:
-	enum LifeType
-	{
-		LIFE_BAR=0,
-		LIFE_BATTERY,
-		LIFE_TIME,
-		NUM_LIFE_TYPES
-	};
+
 	LifeType m_LifeType;
 	enum DrainType
 	{
@@ -51,7 +59,7 @@ public:
 	 *
 	 * This is taken from Init(), but uses the intended
 	 * initialization lists. */
-	SongOptions(): m_LifeType(LIFE_BAR), m_DrainType(DRAIN_NORMAL),
+	SongOptions(): m_LifeType(LifeType_Bar), m_DrainType(DRAIN_NORMAL),
 		m_iBatteryLives(4), m_bAssistClap(false),
 		m_bAssistMetronome(false), m_fMusicRate(1.0f),
 		m_SpeedfMusicRate(1.0f), m_fHaste(0.0f),

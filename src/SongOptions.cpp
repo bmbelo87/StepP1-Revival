@@ -4,9 +4,18 @@
 #include "GameState.h"
 #include "CommonMetrics.h"
 
+static const char *LifeTypeNames [] = {
+	"Bar",
+	"Battery",
+	"Time",
+};
+XToString( LifeType );
+XToLocalizedString( LifeType );
+LuaXType( LifeType );
+
 void SongOptions::Init() 
 {
-	m_LifeType = LIFE_BAR;
+	m_LifeType = LifeType_Bar;
 	m_DrainType = DRAIN_NORMAL;
 	m_iBatteryLives = 4;
 	m_bAssistClap = false;
@@ -61,7 +70,7 @@ void SongOptions::GetMods( vector<RString> &AddTo ) const
 {
 	switch( m_LifeType )
 	{
-	case LIFE_BAR:		
+	case LifeType_Bar:		
 		switch( m_DrainType )
 		{
 		case DRAIN_NORMAL:						break;
@@ -69,10 +78,10 @@ void SongOptions::GetMods( vector<RString> &AddTo ) const
 		case DRAIN_SUDDEN_DEATH:	AddTo.push_back("SuddenDeath");	break;
 		}
 		break;
-	case LIFE_BATTERY:
+	case LifeType_Battery:
 		AddTo.push_back( ssprintf( "%dLives", m_iBatteryLives ) );
 		break;
-	case LIFE_TIME:
+	case LifeType_Time:
 		AddTo.push_back( "LifeTime" );
 		break;
 	default:
@@ -207,9 +216,9 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 	else if( sBit == "randombg" )				m_bRandomBGOnly = on;
 	else if( sBit == "savescore" )				m_bSaveScore = on;
 	else if( sBit == "savereplay" )			m_bSaveReplay = on;
-	else if( sBit == "bar" )				m_LifeType = LIFE_BAR;
-	else if( sBit == "battery" )				m_LifeType = LIFE_BATTERY;
-	else if( sBit == "lifetime" )				m_LifeType = LIFE_TIME;
+	else if( sBit == "bar" )				m_LifeType = LifeType_Bar;
+	else if( sBit == "battery" )				m_LifeType = LifeType_Battery;
+	else if( sBit == "lifetime" )				m_LifeType = LifeType_Time;
 	else if( sBit == "haste" )				m_fHaste = on? 1.0f:0.0f;
 	else
 		return false;
