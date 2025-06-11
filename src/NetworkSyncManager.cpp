@@ -742,7 +742,7 @@ SMOStepType NetworkSyncManager::TranslateStepType(int score)
 		return SMOST_W2;
 	case TNS_W1:
 		return SMOST_W1;
-	case HNS_LetGo+TapNoteScore_Invalid:
+	case HNS_Missed+TapNoteScore_Invalid:
 		return SMOST_LETGO;
 	case HNS_Held+TapNoteScore_Invalid:
 		return SMOST_HELD;

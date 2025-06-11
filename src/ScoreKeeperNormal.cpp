@@ -232,7 +232,7 @@ void ScoreKeeperNormal::AddHoldScore( HoldNoteScore hns )
 {
 	if( hns == HNS_Held )
 		AddScoreInternal( TNS_W1 );
-	else if ( hns == HNS_LetGo )
+	else if ( hns == HNS_Missed )
 		AddScoreInternal( TNS_W4 ); // required for subtractive score display to work properly.
 }
 
@@ -704,7 +704,7 @@ int ScoreKeeperNormal::HoldNoteScoreToDancePoints( HoldNoteScore hns, bool bBegi
 	{
 	DEFAULT_FAIL( hns );
 	case HNS_None:	iWeight = 0;										break;
-	case HNS_LetGo:	iWeight = g_iPercentScoreWeight.GetValue(SE_LetGo);	break;
+	case HNS_Missed:	iWeight = g_iPercentScoreWeight.GetValue(SE_Missed);	break;
 	case HNS_Held:	iWeight = g_iPercentScoreWeight.GetValue(SE_Held);	break;
 	}
 	if( bBeginner && PREFSMAN->m_bMercifulBeginner )
@@ -746,9 +746,9 @@ int ScoreKeeperNormal::HoldNoteScoreToGradePoints( HoldNoteScore hns, bool bBegi
 	switch( hns )
 	{
 	DEFAULT_FAIL( hns );
-	case HNS_None:	iWeight = 0;									break;
-	case HNS_LetGo:	iWeight = g_iGradeWeight.GetValue(SE_LetGo);	break;
-	case HNS_Held:	iWeight = g_iGradeWeight.GetValue(SE_Held);		break;
+	case HNS_None:		iWeight = 0;					break;
+	case HNS_Missed:	iWeight = g_iGradeWeight.GetValue(SE_Missed);	break;
+	case HNS_Held:		iWeight = g_iGradeWeight.GetValue(SE_Held);	break;
 	}
 	if( bBeginner && PREFSMAN->m_bMercifulBeginner )
 		iWeight = max( 0, iWeight );

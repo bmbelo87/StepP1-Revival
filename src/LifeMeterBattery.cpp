@@ -172,7 +172,7 @@ void LifeMeterBattery::ChangeLife( HoldNoteScore score, TapNoteScore tscore )
 	bool bSubtract = false;
 	if( score == HNS_Held && HELD_ADD_LIVES > 0 )
 		AddLives(HELD_ADD_LIVES);
-	if( score == HNS_LetGo && LET_GO_SUBTRACT_LIVES > 0 )
+	if( score == HNS_Missed && LET_GO_SUBTRACT_LIVES > 0 )
 	{
 		SubtractLives(LET_GO_SUBTRACT_LIVES);
 		bSubtract = true;

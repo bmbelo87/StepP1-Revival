@@ -537,7 +537,7 @@ bool PlayerStageStats::FullComboOfScore( TapNoteScore tnsAllGreaterOrEqual ) con
     return false;
 
 	// If missed any holds, then it's not a full combo
-	if( m_iHoldNoteScores[HNS_LetGo] > 0 )
+	if( m_iHoldNoteScores[HNS_Missed] > 0 )
 		return false;
 
 	//if any checkpoints were missed, it's not a full combo	either

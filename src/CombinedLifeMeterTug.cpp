@@ -25,7 +25,7 @@ static void TugMeterPercentChangeInit( size_t /*ScoreEvent*/ i, RString &sNameOu
 	case SE_CheckpointHit:	defaultValueOut = +0.002f;	break;
 	case SE_CheckpointMiss:	defaultValueOut = -0.002f;	break;
 	case SE_Held:		defaultValueOut = +0.008f;	break;
-	case SE_LetGo:		defaultValueOut = -0.020f;	break;
+	case SE_Missed:		defaultValueOut = -0.020f;	break;
 	}
 }
 
@@ -100,7 +100,7 @@ void CombinedLifeMeterTug::ChangeLife( PlayerNumber pn, HoldNoteScore score, Tap
 	switch( score )
 	{
 	case HNS_Held:			fPercentToMove = g_fTugMeterPercentChange[SE_Held];	break;
-	case HNS_LetGo:			fPercentToMove = g_fTugMeterPercentChange[SE_LetGo];	break;
+	case HNS_Missed:		fPercentToMove = g_fTugMeterPercentChange[SE_Missed];	break;
 	default:
 		FAIL_M(ssprintf("Invalid HoldNoteScore: %i", score));
 	}

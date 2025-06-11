@@ -2676,7 +2676,7 @@ void ScreenGameplay::HandleMessage( const Message &msg )
 
 			bool bOn = false;
 			if( hns != HoldNoteScore_Invalid )
-				bOn = hns != HNS_LetGo;
+				bOn = hns != HNS_Missed;
 			else
 				bOn = tns != TNS_Miss;
 

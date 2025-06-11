@@ -101,7 +101,7 @@ void SoundEffectControl::HoldsBeingHeld( int iRow, int &iHoldsHeld, int &iHoldsL
 			continue;
 		if( tn.HoldResult.bActive )
 			++iHoldsHeld;
-		else if( tn.HoldResult.hns == HNS_LetGo )
+		else if( tn.HoldResult.hns == HNS_Missed )
 			++iHoldsLetGo;
 	}
 }
