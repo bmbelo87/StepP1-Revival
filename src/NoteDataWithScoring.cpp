@@ -275,6 +275,11 @@ bool NoteDataWithScoring::IsRowCompletelyJudged( const NoteData &in, unsigned ro
 	return MinTapNoteScore( in, row, nsp ) >= TNS_Miss;
 }
 
+bool NoteDataWithScoring::IsRowCompletelyJudgedWithAtLeastOneMiss( const NoteData &in, unsigned row, TapNote::NoteSkinPlayer nsp )
+{
+	return MinTapNoteScore( in, row, nsp ) >= TNS_Miss;
+}
+
 namespace
 {
 // Return the ratio of actual to possible Bs.

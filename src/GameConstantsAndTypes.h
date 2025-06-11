@@ -313,8 +313,6 @@ const RString& ScoreEventToString( ScoreEvent se );
 enum GameButtonType
 {
 	GameButtonType_Step,
-	GameButtonType_Fret,
-	GameButtonType_Strum,
 	GameButtonType_INVALID
 };
 

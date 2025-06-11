@@ -2287,13 +2287,6 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 				case GameButtonType_Step:
 					if( iCol != -1 )
 					return true;
-				case GameButtonType_Fret:
-					if( iCol != -1 )
-						pi.m_pPlayer->Fret( iCol, -1, input.DeviceI.ts, false, bRelease );
-					return true;
-				case GameButtonType_Strum:
-					pi.m_pPlayer->Strum( iCol, -1, input.DeviceI.ts, false, bRelease );
-					return true;
 				}
 			}
 		}
