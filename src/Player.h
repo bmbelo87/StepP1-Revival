@@ -2,7 +2,6 @@
 #define PLAYER_H
 
 #include "ActorFrame.h"
-#include "HoldJudgment.h"
 #include "NoteDataWithScoring.h"
 #include "RageSound.h"
 #include "AttackDisplay.h"
@@ -13,16 +12,16 @@
 #include "TimingData.h"
 
 class ScoreDisplay;
+class ScoreKeeper;
 class LifeMeter;
 class CombinedLifeMeter;
-class ScoreKeeper;
 class Inventory;
 class RageTimer;
 class NoteField;
 class PlayerStageStats;
-class JudgedRows;
 
 // todo: replace these with a Message and MESSAGEMAN? -aj
+// 
 //AutoScreenMessage( SM_100Combo );
 //AutoScreenMessage( SM_200Combo );
 //AutoScreenMessage( SM_300Combo );
@@ -38,8 +37,6 @@ class JudgedRows;
 // xMAx - removed
 AutoScreenMessage( SM_Player1HitMine );
 AutoScreenMessage( SM_Player2HitMine );
-
-
 
 /** @brief Accepts input, knocks down TapNotes that were stepped on, and keeps score for the player. */
 class Player: public ActorFrame
@@ -96,23 +93,18 @@ public:
 	}
 
 	void UpdateHoldNote ( int iSongRow, float fDeltaTime, TrackRowTapNote &trtn );
+	void Step( int col, int row, const RageTimer &tm, bool bRelease );
 
-	// Called when the strum window passes without a row being hit
-	void ScoreAllActiveHoldsLetGo() {};
-
-	enum ButtonType { ButtonType_Step, ButtonType_StrumFretsChanged, ButtonType_Hopo };
-	void Step ( int col, int row, const RageTimer &tm, bool bRelease );
 
 	void FadeToFail();
 	void CacheAllUsedNoteSkins();
-	TapNoteScore GetLastTapNoteScore() const { return m_LastTapNoteScore; }
 	void ApplyWaitingTransforms();
 	void SetPaused( bool bPaused ) { m_bPaused = bPaused; }
-
 	float GetMaxStepDistanceSeconds();
 	float GetWindowSeconds( TimingWindow tw );
 	const NoteData &GetNoteData() const { return m_NoteData; }
-	bool HasVisibleParts() const { return m_pNoteField != NULL; }
+	//bool HasVisibleParts() const { return m_pNoteField != NULL; } // xMAx
+	bool HasVisibleParts() const { return false; }
 
 	void SetActorWithJudgmentPosition( Actor *pActor ) { m_pActorWithJudgmentPosition = pActor; }
 	void SetActorWithComboPosition( Actor *pActor ) { m_pActorWithComboPosition = pActor; }
@@ -140,6 +132,7 @@ public:
 		JudgeData &operator=(const JudgeData &judgeData );
 	};
 
+
 	float HOLD_TIMING;
 	float PERF_U, PERF_D;
 	float GREAT_U, GREAT_D;
@@ -152,19 +145,16 @@ public:
 	/** That will happen only after one Player load (which happens when play in the editor) */
 	inline void Unload() { m_bLoaded = false; };
 
+	// ------------------------------------------------------------
 protected:
 	void UpdateTapNotesMissedOlderThan( float fMissIfOlderThanThisBeat );
 	//void FlashGhostRow( int iRow ); // xMAx - added iNSP
 	void FlashGhostRow( int iRow, int iNSP );
 	void HandleTapRowScore( unsigned row, TapNoteScore tns );
-	void HandleHoldScore( const TapNote &tn );
 	//void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold ); // xMAx
 	void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold, bool bHoldsAreBeingPressed );
-
 	void PlayKeysound( const TapNote &tn, TapNoteScore score );
-
 	void SetJudgment( TapNoteScore tns );// (int iFirstTrack, float fTapNoteOffset, vector<int> viCols );	// -1 if no track as in TNS_Miss // xMAx - removed
-	void SetHoldJudgment( TapNoteScore tns, HoldNoteScore hns, int iTrack );
 	void SetCombo( int iCombo, int iMisses );
 
 	void ChangeLife( TapNoteScore tns );
@@ -187,8 +177,7 @@ protected:
 	PlayerState		*m_pPlayerState;
 	/** @brief The player's present stage stats. */
 	PlayerStageStats	*m_pPlayerStageStats;
-	TimingData      *m_Timing;
-	float			m_fNoteFieldHeight;
+	TimingData		*m_Timing;
 
 	bool			m_bPaused;
 	bool			m_bDelay;
@@ -196,16 +185,10 @@ protected:
 	NoteData		&m_NoteData;
 	NoteField		*m_pNoteField;
 
-	vector<HoldJudgment*>	m_vpHoldJudgment;
-
-	AutoActor		m_sprJudgment;
-	AutoActor		m_sprCombo;
 	Actor			*m_pActorWithJudgmentPosition;
 	Actor			*m_pActorWithComboPosition;
 
-	AttackDisplay		*m_pAttackDisplay;
-
-	TapNoteScore		m_LastTapNoteScore;
+	//AttackDisplay		*m_pAttackDisplay; //xMAx
 	LifeMeter		*m_pLifeMeter;
 	CombinedLifeMeter	*m_pCombinedLifeMeter;
 	ScoreDisplay		*m_pScoreDisplay;
@@ -214,22 +197,16 @@ protected:
 	ScoreKeeper		*m_pSecondaryScoreKeeper;
 	Inventory		*m_pInventory;
 
-	int			m_iFirstUncrossedRow;	// used by hold checkpoints logic
+
 	NoteData::all_tracks_iterator *m_pIterNeedsTapJudging;
-	NoteData::all_tracks_iterator *m_pIterNeedsHoldJudging;
 	NoteData::all_tracks_iterator *m_pIterUncrossedRows;
-	NoteData::all_tracks_iterator *m_pIterUnjudgedRows;
-	NoteData::all_tracks_iterator *m_pIterUnjudgedMineRows;
-	int			m_iLastSeenCombo;
-	JudgedRows		*m_pJudgedRows;
+	NoteData::all_tracks_iterator *m_pIterNeedsHoldJudging;
+	int			m_iFirstUncrossedRow;	// used by hold checkpoints logic
 
 	RageSound		m_soundMine;
-
 	float			m_fActiveRandomAttackStart;
 
-	vector<bool>	m_vbFretIsDown;
-
-	vector<TrackRowTapNote> vHoldNotesToUpdate; // StepP1
+	vector<TrackRowTapNote> vHoldNotesToUpdate; 
 	vector<RageSound>	m_vKeysounds;
 
 	ThemeMetric<int>	DRAW_DISTANCE_AFTER_TARGET_PIXELS;

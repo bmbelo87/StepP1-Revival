@@ -338,6 +338,9 @@ public:
 	// XML
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
+
+	// xMAx
+	bool HasNoteSkinPlayer() const; // return true if has player noteskins
 };
 
 /** @brief Allow a quick way to swap notedata. */

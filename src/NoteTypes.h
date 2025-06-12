@@ -108,6 +108,7 @@ struct TapNote
 	enum Judge
 	{
 		normal_judge,
+		//fake,
 		bonus,
 		NUM_Judge,
 		Judge_Invalid

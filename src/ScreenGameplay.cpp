@@ -1745,7 +1745,7 @@ void ScreenGameplay::Update( float fDeltaTime )
 			}
 
 			// update 2d dancing characters
-			FOREACH_EnabledPlayerNumberInfo( m_vPlayerInfo, pi )
+			/*FOREACH_EnabledPlayerNumberInfo( m_vPlayerInfo, pi )
 			{
 				DancingCharacters *pCharacter = NULL;
 				if( m_pSongBackground )
@@ -1776,7 +1776,7 @@ void ScreenGameplay::Update( float fDeltaTime )
 
 					pCharacter->Change2DAnimState( pi->m_pn, state );
 				}
-			}
+			}*/
 
 			// Check for enemy death in enemy battle
 			static float fLastSeenEnemyHealth = 1;

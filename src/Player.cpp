@@ -2150,70 +2150,47 @@ void Player::HandleHoldCheckpoint(int iRow,
 	bNoCheating = false;
 #endif
 
-	// WarpSegments and FakeSegments aren't judged in any way.
-	if (!m_Timing->IsJudgableAtRow(iRow))
+	// No juzgar los MISS cuando el multiplicador es 0 - xMAx
+	if( iNumHoldsMissedThisRow != 0 && m_Timing->GetMissComboAtRow( iRow ) == 0 )
 		return;
 
 	// don't accumulate combo if AutoPlay is on.
 	if( bNoCheating && m_pPlayerState->m_PlayerController == PC_AUTOPLAY )
 		return;
 
+	TapNoteScore HoldNoteScore;
+	int iNumHoldsPressedMissOrPerfect = 0;
+
+	if( iNumHoldsMissedThisRow == 0 )
+	{
+		HoldNoteScore = TNS_CheckpointHit;
+		iNumHoldsPressedMissOrPerfect = iNumHoldsHeldThisRow;
+	}
+	else
+	{
+		HoldNoteScore = TNS_CheckpointMiss;
+		iNumHoldsPressedMissOrPerfect = iNumHoldsMissedThisRow;
+	}
+
 	if( m_pPrimaryScoreKeeper )
-		m_pPrimaryScoreKeeper->HandleHoldCheckpointScore(m_NoteData, 
-								 iRow, 
-								 iNumHoldsHeldThisRow, 
-								 iNumHoldsMissedThisRow );
-	if( m_pSecondaryScoreKeeper )
-		m_pSecondaryScoreKeeper->HandleHoldCheckpointScore(m_NoteData, 
-								   iRow, 
-								   iNumHoldsHeldThisRow, 
-								   iNumHoldsMissedThisRow );
+		m_pPrimaryScoreKeeper->HandleTapRowScore(m_NoteData, iRow, HoldNoteScore, true, iNumHoldsPressedMissOrPerfect );
+
+	if( iNumHoldsMissedThisRow == 0 && bHoldsAreBeingPressed )
+	{
+		FOREACH_CONST( int, viColsWithHold, i )
+		{
+			if( m_pNoteField )
+				m_pNoteField->DidHoldNote( *i, HNS_Held, true );
+		}
+	}
 
 	if( m_pPlayerStageStats )
-	{
-		SetCombo( m_pPlayerStageStats->m_iCurCombo, m_pPlayerStageStats->m_iCurMissCombo );
 		m_pPlayerStageStats->UpdateComboList( STATSMAN->m_CurStageStats.m_fStepsSeconds, false );
-	}
+	
+	ChangeLife( HoldNoteScore ); // xMAx
 
-	ChangeLife( iNumHoldsMissedThisRow == 0? TNS_CheckpointHit:TNS_CheckpointMiss );
-
-
-}
-
-void Player::HandleHoldScore( const TapNote &tn )
-{
-	HoldNoteScore holdScore = tn.HoldResult.hns;
-	TapNoteScore tapScore = tn.result.tns;
-	bool bNoCheating = true;
-#ifdef DEBUG
-	bNoCheating = false;
-#endif
-
-	if( GAMESTATE->m_bDemonstrationOrJukebox )
-		bNoCheating = false;
-	// don't accumulate points if AutoPlay is on.
-	if( bNoCheating && m_pPlayerState->m_PlayerController == PC_AUTOPLAY )
-		return;
-
-	if( m_pPrimaryScoreKeeper )
-		m_pPrimaryScoreKeeper->HandleHoldScore( tn );
-	if( m_pSecondaryScoreKeeper )
-		m_pSecondaryScoreKeeper->HandleHoldScore( tn );
-
-	if( m_pScoreDisplay )
-	{
-		if( m_pPlayerStageStats ) 
-			m_pScoreDisplay->SetScore( m_pPlayerStageStats->m_iScore );
-		m_pScoreDisplay->OnJudgment( holdScore, tapScore );
-	}
-	if( m_pSecondaryScoreDisplay )
-	{
-		if( m_pPlayerStageStats ) 
-			m_pSecondaryScoreDisplay->SetScore( m_pPlayerStageStats->m_iScore );
-		m_pSecondaryScoreDisplay->OnJudgment( holdScore, tapScore );
-	}
-
-
+	if( bHoldsAreBeingPressed || iNumHoldsMissedThisRow )
+		SetJudgment( HoldNoteScore );
 }
 
 float Player::GetMaxStepDistanceSeconds()
@@ -2230,9 +2207,10 @@ void Player::FadeToFail()
 		m_pNoteField->FadeToFail();
 
 	// clear miss combo
-	SetCombo( 0, 0 );
+	// SetCombo( 0, 0 );
 }
 
+// Usado en ScreenEdit.CPP - xMAx (omitido xq los noteskins se cargan en el Init del note field)
 void Player::CacheAllUsedNoteSkins()
 {
 	if( m_pNoteField )
@@ -2245,101 +2223,109 @@ void Player::SetJudgment( TapNoteScore tns )
 	{
 		Message msg("Judgment");
 		msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
-		//msg.SetParam( "MultiPlayer", m_pPlayerState->m_mp );
+		/*msg.SetParam( "MultiPlayer", m_pPlayerState->m_mp );
 		//msg.SetParam( "FirstTrack", iTrack );
-		msg.SetParam( "TapNoteScore", tns );
 		//msg.SetParam( "Early", fTapNoteOffset < 0.0f );
 		//msg.SetParam( "TapNoteOffset", fTapNoteOffset );
-		MESSAGEMAN->Broadcast( msg );
-	}
-}
+		//msg.SetParam( "Tracks", viCols); */
 
-void Player::SetHoldJudgment( TapNoteScore tns, HoldNoteScore hns, int iTrack )
-{
-	ASSERT( iTrack < (int)m_vpHoldJudgment.size() );
-	if( m_vpHoldJudgment[iTrack] )
-		m_vpHoldJudgment[iTrack]->SetHoldJudgment( hns );
-
-	if( m_bSendJudgmentAndComboMessages )
-	{
-		Message msg("Judgment");
-		msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
-		msg.SetParam( "MultiPlayer", m_pPlayerState->m_mp );
-		msg.SetParam( "FirstTrack", iTrack );
-		msg.SetParam( "NumTracks", (int)m_vpHoldJudgment.size() );
-		msg.SetParam( "TapNoteScore", tns );
-		msg.SetParam( "HoldNoteScore", hns );
-		MESSAGEMAN->Broadcast( msg );
-	}
-}
-
-void Player::SetCombo( int iCombo, int iMisses )
-{
-	if( m_iLastSeenCombo == -1 )	// first update, don't set bIsMilestone=true
-		m_iLastSeenCombo = iCombo;
-
-	bool b25Milestone = false;
-	bool b50Milestone = false;
-	bool b100Milestone = false;
-	bool b250Milestone = false;
-	bool b1000Milestone = false;
-	for( int i=m_iLastSeenCombo+1; i<=iCombo; i++ )
-	{
-		if( i < 600 )
+		if( m_pPlayerStageStats )
 		{
-			b25Milestone |= ((i % 25) == 0);
-			b50Milestone |= ((i % 50) == 0);
-			b100Milestone |= ((i % 100) == 0);
-			b250Milestone |= ((i % 250) == 0);
+			int iCombo = m_pPlayerStageStats->m_iCurCombo;
+			int iMisses = m_pPlayerStageStats->m_iCurMissCombo;
+
+			if( GAMESTATE->IsEditing() || ( iCombo >= 4 && tns >= TNS_W4 || iMisses >= 4 ) )
+			{
+				// Message msg("Combo");
+				msg.SetParam( "HasComboData", true );
+
+				if( iCombo > 0 )
+					msg.SetParam( "Combo", iCombo );
+
+				if( iMisses > 0 )
+					msg.SetParam( "Misses", iMisses );
+
+				if( iMisses > 0 ) // player is missing steps
+				{
+					if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )
+						msg.SetParam( "IsFailing", false );
+					else
+						msg.SetParam( "IsFailing", true );
+				}
+				else
+				{
+					if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )
+						msg.SetParam( "IsFailing", true );
+					else
+						msg.SetParam( "IsFailing", false );
+				}
+			}
+			else
+			{
+				msg.SetParam( "HasComboData", false );
+			}
+
 		}
 		else
 		{
-			b1000Milestone |= ((i % 200) == 0);
+			msg.SetParam( "HasComboData", false );
 		}
+
+		if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )
+		{
+			TapNoteScore TNS_Reversed = TNS_None;
+			switch( tns )
+			{
+				case TNS_W1:
+				case TNS_W2:	TNS_Reversed = TNS_Miss; break; // miss
+				case TNS_W3:	TNS_Reversed = TNS_W5; break;	// bad
+				case TNS_W4:	TNS_Reversed = TNS_W4; break;	// good
+				case TNS_W5:	TNS_Reversed = TNS_W3; break;	// great
+				case TNS_Miss:	TNS_Reversed = TNS_W2; break;	// perfect
+				case TNS_CheckpointHit:	TNS_Reversed = TNS_CheckpointMiss; break; // miss
+				case TNS_CheckpointMiss:TNS_Reversed = TNS_CheckpointHit; break; // perfect
+			}
+
+			tns = TNS_Reversed;
+		}
+
+		msg.SetParam( "TapNoteScore", tns );
+		MESSAGEMAN->Broadcast( msg );
 	}
-	m_iLastSeenCombo = iCombo;
+}
 
-	if( b25Milestone )
-		this->PlayCommand( "TwentyFiveMilestone");
-	if( b50Milestone )
-		this->PlayCommand( "FiftyMilestone");
-	if( b100Milestone )
-		this->PlayCommand( "HundredMilestone" );
-	if( b250Milestone )
-		this->PlayCommand( "TwoHundredFiftyMilestone");
-	if( b1000Milestone )
-		this->PlayCommand( "ThousandMilestone" );
 
-	/* Colored combo logic differs between Songs and Courses.
-	 *	Songs:
-	 *	The theme decides how far into the song the combo color should appear.
-	 *	(PERCENT_UNTIL_COLOR_COMBO)
-	 *
-	 *	Courses:
-	 *	PERCENT_UNTIL_COLOR_COMBO refers to how long through the course the
-	 *	combo color should appear (scaling to the number of songs). This may
-	 *	not be desired behavior, however. -aj
-	 *
-	 *	TODO: Add a metric that determines Course combo colors logic?
-	 *	Or possibly move the logic to a Lua function? -aj */
-	bool bPastBeginning = false;
-
+void Player::SetCombo( int iCombo, int iMisses )
+{
 	if( m_bSendJudgmentAndComboMessages )
 	{
-		Message msg("Combo");
-		if( iCombo )
-			msg.SetParam( "Combo", iCombo );
-		if( iMisses )
-			msg.SetParam( "Misses", iMisses );
-		if( bPastBeginning && m_pPlayerStageStats->FullComboOfScore(TNS_W1) )
-			msg.SetParam( "FullComboW1", true );
-		if( bPastBeginning && m_pPlayerStageStats->FullComboOfScore(TNS_W2) )
-			msg.SetParam( "FullComboW2", true );
-		if( bPastBeginning && m_pPlayerStageStats->FullComboOfScore(TNS_W3) )
-			msg.SetParam( "FullComboW3", true );
-		if( bPastBeginning && m_pPlayerStageStats->FullComboOfScore(TNS_W4) )
-			msg.SetParam( "FullComboW4", true );
-		this->HandleMessage( msg );
+		if( GAMESTATE->IsEditing() || iCombo >= 4 || iMisses >= 4 )
+		{
+			Message msg( "Combo" );
+			if( iCombo )
+				msg.SetParam( "Combo", iCombo );
+
+			if( iMisses )
+				msg.SetParam( "Misses", iMisses );
+
+			if( iMisses > 0 ) // player is missing steps
+			{
+				if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )
+					msg.SetParam( "IsFailing", false );
+				else
+					msg.SetParam( "IsFailing", true );
+			}
+			else
+			{
+				if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )
+					msg.SetParam( "IsFailing", true );
+				else
+					msg.SetParam( "IsFailing", false );
+			}
+
+			msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
+			MESSAGEMAN->Broadcast( msg );
+		}
 	}
 }
 

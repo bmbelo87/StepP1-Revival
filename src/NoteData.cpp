@@ -89,7 +89,7 @@ void NoteData::ClearRangeForTrack( int rowBegin, int rowEnd, int iTrack )
 	{
 		NoteData::TrackMap::iterator prev = lEnd;
 		--prev;
-		TapNote tn = lBegin->second;
+		TapNote tn = prev->second; // Was "lBegin->second;" before - taken from Sm5 - xMAx
 		int iRow = prev->first;
 		if( tn.type == TapNote::hold_head && iRow + tn.iDuration > rowEnd )
 		{
@@ -382,14 +382,13 @@ bool NoteData::IsHoldNoteAtRow( int iTrack, int iRow, int *pHeadRow ) const
 				return false;
 			*pHeadRow = r;
 			return true;
-
+		case TapNote::hold_tail:	// xMAx - no estoy seguro si se usa en sm-pump
 		case TapNote::tap:
 		case TapNote::mine:
 		case TapNote::attack:
 		case TapNote::lift:
-		case TapNote::fake:
+		//case TapNote::fake:
 			return false;
-
 		case TapNote::empty:
 		case TapNote::autoKeysound:
 			// ignore
@@ -461,10 +460,16 @@ int NoteData::GetLastRow() const
 
 bool NoteData::IsTap(const TapNote &tn, const int row) const
 {
+	/*
 	return (tn.type != TapNote::empty && tn.type != TapNote::mine
 			&& tn.type != TapNote::lift && tn.type != TapNote::fake
 			&& tn.type != TapNote::autoKeysound
 			&& GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
+			*/
+	return ( tn.type != TapNote::empty && tn.type != TapNote::mine
+		 && tn.type != TapNote::lift
+		 && tn.type != TapNote::autoKeysound
+		 && !IsFake( tn, row ) );
 }
 
 bool NoteData::IsMine(const TapNote &tn, const int row) const
@@ -481,8 +486,11 @@ bool NoteData::IsLift(const TapNote &tn, const int row) const
 
 bool NoteData::IsFake(const TapNote &tn, const int row) const
 {
+	/*
 	return (tn.type == TapNote::fake
 			|| !GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
+	*/
+	return ( ( tn.judge == TapNote::fake ) || !GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow( row ) );
 }
 
 int NoteData::GetNumTapNotes( int iStartIndex, int iEndIndex ) const
