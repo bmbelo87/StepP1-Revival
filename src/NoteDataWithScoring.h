@@ -21,7 +21,7 @@ namespace NoteDataWithScoring
 	 * @return true if it has been completley judged, or false otherwise. */
 	bool IsRowCompletelyJudged( const NoteData &in, unsigned iRow, TapNote::NoteSkinPlayer nsp );
 	bool IsRowCompletelyJudgedWithAtLeastOneMiss( const NoteData &in, unsigned iRow, TapNote::NoteSkinPlayer nsp );
-	TapNoteScore MinTapNoteScore( const NoteData &in, unsigned iRow, TapNote::NoteSkinPlayer nsp );
+	TapNoteScore MinTapNoteScore( const NoteData &in, unsigned iRow, int iNSP );
 	const TapNote &LastTapNoteWithResult( const NoteData &in, unsigned iRow, PlayerNumber plnum = PlayerNumber_Invalid );
 
 	void GetActualRadarValues( const NoteData &in, const PlayerStageStats &pss, 

@@ -249,8 +249,13 @@ const TapNote &NoteDataWithScoring::LastTapNoteWithResult( const NoteData &in, u
 
 /* Return the minimum tap score of a row.  If the row isn't complete (not all
  * taps have been hit), return TNS_None or TNS_Miss. */
-TapNoteScore NoteDataWithScoring::MinTapNoteScore( const NoteData &in, unsigned row, TapNote::NoteSkinPlayer nsp )
+TapNoteScore NoteDataWithScoring::MinTapNoteScore( const NoteData &in, unsigned row, int iNSP )
 {
+	TapNote::NoteSkinPlayer nsp = TapNote::NoteSkinPlayer_Invalid;
+
+	if( iNSP >= TapNote::def_nsp && iNSP < TapNote::NUM_NoteSkinPlayer)
+		nsp = static_cast< TapNote::NoteSkinPlayer >( iNSP );
+
 	//LOG->Trace("Hey I'm NoteDataWithScoring::MinTapNoteScore");
 	TapNoteScore score = TNS_W1;
 	for( int t=0; t<in.GetNumTracks(); t++ )
@@ -261,7 +266,7 @@ TapNoteScore NoteDataWithScoring::MinTapNoteScore( const NoteData &in, unsigned 
 			tn.type == TapNote::mine ||
 			tn.type == TapNote::fake ||
 			tn.type == TapNote::autoKeysound ||
-			( nsp != PlayerNumber_Invalid && tn.pn != nsp ) )
+			( nsp != TapNote::NoteSkinPlayer_Invalid && tn.pn != nsp ) )
 			continue;
 		score = min( score, tn.result.tns );
 	}

@@ -163,7 +163,7 @@ protected:
 
 	void PlayKeysound( const TapNote &tn, TapNoteScore score );
 
-	void SetJudgment( TapNoteScore tns, int iFirstTrack, float fTapNoteOffset );	// -1 if no track as in TNS_Miss
+	void SetJudgment( TapNoteScore tns );// (int iFirstTrack, float fTapNoteOffset, vector<int> viCols );	// -1 if no track as in TNS_Miss // xMAx - removed
 	void SetHoldJudgment( TapNoteScore tns, HoldNoteScore hns, int iTrack );
 	void SetCombo( int iCombo, int iMisses );
 

@@ -41,9 +41,11 @@ public:
 	void DidTapNote( int iCol, TapNoteScore score, bool bBright );
 	void DidHoldNote( int iCol, HoldNoteScore score, bool bBright );
 
+
 	const PlayerState *GetPlayerState() const { return m_pPlayerState; }
 
 	int	m_iBeginMarker, m_iEndMarker;	// only used with MODE_EDIT
+	void UpdateHoldBody( TapNote *tn );
 
 protected:
 	void CacheNoteSkin( const RString &sNoteSkin );
@@ -106,6 +108,10 @@ protected:
 	BitmapText	m_textMeasureNumber;
 	Quad		m_rectMarkerBar;
 	Quad		m_rectAreaHighlight;
+
+	// xMAx
+
+	bool m_bUseRandomSkin;
 };
 
 #endif

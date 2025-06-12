@@ -131,7 +131,7 @@ struct TapNote
 		// p4_nsp,
 		// p5_nsp,
 		NUM_NoteSkinPlayer,
-		PlayerNumber_Invalid
+		NoteSkinPlayer_Invalid,
 	};
 
 	/** @brief The core note type that is about to cross the target area. */
@@ -145,9 +145,9 @@ struct TapNote
 	/** @brief The Player that is supposed to hit this note. This is mainly for Routine Mode. */
 	PlayerNumber	pn;
 	/* xMAx - noteskin player = para separar los tipos de noteskins en los double performance */
-	NoteSkinPlayer		nsp; // 0 - default, 1 = player1, etc...
-	//Appearance			appearance;
-	Judge				judge;
+	NoteSkinPlayer	nsp; // 0 - default, 1 = player1, etc...
+	//Appearance	appearance;
+	Judge		judge;
 
 
 
@@ -161,6 +161,9 @@ struct TapNote
 	// Index into Song's vector of keysound files if nonnegative:
 	int		iKeysoundIndex;
 
+	// xMAx
+	int		iSkin;
+
 	// also used for hold_head only:
 	int		iDuration;
 	HoldNoteResult	HoldResult;
@@ -170,32 +173,36 @@ struct TapNote
 	void LoadFromNode( const XNode* pNode );
 
 	TapNote(): type(empty), subType(SubType_Invalid), source(original),
-		result(), pn(PLAYER_INVALID), bHopoPossible(false), 
+		result(), pn(PLAYER_INVALID), nsp(def_nsp), //xMAx
 		sAttackModifiers(""), fAttackDurationSeconds(0), 
-		iKeysoundIndex(-1), iDuration(0), HoldResult() {}
+		iKeysoundIndex(-1), iDuration(0), HoldResult(), /*iSkin(-1) , appearance(normal), */judge(normal_judge)  {}
 	void Init()
 	{
 		type = empty;
 		subType = SubType_Invalid; 
 		source = original; 
-		pn = PLAYER_INVALID, 
-		bHopoPossible = false;
+		pn = PLAYER_INVALID,
+		nsp = def_nsp; // xMAx
 		fAttackDurationSeconds = 0.f; 
 		iKeysoundIndex = -1;
 		iDuration = 0;
+		//iSkin == -1; // xMAx
+		//appearance = normal;
+		judge = normal_judge;
 	}
-	TapNote( 
+	TapNote(
 		Type type_,
 		SubType subType_,
-		Source source_, 
+		Source source_,
 		RString sAttackModifiers_,
 		float fAttackDurationSeconds_,
-		int iKeysoundIndex_ ):
-		type(type_), subType(subType_), source(source_), result(),
-		pn(PLAYER_INVALID), bHopoPossible(false),
-		sAttackModifiers(sAttackModifiers_),
-		fAttackDurationSeconds(fAttackDurationSeconds_),
-		iKeysoundIndex(iKeysoundIndex_), iDuration(0), HoldResult()
+		int iKeysoundIndex_,
+		NoteSkinPlayer nsp_ = def_nsp, Judge judge_ = normal_judge ) :  //xMAx
+		type( type_ ), subType( subType_ ), source( source_ ), result(),
+		pn( PLAYER_INVALID ), nsp( nsp_ ),
+		sAttackModifiers( sAttackModifiers_ ),
+		fAttackDurationSeconds( fAttackDurationSeconds_ ),
+		iKeysoundIndex( iKeysoundIndex_ ), iDuration( 0 ), /* iSkin(-1), appearance(normal), */ judge( judge_ ), HoldResult()
 	{
 		if (type_ > TapNote::fake )
 		{
@@ -219,6 +226,10 @@ struct TapNote
 		COMPARE(iKeysoundIndex);
 		COMPARE(iDuration);
 		COMPARE(pn);
+		COMPARE( nsp ); //xMAx
+		//COMPARE( iSkin ); // xMAx
+		//COMPARE(appearance); // xMAx
+		COMPARE( judge );
 #undef COMPARE
 		return true;
 	}
@@ -272,6 +283,26 @@ inline const RString TapNoteTypeToString( TapNote::Type tn )
 			return RString("fake");
 		default:
 			return RString("");
+	}
+}
+
+/**
+*@brief Regresa el string que repesenta al TapNote NoteSkinPlayer - xMAx */
+inline const RString NoteSkinPlayerToString( TapNote::NoteSkinPlayer nsp )
+{
+	switch( nsp )
+	{
+		case TapNote::def_nsp:
+			return RString( "Default" );
+		case TapNote::p1_nsp:
+			return RString( "Player 1 NS" );
+		case TapNote::p2_nsp:
+			return RString( "Player 2 NS" );
+		case TapNote::p3_nsp:
+			return RString( "Player 3 NS" );			//case p4 e p5 soon
+		default:
+			return RString( "" );
+
 	}
 }
 

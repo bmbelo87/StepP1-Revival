@@ -21,6 +21,8 @@
 #include "NoteData.h"
 #include "RageDisplay.h"
 
+#define NUM_RANDOM_NOTESKINS 6
+
 float FindFirstDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceAfterTargetsPixels );
 float FindLastDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceBeforeTargetsPixels );
 
@@ -64,6 +66,8 @@ NoteField::NoteField()
 	m_iBeginMarker = m_iEndMarker = -1;
 
 	m_fPercentFadeToFail = -1;
+
+	m_bUseRandomSkin = false;
 }
 
 NoteField::~NoteField()
@@ -1370,6 +1374,17 @@ void NoteField::Step( int iCol, TapNoteScore score ) { m_pCurDisplay->m_Receptor
 void NoteField::SetPressed( int iCol ) { m_pCurDisplay->m_ReceptorArrowRow.SetPressed( iCol ); }
 void NoteField::DidTapNote( int iCol, TapNoteScore score, bool bBright ) { m_pCurDisplay->m_GhostArrowRow.DidTapNote( iCol, score, bBright ); }
 void NoteField::DidHoldNote( int iCol, HoldNoteScore score, bool bBright ) { m_pCurDisplay->m_GhostArrowRow.DidHoldNote( iCol, score, bBright ); }
+void NoteField::UpdateHoldBody( TapNote *tn )
+{
+	if( m_bUseRandomSkin )
+	{
+		//if(tn->iSkin == -1 || bIsHoldingNote)
+		{
+			int random_skin = rand() % NUM_RANDOM_NOTESKINS;
+			tn->iSkin = random_skin;
+		}
+	}
+}
 
 void NoteField::HandleMessage( const Message &msg )
 {
