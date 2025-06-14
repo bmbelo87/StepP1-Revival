@@ -571,7 +571,7 @@ class DebugLineAutoplay : public IDebugLine
 	virtual RString GetDisplayTitle() { return AUTO_PLAY.GetValue() + " (+Shift = AI) (+Alt = hide)"; }
 	virtual RString GetDisplayValue()
 	{
-		PlayerController pc = GamePreferences::m_AutoPlay.Get();
+		PlayerController pc = GamePreferences::m_AutoPlayP1.Get();
 		switch( pc )
 		{
 		case PC_HUMAN:		return OFF.GetValue();	break;
@@ -582,7 +582,7 @@ class DebugLineAutoplay : public IDebugLine
 		}
 	}
 	virtual Type GetType() const { return IDebugLine::gameplay_only; }
-	virtual bool IsEnabled() { return GamePreferences::m_AutoPlay.Get() != PC_HUMAN; }
+	virtual bool IsEnabled() { return GamePreferences::m_AutoPlayP1.Get() != PC_HUMAN; }
 	virtual void DoAndLog( RString &sMessageOut )
 	{
 		ASSERT( GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID );
@@ -594,11 +594,11 @@ class DebugLineAutoplay : public IDebugLine
 			pc = (pc==PC_CPU) ? PC_HUMAN : PC_CPU;
 		else
 			pc = (pc==PC_AUTOPLAY) ? PC_HUMAN : PC_AUTOPLAY;
-		GamePreferences::m_AutoPlay.Set( pc );
+		GamePreferences::m_AutoPlayP1.Set( pc );
 		FOREACH_HumanPlayer(p)
-			GAMESTATE->m_pPlayerState[p]->m_PlayerController = GamePreferences::m_AutoPlay;
+			GAMESTATE->m_pPlayerState[p]->m_PlayerController = GamePreferences::m_AutoPlayP1;
 		FOREACH_MultiPlayer(p)
-			GAMESTATE->m_pMultiPlayerState[p]->m_PlayerController = GamePreferences::m_AutoPlay;
+			GAMESTATE->m_pMultiPlayerState[p]->m_PlayerController = GamePreferences::m_AutoPlayP1;
 
 		// Hide Autoplay if Alt is held down
 		bool bHoldingAlt = 

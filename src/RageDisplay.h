@@ -296,6 +296,8 @@ public:
 	void DrawSymmetricQuadStrip( const RageSpriteVertex v[], int iNumVerts );
 	void DrawCircle( const RageSpriteVertex &v, float radius );
 
+	void DrawPoint( const RageSpriteVertex v [], int iNumVerts ) ;
+
 	void DrawQuad( const RageSpriteVertex v[] ) { DrawQuads(v,4); } /* alias. upper-left, upper-right, lower-left, lower-right */
 
 	// hacks for cell-shaded models

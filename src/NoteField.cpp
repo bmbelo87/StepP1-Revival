@@ -1245,8 +1245,7 @@ void NoteField::DrawPrimitives()
 				}
 
 				bool bIsAddition = (tn.source == TapNote::addition);
-				bool bIsHopoPossible = (tn.bHopoPossible);
-				bool bUseAdditionColoring = bIsAddition || bIsHopoPossible;
+				bool bUseAdditionColoring = bIsAddition;
 				const bool bHoldGhostShowing = tn.HoldResult.bActive  &&  tn.HoldResult.fLife > 0;
 				const bool bIsHoldingNote = tn.HoldResult.bHeld;
 				if( bHoldGhostShowing )
@@ -1344,8 +1343,7 @@ void NoteField::DrawPrimitives()
 				bIsInSelectionRange = m_iBeginMarker<=q && q<m_iEndMarker;
 
 			bool bIsAddition = (tn.source == TapNote::addition);
-			bool bIsHopoPossible = (tn.bHopoPossible);
-			bool bUseAdditionColoring = bIsAddition || bIsHopoPossible;
+			bool bUseAdditionColoring = bIsAddition;
 			NoteDisplayCols *displayCols = tn.pn == PLAYER_INVALID ? m_pCurDisplay : m_pDisplays[tn.pn];
 			displayCols->display[c].DrawTap(tn, c, NoteRowToVisibleBeat(m_pPlayerState, q),
 							bHoldNoteBeginsOnThisBeat, bRollNoteBeginsOnThisBeat,

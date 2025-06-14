@@ -174,7 +174,7 @@ void ScreenGameplayLesson::ChangeLessonPage( int iDir )
 			if( pi->GetPlayerState()->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay != 0 )
 				pi->GetPlayerState()->m_PlayerController = PC_AUTOPLAY;
 			else
-				pi->GetPlayerState()->m_PlayerController = GamePreferences::m_AutoPlay;
+				pi->GetPlayerState()->m_PlayerController = GamePreferences::m_AutoPlayP1;
 		}
 	}
 	else

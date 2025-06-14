@@ -298,6 +298,17 @@ public:
 	void SetSpecifiedLastSecond(const float f);
 
 	typedef vector<BackgroundChange> 	VBackgroundChange;
+
+	// xMAx -----------------------------------------------------------------------------------
+
+
+	int		m_iVolume;
+
+
+
+
+	bool		m_bCanBeEdit;
+
 private:
 	/** @brief The first second that a note is hit. */
 	float firstSecond;

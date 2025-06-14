@@ -12,7 +12,6 @@ using namespace RageDisplay_Legacy_Helpers;
 #include "RageTextureManager.h"
 #include "RageMath.h"
 #include "RageTypes.h"
-#include "RageUtil.h"
 #include "EnumHelper.h"
 #include "Foreach.h"
 #include "DisplayResolutions.h"
@@ -1554,6 +1553,18 @@ void RageDisplay_Legacy::DrawLineStripInternal( const RageSpriteVertex v[], int 
 	glDrawArrays( GL_POINTS, 0, iNumVerts );
 
 	glDisable( GL_POINT_SMOOTH );
+}
+
+// STEPP1 BGAOff Things, Is this code is correct? D:
+void RageDisplay::DrawPoint(const RageSpriteVertex v[], int iNumVerts)
+{
+	glBegin(GL_POINTS);
+	for (int i = 0; i < iNumVerts; ++i)
+	{
+		glColor4f(v[i].c.r, v[i].c.g, v[i].c.b, v[i].c.a);
+		glVertex3f(v[i].p.x, v[i].p.y, v[i].p.z);
+	}
+	glEnd();
 }
 
 static bool SetTextureUnit( TextureUnit tu )

@@ -41,7 +41,7 @@ void ScreenGameplaySyncMachine::Init()
 	Steps *pSteps = vpSteps[0];
 	GAMESTATE->m_pCurSteps[GAMESTATE->GetFirstHumanPlayer()].Set( pSteps );
 
-	GamePreferences::m_AutoPlay.Set( PC_HUMAN );
+	GamePreferences::m_AutoPlayP1.Set( PC_HUMAN );
 
 	ScreenGameplayNormal::Init();
 

@@ -7,7 +7,11 @@
 namespace GamePreferences
 {
 	extern Preference<CoinMode> m_CoinMode;
-	extern Preference<PlayerController> m_AutoPlay;
+	//extern Preference<PlayerController> m_AutoPlay;
+
+	// xMAx
+	extern Preference<PlayerController> m_AutoPlayP1;
+	extern Preference<PlayerController> m_AutoPlayP2;
 };
 
 #endif

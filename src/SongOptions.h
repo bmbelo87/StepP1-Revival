@@ -78,6 +78,16 @@ public:
 
 	bool operator==( const SongOptions &other ) const;
 	bool operator!=( const SongOptions &other ) const { return !operator==(other); }
+
+	// xMAx
+	bool m_bUseBGAOff;
+	bool m_bUseBGADark;
+
+
+
+
+
+
 };
 
 #endif

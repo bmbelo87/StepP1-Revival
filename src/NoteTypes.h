@@ -93,7 +93,7 @@ struct TapNote
 		lift,		/**< Lift your foot up when it crosses the target area. */
 		attack,		/**< Hitting this note causes an attack to take place. */
 		autoKeysound,	/**< A special sound is played when this note crosses the target area. */
-		fake,		/**< This arrow can't be scored for or against the player. */
+		// fake,		/**< This arrow can't be scored for or against the player. */
  	};
 	/** @brief The list of a TapNote's sub types. */
 	enum SubType
@@ -105,10 +105,20 @@ struct TapNote
 		SubType_Invalid
 	};
 
+	enum Appearance
+	{
+		normal,
+		hidden,
+		sudden,
+		vanish,
+		NUM_Appearance,
+		Appearance_Invalid
+	};
+
 	enum Judge
 	{
 		normal_judge,
-		//fake,
+		fake,
 		bonus,
 		NUM_Judge,
 		Judge_Invalid
@@ -147,13 +157,9 @@ struct TapNote
 	PlayerNumber	pn;
 	/* xMAx - noteskin player = para separar los tipos de noteskins en los double performance */
 	NoteSkinPlayer	nsp; // 0 - default, 1 = player1, etc...
-	//Appearance	appearance;
+	Appearance	appearance;
 	Judge		judge;
 
-
-
-	/** @brief Can this note be hammered on or pulled off? This is set before gameplay begins. */
-	bool		bHopoPossible;
 
 	// used only if Type == attack:
 	RString		sAttackModifiers;
@@ -176,7 +182,7 @@ struct TapNote
 	TapNote(): type(empty), subType(SubType_Invalid), source(original),
 		result(), pn(PLAYER_INVALID), nsp(def_nsp), //xMAx
 		sAttackModifiers(""), fAttackDurationSeconds(0), 
-		iKeysoundIndex(-1), iDuration(0), HoldResult(), /*iSkin(-1) , appearance(normal), */judge(normal_judge)  {}
+		iKeysoundIndex(-1), iDuration(0), HoldResult(), iSkin(-1) , appearance(normal), judge(normal_judge)  {} // xMAx
 	void Init()
 	{
 		type = empty;
@@ -187,8 +193,8 @@ struct TapNote
 		fAttackDurationSeconds = 0.f; 
 		iKeysoundIndex = -1;
 		iDuration = 0;
-		//iSkin == -1; // xMAx
-		//appearance = normal;
+		iSkin = -1; // xMAx
+		appearance = normal;
 		judge = normal_judge;
 	}
 	TapNote(
@@ -200,12 +206,13 @@ struct TapNote
 		int iKeysoundIndex_,
 		NoteSkinPlayer nsp_ = def_nsp, Judge judge_ = normal_judge ) :  //xMAx
 		type( type_ ), subType( subType_ ), source( source_ ), result(),
-		pn( PLAYER_INVALID ), nsp( nsp_ ),
+		pn( PLAYER_INVALID ), nsp( nsp_ ), //xMAx
 		sAttackModifiers( sAttackModifiers_ ),
 		fAttackDurationSeconds( fAttackDurationSeconds_ ),
-		iKeysoundIndex( iKeysoundIndex_ ), iDuration( 0 ), /* iSkin(-1), appearance(normal), */ judge( judge_ ), HoldResult()
+		iKeysoundIndex( iKeysoundIndex_ ), iDuration( 0 ), iSkin(-1), appearance(normal), judge( judge_ ), HoldResult()
 	{
-		if (type_ > TapNote::fake )
+		//if( type_ > TapNote::fake )
+		if (type_ > TapNote::autoKeysound )
 		{
 			LOG->Trace("Invalid tap note type %d (most likely) due to random vanish issues. Assume it doesn't need judging.", (int)type_ );
 			type = TapNote::empty;
@@ -228,9 +235,9 @@ struct TapNote
 		COMPARE(iDuration);
 		COMPARE(pn);
 		COMPARE( nsp ); //xMAx
-		//COMPARE( iSkin ); // xMAx
-		//COMPARE(appearance); // xMAx
-		COMPARE( judge );
+		COMPARE( iSkin ); //xMAx
+		COMPARE( appearance ); //xMAx
+		COMPARE( judge ); //xMAx
 #undef COMPARE
 		return true;
 	}
@@ -250,6 +257,12 @@ extern TapNote TAP_ORIGINAL_LIFT;		// 'L'
 extern TapNote TAP_ORIGINAL_ATTACK;		// 'A'
 extern TapNote TAP_ORIGINAL_AUTO_KEYSOUND;	// 'K'
 extern TapNote TAP_ORIGINAL_FAKE;		// 'F'
+extern TapNote TAP_ORIGINAL_P1;			// 'X' - xMAx
+extern TapNote TAP_ORIGINAL_P1_HOLD_HEAD;	// 'x' - xMAx
+extern TapNote TAP_ORIGINAL_P2;			// 'Y' - xMAx
+extern TapNote TAP_ORIGINAL_P2_HOLD_HEAD;	// 'y' - xMAx
+extern TapNote TAP_ORIGINAL_P3;			// 'Z' - xMAx
+extern TapNote TAP_ORIGINAL_P3_HOLD_HEAD;	// 'z' - xMAx
 //extern TapNote TAP_ORIGINAL_MINE_HEAD;	// 'N' (tentative, we'll see when iDance gets ripped.)
 extern TapNote TAP_ADDITION_TAP;
 extern TapNote TAP_ADDITION_MINE;
@@ -280,8 +293,8 @@ inline const RString TapNoteTypeToString( TapNote::Type tn )
 			return RString("attack");
 		case TapNote::autoKeysound:
 			return RString("autoKeysound");
-		case TapNote::fake:
-			return RString("fake");
+		/*case TapNote::fake:
+			return RString("fake");*/
 		default:
 			return RString("");
 	}
@@ -300,10 +313,32 @@ inline const RString NoteSkinPlayerToString( TapNote::NoteSkinPlayer nsp )
 		case TapNote::p2_nsp:
 			return RString( "Player 2 NS" );
 		case TapNote::p3_nsp:
-			return RString( "Player 3 NS" );			//case p4 e p5 soon
+			return RString( "Player 3 NS" );
+
+
+
+			//case p4 e p5 soon
 		default:
 			return RString( "" );
+	}
+}
 
+/**
+* @brief Regresa el string que repesenta al TapNote Appearance. - xMAx */
+inline const RString AppearanceToString( TapNote::Appearance appearance )
+{
+	switch( appearance )
+	{
+		case TapNote::normal:
+			return RString( "Normal" );
+		case TapNote::hidden:
+			return RString( "Hidden" );
+		case TapNote::sudden:
+			return RString( "Sudden" );
+		case TapNote::vanish:
+			return RString( "Vanish" );
+		default:
+			return RString( "" );
 	}
 }
 

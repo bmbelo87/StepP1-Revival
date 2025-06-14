@@ -42,6 +42,8 @@ void StatsManager::Reset()
 	m_CurStageStats.Init();
 	m_vPlayedStageStats.clear();
 	m_AccumPlayedStageStats.Init();
+
+	m_iStagesPlayed.assign( NUM_PLAYERS, 0 ); // StepP1 Revival -- bSilver
 	
 	CalcAccumPlayedStageStats();
 }

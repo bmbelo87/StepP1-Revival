@@ -1860,7 +1860,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 				case TapNote::tap:	m_selectedTap = TAP_ORIGINAL_FAKE;	break;
 				case TapNote::mine:	m_selectedTap = TAP_ORIGINAL_TAP;	break;
 				case TapNote::lift:	m_selectedTap = TAP_ORIGINAL_MINE;	break;
-				case TapNote::fake:	m_selectedTap = TAP_ORIGINAL_LIFT;	break;
+				// case TapNote::fake:	m_selectedTap = TAP_ORIGINAL_LIFT;	break;
 				DEFAULT_FAIL( m_selectedTap.type );
 			}
 			return true;
@@ -1872,7 +1872,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 				case TapNote::tap:	m_selectedTap = TAP_ORIGINAL_MINE;	break;
 				case TapNote::mine:	m_selectedTap = TAP_ORIGINAL_LIFT;	break;
 				case TapNote::lift:	m_selectedTap = TAP_ORIGINAL_FAKE;	break;
-				case TapNote::fake:	m_selectedTap = TAP_ORIGINAL_TAP;	break;
+				// case TapNote::fake:	m_selectedTap = TAP_ORIGINAL_TAP;	break;
 				DEFAULT_FAIL( m_selectedTap.type );
 			}
 			return true;
@@ -2858,7 +2858,7 @@ bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 
 	GameButtonType gbt = GAMESTATE->m_pCurGame->GetPerButtonInfo(input.GameI.button)->m_gbt;
 
-	if( GamePreferences::m_AutoPlay == PC_HUMAN && GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay == 0 )
+	if( ( GamePreferences::m_AutoPlayP1 == PC_HUMAN && GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay == 0 ) || (GamePreferences::m_AutoPlayP2 == PC_HUMAN && GAMESTATE->m_pPlayerState[PLAYER_2]->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay == 0 ))
 	{
 		const int iCol = GAMESTATE->GetCurrentStyle()->GameInputToColumn( input.GameI );
 		bool bRelease = input.type == IET_RELEASE;
@@ -3066,7 +3066,7 @@ void ScreenEdit::TransitionEditState( EditState em )
 		if( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay != 0 )
 			GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerController = PC_AUTOPLAY;
 		else
-			GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerController = GamePreferences::m_AutoPlay;
+			GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerController = GamePreferences::m_AutoPlayP1;
 
 		if( g_bEditorShowBGChangesPlay )
 		{

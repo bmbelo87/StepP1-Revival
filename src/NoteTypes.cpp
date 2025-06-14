@@ -13,11 +13,22 @@ TapNote TAP_ORIGINAL_ROLL_HEAD		( TapNote::hold_head,	TapNote::hold_head_roll,	T
 TapNote TAP_ORIGINAL_MINE		( TapNote::mine,	TapNote::SubType_Invalid,	TapNote::original, "", 0, -1 );
 TapNote TAP_ORIGINAL_ATTACK		( TapNote::attack,	TapNote::SubType_Invalid,	TapNote::original, "", 0, -1 );
 TapNote TAP_ORIGINAL_AUTO_KEYSOUND	( TapNote::autoKeysound,TapNote::SubType_Invalid,	TapNote::original, "", 0, -1 );
-TapNote TAP_ORIGINAL_FAKE		( TapNote::fake,	TapNote::SubType_Invalid,	TapNote::original, "", 0, -1 );
+//TapNote TAP_ORIGINAL_FAKE		( TapNote::fake,	TapNote::SubType_Invalid,	TapNote::original, "", 0, -1 );
+TapNote TAP_ORIGINAL_FAKE		( TapNote::tap,		TapNote::SubType_Invalid,	TapNote::original, "", 0, -1, TapNote::def_nsp, TapNote::fake );
+TapNote TAP_ORIGINAL_P1			( TapNote::tap,		TapNote::SubType_Invalid,	TapNote::original, "", 0, -1, TapNote::p1_nsp);  // xMAx
+TapNote TAP_ORIGINAL_P1_HOLD_HEAD	( TapNote::hold_head,	TapNote::hold_head_hold,	TapNote::original, "", 0, -1, TapNote::p1_nsp);
+TapNote TAP_ORIGINAL_P2			( TapNote::tap,		TapNote::SubType_Invalid,	TapNote::original, "", 0, -1, TapNote::p2_nsp);  // xMAx
+TapNote TAP_ORIGINAL_P2_HOLD_HEAD	( TapNote::hold_head,	TapNote::hold_head_hold,	TapNote::original, "", 0, -1, TapNote::p2_nsp);
+TapNote TAP_ORIGINAL_P3			( TapNote::tap,		TapNote::SubType_Invalid,	TapNote::original, "", 0, -1, TapNote::p3_nsp);  // xMAx
+TapNote TAP_ORIGINAL_P3_HOLD_HEAD	( TapNote::hold_head,	TapNote::hold_head_hold,	TapNote::original, "", 0, -1, TapNote::p3_nsp);
 //TapNote TAP_ORIGINAL_MINE_HEAD	( TapNote::mine_head,	TapNote::hold_head_mine,	TapNote::original, "", 0, -1 );
 TapNote TAP_ADDITION_TAP		( TapNote::tap,		TapNote::SubType_Invalid,	TapNote::addition, "", 0, -1 );
 TapNote TAP_ADDITION_MINE		( TapNote::mine,	TapNote::SubType_Invalid,	TapNote::addition, "", 0, -1 );
 
+/*
+TapNote TAP_ORIGINAL_HIDDEN	( TapNote::tap,	TapNote::hidden,	TapNote::original, "", 0, -1 );
+TapNote TAP_ORIGINAL_HIDDEN_HOLD_HEAD	( TapNote::hold_head,	TapNote::hidden,	TapNote::original, "", 0, -1 );
+*/
 static const char *NoteTypeNames[] = {
 	"4th",
 	"8th",

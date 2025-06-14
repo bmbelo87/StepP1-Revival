@@ -285,7 +285,7 @@ int NoteData::GetFirstTrackWithTapOrHoldHead( int row ) const
 	for( int t=0; t<GetNumTracks(); t++ )
 	{
 		const TapNote &tn = GetTapNote( t, row );
-		if( tn.type == TapNote::tap || tn.type == TapNote::lift || tn.type == TapNote::hold_head )
+		if( ( tn.type == TapNote::tap || tn.type == TapNote::lift || tn.type == TapNote::hold_head ) && !(tn.judge == TapNote::fake) )
 			return t;
 	}
 	return -1;
@@ -559,11 +559,15 @@ bool NoteData::RowNeedsAtLeastSimultaneousPresses( int iMinSimultaneousPresses, 
 	for( int t=0; t<GetNumTracks(); t++ )
 	{
 		const TapNote &tn = GetTapNote(t, row);
+
+		if( tn.judge == TapNote::fake )
+			continue;
+
 		switch( tn.type )
 		{
 			case TapNote::mine:
 			case TapNote::empty:
-			case TapNote::fake:
+			//case TapNote::fake:
 			case TapNote::lift: // you don't "press" on a lift.
 			case TapNote::autoKeysound:
 				continue;	// skip these types - they don't count
@@ -620,10 +624,15 @@ int NoteData::GetNumRowsWithSimultaneousTaps( int iMinTaps, int iStartIndex, int
 		for( int t=0; t<GetNumTracks(); t++ )
 		{
 			const TapNote &tn = GetTapNote(t, r);
+			/*
 			if (tn.type != TapNote::mine &&     // mines don't count.
 				tn.type != TapNote::empty &&
 				tn.type != TapNote::fake &&
 				tn.type != TapNote::autoKeysound)
+			*/
+			if( ( tn.type != TapNote::mine && //mines don't count.
+			    tn.type != TapNote::empty &&
+			    tn.type != TapNote::autoKeysound ) && !( tn.judge == TapNote::fake ) )
 				iNumNotesThisIndex++;
 		}
 		if( iNumNotesThisIndex >= iMinTaps )
@@ -652,7 +661,6 @@ int NoteData::GetNumHoldNotes( int iStartIndex, int iEndIndex ) const
 	}
 	return iNumHolds;
 }
-
 int NoteData::GetNumRolls( int iStartIndex, int iEndIndex ) const
 {
 	int iNumRolls = 0;
@@ -1040,6 +1048,10 @@ void NoteData::GetTapNoteRangeInclusive( int iTrack, int iStartRow, int iEndRow,
 	{
 		iterator prev = Decrement(lBegin);
 
+		// xMAx
+		if( prev->second.type == TapNote::hold_tail )
+			--prev;
+
 		const TapNote &tn = prev->second;
 		if( tn.type == TapNote::hold_head )
 		{
@@ -1074,6 +1086,11 @@ void NoteData::GetTapNoteRangeExclusive( int iTrack, int iStartRow, int iEndRow,
 	{
 		iterator prev = lEnd;
 		--prev;
+
+		// xMAx
+		if( prev->second.type == TapNote::hold_tail )
+			--prev;
+
 		if( prev->second.type == TapNote::hold_head )
 		{
 			int localStartRow = prev->first;
@@ -1162,6 +1179,23 @@ bool NoteData::GetPrevTapNoteRowForAllTracks( int &rowInOut ) const
 	}
 }
 
+// xMAx -------------------------------------------------------------------------
+bool NoteData::HasNoteSkinPlayer() const
+{
+	FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( *this, r, 0, MAX_NOTE_ROW )
+	for( int t = 0; t < GetNumTracks(); t++ )
+	{
+		const TapNote &tn = GetTapNote( t, r );
+		if( tn.nsp != TapNote::def_nsp )
+		{
+			LOG->Trace( "NoteData::Steps have NoteSkinPlayers" );
+			return true;
+		}
+	}
+
+	return false;
+}
+//------------------------------------------------------------------------------
 XNode* NoteData::CreateNode() const
 {
 	XNode *p = new XNode( "NoteData" );

@@ -35,6 +35,8 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 
+	vector<int>	 m_iStagesPlayed; // StepP1 Revival -- bSilver
+
 private:
 	StageStats m_AccumPlayedStageStats;
 };

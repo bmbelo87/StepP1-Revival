@@ -30,6 +30,9 @@ void SongOptions::Init()
 	m_bRandomBGOnly = false;
 	m_bSaveScore = true;
 	m_bSaveReplay = false; // don't save replays by default?
+
+	// xMAx
+	m_bUseBGAOff = false;
 }
 
 void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
@@ -52,6 +55,7 @@ void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
 	DO_COPY( m_bRandomBGOnly );
 	DO_COPY( m_bSaveScore );
 	DO_COPY( m_bSaveReplay );
+	DO_COPY( m_bUseBGAOff ); //
 #undef APPROACH
 #undef DO_COPY
 }
@@ -242,6 +246,7 @@ bool SongOptions::operator==( const SongOptions &other ) const
 	COMPARE( m_bRandomBGOnly );
 	COMPARE( m_bSaveScore );
 	COMPARE( m_bSaveReplay );
+	COMPARE( m_bUseBGAOff ); //
 #undef COMPARE
 	return true;
 }

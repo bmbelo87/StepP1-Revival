@@ -102,7 +102,7 @@ void ScreenSyncOverlay::UpdateText()
 
 	if( g_bShowAutoplay )
 	{
-		PlayerController pc = GamePreferences::m_AutoPlay.Get();
+		PlayerController pc = GamePreferences::m_AutoPlayP1.Get();
 		switch( pc )
 		{
 		case PC_HUMAN:						break;

@@ -7,7 +7,6 @@
 #include "BitmapText.h"
 #include "RageSound.h"
 #include "LocalizedString.h"
-#include "BeginnerHelper.h"
 #include "LyricDisplay.h"
 #include "Attack.h"
 #include "NetworkSyncManager.h"
@@ -18,6 +17,7 @@
 #include "InputEventPlus.h"
 #include "SoundEffectControl.h"
 #include "GameplayAssist.h"
+#include "Quad.h"	// xMAx - added for mines flash
 
 class LyricsLoader;
 class ActiveAttackList;
@@ -34,6 +34,19 @@ class Foreground;
 AutoScreenMessage( SM_NotesEnded );
 AutoScreenMessage( SM_BeginFailed );
 AutoScreenMessage( SM_LeaveGameplay );
+
+class BGAOff
+{
+public:
+	BGAOff();
+	~BGAOff();
+	void InitStar( int no );
+	void InitBGAOff();
+	void DrawStars();
+
+	bool m_bUpdatePositions;
+	float m_fTimeCounter;
+};
 
 class PlayerInfo
 {
@@ -76,7 +89,7 @@ public:
 	}
 
 	// Lua
-	void PushSelf( lua_State *L );
+	//void PushSelf( lua_State *L );	//xMAx - removed
 
 	/** @brief The present Player's number. */
 	PlayerNumber		m_pn;
@@ -163,13 +176,27 @@ public:
 	bool Center1Player() const;
 
 	// Lua
-	virtual void PushSelf( lua_State *L );
+	//virtual void PushSelf( lua_State *L ); // xMAx removed
 	Song *GetNextCourseSong() const;
 	LifeMeter *GetLifeMeter( PlayerNumber pn );
 	PlayerInfo *GetPlayerInfo( PlayerNumber pn );
 	PlayerInfo *GetDummyPlayerInfo( int iDummyIndex );
 	void Pause(bool bPause) { PauseGame(bPause); }
 	bool IsPaused() const { return m_bPaused; }
+	float GetHasteRate();
+
+	vector<float> m_HasteTurningPoints; // Values at which the meaning of GAMESTATE->m_fHasteRate changes.
+	vector<float> m_HasteAddAmounts; // Amounts that are added to speed depending on what turning point has been passed.
+	float m_fHasteTimeBetweenUpdates; // Seconds between haste updates.
+	float m_fHasteLifeSwitchPoint; // Life amount below which GAMESTATE->m_fHasteRate is based on the life amount.
+
+	// xMAx
+	float	m_fLastSecondForCurrentSong;
+	float	GetLastSecondForCurrentSong( void );
+	Quad	m_WhiteFlashForMineExplosion;
+	BGAOff	*m_BGAOff;
+	Quad	m_FadeBGA;
+	virtual void DrawPrimitives();
 
 protected:
 	virtual void UpdateStageStats( MultiPlayer /* mp */ ) {};	// overridden for multiplayer
@@ -182,6 +209,7 @@ protected:
 	LocalizedString GIVE_UP_START_TEXT;
 	LocalizedString GIVE_UP_BACK_TEXT;
 	LocalizedString GIVE_UP_ABORTED_TEXT;
+	ThemeMetric<float> GIVE_UP_SECONDS;
 	ThemeMetric<float> MUSIC_FADE_OUT_SECONDS;
 	ThemeMetric<float> OUT_TRANSITION_LENGTH;
 	ThemeMetric<float> COURSE_TRANSITION_LENGTH;
@@ -204,7 +232,8 @@ protected:
 	void ReloadCurrentSong();
 	virtual void LoadNextSong();
 	void StartPlayingSong( float fMinTimeToNotes, float fMinTimeToMusic );
-	void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic, float &fSecondsToStartTransitioningOut );
+	// void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic, float &fSecondsToStartTransitioningOut );
+	void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic );
 	void LoadLights();
 	void PauseGame( bool bPause, GameController gc = GameController_Invalid );
 	void PlayAnnouncer( const RString &type, float fSeconds, float *fDeltaSeconds );
@@ -212,7 +241,6 @@ protected:
 	void UpdateLights();
 	void SendCrossedMessages();
 	void BeginBackingOutFromGameplay();
-	float GetHasteRate();
 
 	void PlayTicks();
 	void UpdateSongPosition( float fDeltaTime );
@@ -225,6 +253,10 @@ protected:
 	bool AllAreFailing();
 
 	virtual void InitSongQueues();
+
+	void UpdateHasteRate();
+	float m_fCurrHasteRate;
+	// These exist so that the haste rate isn't recalculated every time GetHasteRate is called, which is at least once per frame. -Kyz
 
 	/** @brief The different game states of ScreenGameplay. */
 	enum DancingState { 
@@ -245,7 +277,7 @@ protected:
 
 	float			m_fTimeSinceLastDancingComment;	// this counter is only running while STATE_DANCING
 
-	LyricDisplay		m_LyricDisplay;
+	//LyricDisplay		m_LyricDisplay;
 
 	Background		*m_pSongBackground;
 	Foreground		*m_pSongForeground;
@@ -289,8 +321,6 @@ protected:
 
 	GameplayAssist		m_GameplayAssist;
 	RageSound		*m_pSoundMusic;
-
-	BeginnerHelper		m_BeginnerHelper;
 
 	/** @brief The NoteData that controls the lights on an arcade cabinet. */
 	NoteData		m_CabinetLightsNoteData;

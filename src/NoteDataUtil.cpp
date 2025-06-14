@@ -55,7 +55,8 @@ NoteType NoteDataUtil::GetSmallestNoteTypeInRange( const NoteData &n, int iStart
 }
 
 static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sSMNoteData, int start,
-						int len, PlayerNumber pn, int iNumTracks )
+						//int len, PlayerNumber pn, int iNumTracks )  //xMAx
+						int len, int player, int iNumTracks )
 {
 	/* Don't allocate memory for the entire string, nor per measure. Instead, use the in-place
 	 * partial string split twice. By maintaining begin and end pointers to each measure line
@@ -101,6 +102,10 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 			const char *const beginLine = p;
 			const char *const endLine = aMeasureLines[l].second;
 
+			// Ignore full empty taps rows - xMAx
+			if( p[0] == 'R' && p[1] == '0' )
+				continue;
+
 			const float fPercentIntoMeasure = l/(float)aMeasureLines.size();
 			const float fBeat = (m + fPercentIntoMeasure) * BEATS_PER_MEASURE;
 			const int iIndex = BeatToNoteRow( fBeat );
@@ -110,15 +115,59 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 			{
 				TapNote tn;
 				char ch = *p;
+				bool bNoteHasParameters = false;
+				char sAppearance = 'n';
+				int iJudge = 0;
+				int iSkin = 0;
+
+				if( ( *p ) == '{' )
+				{
+					p++;
+					if( sscanf( p, "%c|%c|%i|%i}", &ch, &sAppearance, &iJudge, &iSkin ) == 4 )
+						bNoteHasParameters = true;
+				}
 
 				switch( ch )
 				{
 				case '0': tn = TAP_EMPTY;				break;
-				case '1': tn = TAP_ORIGINAL_TAP;			break;
+
+				// TAP NOTES ***
+				case '1':
+					tn = TAP_ORIGINAL_TAP;
+					{
+						// Force a player and noteskin player
+						switch( player )
+						{
+							case 1: tn = TAP_ORIGINAL_P1; tn.pn = PLAYER_1; break;
+							case 2: tn = TAP_ORIGINAL_P2; tn.pn = PLAYER_2; break;
+							case 3: tn = TAP_ORIGINAL_P3; break;
+							default: break;
+						}
+					}
+					break;
+				case '5': tn = TAP_ORIGINAL_TAP; tn.appearance = TapNote::hidden; break;
+				/*
+				case 'S': tn = TAP_ORIGINAL_TAP; tn.appearance = TapNote::sudden; break;
+				case 'V': tn = TAP_ORIGINAL_TAP; tn.appearance = TapNote::vanish; break;
+				*/
+				case 'X': tn = TAP_ORIGINAL_P1; break;
+				case 'Y': tn = TAP_ORIGINAL_P2; break;
+				case 'Z': tn = TAP_ORIGINAL_P3; break;
+
+				// HOLD HEADS ***
 				case '2':
 				case '4':
 				// case 'N': // minefield
 					tn = ch == '2' ? TAP_ORIGINAL_HOLD_HEAD : TAP_ORIGINAL_ROLL_HEAD;
+
+					switch( player )
+					{
+						case 1: tn = TAP_ORIGINAL_P1_HOLD_HEAD; tn.pn = PLAYER_1; break;
+						case 2: tn = TAP_ORIGINAL_P2_HOLD_HEAD; tn.pn = PLAYER_2; break;
+						case 3: tn = TAP_ORIGINAL_P3_HOLD_HEAD; break;
+						default: break;
+					}
+
 					/*
 					// upcoming code for minefields -aj
 					switch(ch)
@@ -129,17 +178,26 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 					}
 					*/
 
-					/* Set the hold note to have infinite length. We'll clamp
-					 * it when we hit the tail. */
+					/* Set the hold note to have infinite length. We'll clamp it when we hit the tail. */
 					tn.iDuration = MAX_NOTE_ROW;
 					break;
+				case 'x': tn = TAP_ORIGINAL_P1_HOLD_HEAD; tn.iDuration = MAX_NOTE_ROW; break; //xMAx
+				case 'y': tn = TAP_ORIGINAL_P2_HOLD_HEAD; tn.iDuration = MAX_NOTE_ROW; break; //xMAx
+				case 'z': tn = TAP_ORIGINAL_P3_HOLD_HEAD; tn.iDuration = MAX_NOTE_ROW; break; //xMAx
+
+				case '6': tn = TAP_ORIGINAL_HOLD_HEAD; tn.appearance = TapNote::hidden; tn.iDuration = MAX_NOTE_ROW; break;
+				/*
+				case 's': tn = TAP_ORIGINAL_HOLD_HEAD; tn.appearance = TapNote::sudden; tn.iDuration = MAX_NOTE_ROW; break;
+				case 'v': tn = TAP_ORIGINAL_HOLD_HEAD; tn.appearance = TapNote::vanish; tn.iDuration = MAX_NOTE_ROW; break;
+				*/
+				// HOLD TAIL ***
 				case '3':
 				{
 					// This is the end of a hold. Search for the beginning.
 					int iHeadRow;
 					if( !out.IsHoldNoteAtRow( iTrack, iIndex, &iHeadRow ) )
 					{
-						int n = intptr_t(endLine) - intptr_t(beginLine);
+						int n = intptr_t( endLine ) - intptr_t( beginLine );
 						LOG->Warn( "Unmatched 3 in \"%.*s\"", n, beginLine );
 					}
 					else
@@ -150,15 +208,15 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 					// This won't write tn, but keep parsing normally anyway.
 					break;
 				}
-				//				case 'm':
+				// case 'm':
 				// Don't be loose with the definition.  Use only 'M' since
 				// that's what we've been writing to disk.  -Chris
-				case 'M': tn = TAP_ORIGINAL_MINE;			break;
-				// case 'A': tn = TAP_ORIGINAL_ATTACK;			break;
-				case 'K': tn = TAP_ORIGINAL_AUTO_KEYSOUND;		break;
-				case 'L': tn = TAP_ORIGINAL_LIFT;			break;
-				case 'F': tn = TAP_ORIGINAL_FAKE;			break;
-				// case 'I': tn = TAP_ORIGINAL_ITEM;			break;
+				case 'M': tn = TAP_ORIGINAL_MINE;	break;
+				// case 'A': tn = TAP_ORIGINAL_ATTACK;	break;
+				case 'K': tn = TAP_ORIGINAL_AUTO_KEYSOUND;	break;
+				case 'L': tn = TAP_ORIGINAL_LIFT;	break;
+				case 'F': tn = TAP_ORIGINAL_FAKE;	break;
+				// case 'I': tn = TAP_ORIGINAL_ITEM;	break;
 				default: 
 					/* Invalid data. We don't want to assert, since there might
 					 * simply be invalid data in an .SM, and we don't want to die
@@ -169,10 +227,45 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 					break;
 				}
 
+				if( bNoteHasParameters )
+				{
+					switch( sAppearance )
+					{
+						case 'n': tn.appearance = TapNote::normal; break;
+						case 'h': tn.appearance = TapNote::hidden; break;
+						case 's': tn.appearance = TapNote::sudden; break;
+						case 'v': tn.appearance = TapNote::vanish; break;
+						default:
+							//FAIL_M( ssprintf("Invalid tap note appearance: %c, when loading custom appearance.", szAppearance) );
+							break;
+					}
+
+					switch( iJudge )
+					{
+						case 0: tn.judge = TapNote::normal_judge; break;
+						case 1: tn.judge = TapNote::fake; break;
+							//case 2: tn.judge = TapNote::bonus; break;
+						default:
+							break;
+					}
+
+					// skip past the '}'
+					while( p < endLine )
+					{
+						if( *( p++ ) == '}' )
+							break;
+					}
+				}
+				else
 				p++;
+
+
+
+
 				// We won't scan past the end of the line so these are safe to do.
 #if 0
 				// look for optional attack info (e.g. "{tipsy,50% drunk:15.2}")
+				/*
 				if( *p == '{' )
 				{
 					p++;
@@ -193,9 +286,11 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 							break;
 					}
 				}
+				*/
 #endif
 
 				// look for optional keysound index (e.g. "[123]")
+#if 0
 				if( *p == '[' )
 				{
 					p++;
@@ -210,6 +305,7 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 							break;
 					}
 				}
+#endif
 
 #if 0
 				// look for optional item name (e.g. "<potion>"),
@@ -233,7 +329,32 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 				 * there, so avoid the search. */
 				if( tn.type != TapNote::empty && ch != '3' )
 				{
-					tn.pn = pn;
+					/*if( GAMESTATE->m_bInStepEditor )
+					tn.nsp = static_cast<TapNote::NoteSkinPlayer>(player);
+					*/
+					/*
+					if( !GAMESTATE->m_bInStepEditor )
+					tn.nsp = static_cast<TapNote::NoteSkinPlayer>(player);
+
+					//tn.pn = PLAYER_INVALID;	//XMAX, para que los cambios de player no sean efectivos en la combinacion de pasos
+					//tn.nsp = TapNote::def_nsp;	//XMAX, para que los cambios de player no sean efectivos en la combinacion de pasos
+					else
+					//tn.pn = pn;
+					tn.nsp = static_cast<TapNote::NoteSkinPlayer>(player);
+					*/ 
+					// no hay qur forzar el nsp cuando se utiliza por ejemplo TAP_ORIGINAL_P1 en un double com�n. 
+					// El player es siempre 1 (o sea el default, que viene a ser el 4to jugador) - xMAx
+
+
+
+					// Hay notas que no tienen un jugador espec�fico (como las minas). Hay que asignarle un jugador entonces
+					// Esto solo se hace cuando la nota tiene un jugador no valido y cuando se asignaron jugadores a los taps normales. 
+					// xMAx - STEP_F2
+					if( tn.pn == PLAYER_INVALID && player != 0 )
+					{
+						tn.pn = PLAYER_1;
+					}
+
 					out.SetTapNote( iTrack, iIndex, tn );
 				}
 
@@ -291,13 +412,32 @@ void NoteDataUtil::LoadFromSMNoteDataString( NoteData &out, const RString &sSMNo
 	if( !bComposite )
 	{
 		LoadFromSMNoteDataStringWithPlayer( out, sSMNoteData, 0, sSMNoteData.size(),
-						    PLAYER_INVALID, iNumTracks );
+						    //PLAYER_INVALID, iNumTracks );
+						    0, iNumTracks );
 		return;
 	}
 
-	int start = 0, size = -1;
+
 
 	vector<NoteData> vParts;
+
+	vector<RString> vsNotes;
+	split( sSMNoteData, "&", vsNotes, true );
+
+	for( int i = 0; i < ( int ) vsNotes.size(); i++ )
+	{
+		if( i == 4 )
+			break;
+
+		vParts.push_back( NoteData() );
+		NoteData &nd = vParts.back();
+
+		nd.SetNumTracks( iNumTracks );
+
+	}
+
+	/*
+	int start = 0, size = -1;
 	FOREACH_PlayerNumber( pn )
 	{
 		// Split in place.
@@ -310,6 +450,7 @@ void NoteDataUtil::LoadFromSMNoteDataString( NoteData &out, const RString &sSMNo
 		nd.SetNumTracks( iNumTracks );
 		LoadFromSMNoteDataStringWithPlayer( nd, sSMNoteData, start, size, pn, iNumTracks );
 	}
+	*/
 	CombineCompositeNoteData( out, vParts );
 }
 
@@ -402,7 +543,7 @@ void NoteDataUtil::GetSMNoteDataString( const NoteData &in, RString &sRet )
 					case TapNote::attack:			c = 'A'; break;
 					case TapNote::autoKeysound:	c = 'K'; break;
 					case TapNote::lift:			c = 'L'; break;
-					case TapNote::fake:			c = 'F'; break;
+					//case TapNote::fake:			c = 'F'; break;
 					default: 
 						c = '\0';
 						FAIL_M(ssprintf("Invalid tap note type: %i", tn.type));
@@ -1088,7 +1229,7 @@ void NoteDataUtil::RemoveLifts( NoteData &inout, int iStartIndex, int iEndIndex 
 
 void NoteDataUtil::RemoveFakes( NoteData &inout, int iStartIndex, int iEndIndex )
 {
-	RemoveSpecificTapNotes( inout, TapNote::fake, iStartIndex, iEndIndex );
+	/*RemoveSpecificTapNotes( inout, TapNote::fake, iStartIndex, iEndIndex );*/
 }
 
 void NoteDataUtil::RemoveAllButOneTap( NoteData &inout, int row )
@@ -1471,7 +1612,7 @@ static void SuperShuffleTaps( NoteData &inout, int iStartIndex, int iEndIndex )
 			case TapNote::mine:
 			case TapNote::attack:
 			case TapNote::lift:
-			case TapNote::fake:
+			// case TapNote::fake:
 				break;	// shuffle this
 			DEFAULT_FAIL( tn1.type );
 			}
@@ -1503,7 +1644,7 @@ static void SuperShuffleTaps( NoteData &inout, int iStartIndex, int iEndIndex )
 				case TapNote::mine:
 				case TapNote::attack:
 				case TapNote::lift:
-				case TapNote::fake:
+				// case TapNote::fake:
 					break;	// ok to swap with this
 				DEFAULT_FAIL( tn2.type );
 				}
