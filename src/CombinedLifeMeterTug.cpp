@@ -25,7 +25,8 @@ static void TugMeterPercentChangeInit( size_t /*ScoreEvent*/ i, RString &sNameOu
 	case SE_CheckpointHit:	defaultValueOut = +0.002f;	break;
 	case SE_CheckpointMiss:	defaultValueOut = -0.002f;	break;
 	case SE_Held:		defaultValueOut = +0.008f;	break;
-	case SE_Missed:		defaultValueOut = -0.020f;	break;
+	case SE_LetGo:		defaultValueOut = -0.020f;	break;
+	case SE_Missed:		defaultValueOut = -0.000f;	break;
 	}
 }
 

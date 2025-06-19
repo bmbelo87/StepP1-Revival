@@ -121,7 +121,7 @@ public:
 	enum Effect { no_effect,
 			diffuse_blink, diffuse_shift, diffuse_ramp,
 			glow_blink, glow_shift, glow_ramp, rainbow,
-			wag, bounce, bob, pulse, spin, vibrate
+			wag, bounce, bob, pulse, spin, vibrate, xpulse // xMAx - se agrega el efecto xpulse
 	};
 
 	/** @brief Various values an Actor's effect can be tied to. */
@@ -270,6 +270,10 @@ public:
 	virtual void Update( float fDeltaTime );		// this can short circuit UpdateInternal
 	virtual void UpdateInternal( float fDeltaTime );	// override this
 	void UpdateTweening( float fDeltaTime );
+	// These next functions should all be overridden by a derived class that has its own tweening states to handl.
+	virtual void SetCurrentTweenStart() {}
+	virtual void EraseHeadTween() {}
+	virtual void UpdatePercentThroughTween( float PercentThroughTween ) {}
 
 	/**
 	 * @brief Retrieve the Actor's name.
@@ -524,6 +528,7 @@ public:
 	void SetEffectBounce( float fPeriod, RageVector3 vect );
 	void SetEffectBob( float fPeriod, RageVector3 vect );
 	void SetEffectPulse( float fPeriod, float fMinZoom, float fMaxZoom );
+	void SetEffectXPulse( float fPeriod, float fMinZoom, float fMaxZoom ); //xMAx
 	void SetEffectSpin( RageVector3 vect );
 	void SetEffectVibrate( RageVector3 vect );
 

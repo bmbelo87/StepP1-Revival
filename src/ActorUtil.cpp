@@ -10,7 +10,6 @@
 #include "XmlFileUtil.h"
 #include "IniFile.h"
 #include "LuaManager.h"
-#include "Foreach.h"
 #include "Song.h"
 #include "Course.h"
 #include "GameState.h"
@@ -19,7 +18,7 @@
 
 
 // Actor registration
-static map<RString,CreateActorFn>	*g_pmapRegistrees = NULL;
+static map<RString,CreateActorFn>	*g_pmapRegistrees = nullptr;
 
 static bool IsRegistered( const RString& sClassName )
 {
@@ -28,7 +27,7 @@ static bool IsRegistered( const RString& sClassName )
 
 void ActorUtil::Register( const RString& sClassName, CreateActorFn pfn )
 {
-	if( g_pmapRegistrees == NULL )
+	if( g_pmapRegistrees == nullptr )
 		g_pmapRegistrees = new map<RString,CreateActorFn>;
 
 	map<RString,CreateActorFn>::iterator iter = g_pmapRegistrees->find( sClassName );
@@ -40,7 +39,7 @@ void ActorUtil::Register( const RString& sClassName, CreateActorFn pfn )
 /* Resolves actor paths a la LoadActor("..."), with autowildcarding and .redir
  * files.  Returns a path *within* the Rage filesystem, unlike the FILEMAN
  * function of the same name. */
-bool ActorUtil::ResolvePath( RString &sPath, const RString &sName )
+bool ActorUtil::ResolvePath( RString &sPath, const RString &sName, bool optional )
 {
 	CollapsePath( sPath );
 
@@ -54,8 +53,12 @@ bool ActorUtil::ResolvePath( RString &sPath, const RString &sName )
 
 		if( asPaths.empty() )
 		{
+			if(optional)
+			{
+				return false;
+			}
 			RString sError = ssprintf( "%s: references a file \"%s\" which doesn't exist", sName.c_str(), sPath.c_str() );
-			switch( Dialog::AbortRetryIgnore( sError, "BROKEN_FILE_REFERENCE" ) )
+			switch(LuaHelpers::ReportScriptError(sError, "BROKEN_FILE_REFERENCE", true))
 			{
 			case Dialog::abort:
 				RageException::Throw( "%s", sError.c_str() ); 
@@ -76,7 +79,7 @@ bool ActorUtil::ResolvePath( RString &sPath, const RString &sName )
 		{
 			RString sError = ssprintf( "%s: references a file \"%s\" which has multiple matches", sName.c_str(), sPath.c_str() );
 			sError += "\n" + join( "\n", asPaths );
-			switch( Dialog::AbortRetryIgnore( sError, "BROKEN_FILE_REFERENCE" ) )
+			switch(LuaHelpers::ReportScriptError(sError, "BROKEN_FILE_REFERENCE", true))
 			{
 			case Dialog::abort:
 				RageException::Throw( "%s", sError.c_str() ); 
@@ -119,7 +122,7 @@ namespace
 		// The non-legacy LoadFromNode has already checked the Class and
 		// Type attributes.
 
-		if (pActor->GetAttr("Text") != NULL)
+		if (pActor->GetAttr("Text") != nullptr)
 			return "BitmapText";
 
 		RString sFile;
@@ -168,7 +171,7 @@ namespace
 
 Actor *ActorUtil::LoadFromNode( const XNode* _pNode, Actor *pParentActor )
 {
-	ASSERT( _pNode != NULL );
+	ASSERT( _pNode != nullptr );
 
 	XNode node = *_pNode;
 
@@ -178,7 +181,7 @@ Actor *ActorUtil::LoadFromNode( const XNode* _pNode, Actor *pParentActor )
 	{
 		bool bCond;
 		if( node.GetAttrValue("Condition", bCond) && !bCond )
-			return NULL;
+			return nullptr;
 	}
 
 	RString sClass;
@@ -186,7 +189,7 @@ Actor *ActorUtil::LoadFromNode( const XNode* _pNode, Actor *pParentActor )
 	if( !bHasClass )
 		bHasClass = node.GetAttrValue( "Type", sClass );
 
-	bool bLegacy = (node.GetAttr( "_LegacyXml" ) != NULL);
+	bool bLegacy = (node.GetAttr( "_LegacyXml" ) != nullptr);
 	if( !bHasClass && bLegacy )
 		sClass = GetLegacyActorClass( &node );
 
@@ -205,8 +208,8 @@ Actor *ActorUtil::LoadFromNode( const XNode* _pNode, Actor *pParentActor )
 			if (ResolvePath(sPath, GetWhere(&node)))
 			{
 				Actor *pNewActor = MakeActor(sPath, pParentActor);
-				if (pNewActor == NULL)
-					return NULL;
+				if (pNewActor == nullptr)
+					return nullptr;
 				if (pParentActor)
 					pNewActor->SetParent(pParentActor);
 				pNewActor->LoadFromNode(&node);
@@ -217,7 +220,7 @@ Actor *ActorUtil::LoadFromNode( const XNode* _pNode, Actor *pParentActor )
 		// sClass is invalid
 		RString sError = ssprintf( "%s: invalid Class \"%s\"",
 			ActorUtil::GetWhere(&node).c_str(), sClass.c_str() );
-		Dialog::OK( sError );
+		LuaHelpers::ReportScriptError(sError);
 		return new Actor;	// Return a dummy object so that we don't crash in AutoActor later.
 	}
 
@@ -237,7 +240,7 @@ namespace
 	{
 		RString sScript;
 		if( !GetFileContents(sFile, sScript) )
-			return NULL;
+			return nullptr;
 
 		Lua *L = LUA->Get();
 
@@ -246,11 +249,11 @@ namespace
 		{
 			LUA->Release( L );
 			sError = ssprintf( "Lua runtime error: %s", sError.c_str() );
-			Dialog::OK( sError, "LUA_ERROR" );
-			return NULL;
+			LuaHelpers::ReportScriptError(sError);
+			return nullptr;
 		}
 
-		XNode *pRet = NULL;
+		XNode *pRet = nullptr;
 		if( ActorUtil::LoadTableFromStackShowErrors(L) )
 			pRet = XmlFileUtil::XNodeFromTable( L );
 
@@ -268,12 +271,10 @@ bool ActorUtil::LoadTableFromStackShowErrors( Lua *L )
 	lua_pushvalue( L, -1 );
 	func.SetFromStack( L );
 
-	RString sError;
-	if( !LuaHelpers::RunScriptOnStack(L, sError, 0, 1) )
+	RString Error= "Lua runtime error: ";
+	if( !LuaHelpers::RunScriptOnStack(L, Error, 0, 1, true) )
 	{
 		lua_pop( L, 1 );
-		sError = ssprintf( "Lua runtime error: %s", sError.c_str() );
-		Dialog::OK( sError, "LUA_ERROR" );
 		return false;
 	}
 
@@ -285,15 +286,15 @@ bool ActorUtil::LoadTableFromStackShowErrors( Lua *L )
 		lua_Debug debug;
 		lua_getinfo( L, ">nS", &debug );
 
-		sError = ssprintf( "%s: must return a table", debug.short_src );
+		Error = ssprintf( "%s: must return a table", debug.short_src );
 
-		Dialog::OK( sError, "LUA_ERROR" );
+		LuaHelpers::ReportScriptError(Error, "LUA_ERROR");
 		return false;
 	}
 	return true;
 }
 
-// NOTE: This function can return NULL if the actor should not be displayed.
+// NOTE: This function can return nullptr if the actor should not be displayed.
 // Callers should be aware of this and handle it appropriately.
 Actor* ActorUtil::MakeActor( const RString &sPath_, Actor *pParentActor )
 {
@@ -304,8 +305,8 @@ Actor* ActorUtil::MakeActor( const RString &sPath_, Actor *pParentActor )
 	{
 	case FT_Lua:
 		{
-			auto_ptr<XNode> pNode( LoadXNodeFromLuaShowErrors(sPath) );
-			if( pNode.get() == NULL )
+			unique_ptr<XNode> pNode( LoadXNodeFromLuaShowErrors(sPath) );
+			if( pNode.get() == nullptr )
 			{
 				// XNode will warn about the error
 				return new Actor;
@@ -404,7 +405,7 @@ RString ActorUtil::GetWhere( const XNode *pNode )
 	return sPath;
 }
 
-bool ActorUtil::GetAttrPath( const XNode *pNode, const RString &sName, RString &sOut )
+bool ActorUtil::GetAttrPath( const XNode *pNode, const RString &sName, RString &sOut, bool optional )
 {
 	if( !pNode->GetAttrValue(sName, sOut) )
 		return false;
@@ -415,13 +416,16 @@ bool ActorUtil::GetAttrPath( const XNode *pNode, const RString &sName, RString &
 		RString sDir;
 		if( !pNode->GetAttrValue("_Dir", sDir) )
 		{
-			LOG->Warn( "Relative path \"%s\", but path is unknown", sOut.c_str() );
+			if(!optional)
+			{
+				LOG->Warn( "Relative path \"%s\", but path is unknown", sOut.c_str() );
+			}
 			return false;
 		}
 		sOut = sDir+sOut;
 	}
 
-	return ActorUtil::ResolvePath( sOut, ActorUtil::GetWhere(pNode) );
+	return ActorUtil::ResolvePath( sOut, ActorUtil::GetWhere(pNode), optional );
 }
 
 apActorCommands ActorUtil::ParseActorCommands( const RString &sCommands, const RString &sName )
@@ -470,9 +474,8 @@ void ActorUtil::LoadAllCommandsFromName( Actor& actor, const RString &sMetricsGr
 	set<RString> vsValueNames;
 	THEME->GetMetricsThatBeginWith( sMetricsGroup, sName, vsValueNames );
 
-	FOREACHS_CONST( RString, vsValueNames, v )
+	for (RString const & sv : vsValueNames)
 	{
-		const RString &sv = *v;
 		static const RString sEnding = "Command"; 
 		if( EndsWith(sv,sEnding) )
 		{
@@ -494,55 +497,117 @@ void ActorUtil::SortByZPosition( vector<Actor*> &vActors )
 }
 
 static const char *FileTypeNames[] = {
-	"Bitmap", 
+	"Bitmap",
 	"Sprite",
-	"Sound", 
-	"Movie", 
-	"Directory", 
+	"Sound",
+	"Movie",
+	"Directory",
 	"Xml",
-	"Model", 
-	"Lua", 
+	"Model",
+	"Lua",
+	"Ini",
 };
 XToString( FileType );
 LuaXType( FileType );
+
+// convenience so the for-loop lines can be shorter.
+typedef map<RString, FileType> etft_cont_t;
+typedef map<FileType, vector<RString> > fttel_cont_t;
+etft_cont_t ExtensionToFileType;
+fttel_cont_t FileTypeToExtensionList;
+
+void ActorUtil::InitFileTypeLists()
+{
+	// This function creates things to serve two purposes:
+	// 1.  A map from extensions to filetypes, so extensions can be converted.
+	// 2.  A reverse map for things that need a list of extensions to look for.
+	// The first section creates the map from extensions to filetypes, then the
+	// second section uses that map to build the reverse map.
+	ExtensionToFileType["lua"]= FT_Lua;
+
+	ExtensionToFileType["xml"]= FT_Xml;
+
+	ExtensionToFileType["ini"]= FT_Ini;
+
+	// Update RageSurfaceUtils when adding new image formats.
+	ExtensionToFileType["bmp"]= FT_Bitmap;
+	ExtensionToFileType["gif"]= FT_Bitmap;
+	ExtensionToFileType["jpeg"]= FT_Bitmap;
+	ExtensionToFileType["jpg"]= FT_Bitmap;
+	ExtensionToFileType["png"]= FT_Bitmap;
+
+	// Update RageSoundReader_FileReader when adding new sound formats.
+	ExtensionToFileType["mp3"]= FT_Sound;
+	ExtensionToFileType["oga"]= FT_Sound;
+	ExtensionToFileType["ogg"]= FT_Sound;
+	ExtensionToFileType["wav"]= FT_Sound;
+
+	// ffmpeg takes care of loading videos, not sure whether this list should
+	// have everything ffmpeg supports.
+	ExtensionToFileType["avi"]= FT_Movie;
+	ExtensionToFileType["f4v"]= FT_Movie;
+	ExtensionToFileType["flv"]= FT_Movie;
+	ExtensionToFileType["mkv"]= FT_Movie;
+	ExtensionToFileType["mp4"]= FT_Movie;
+	ExtensionToFileType["mpeg"]= FT_Movie;
+	ExtensionToFileType["mpg"]= FT_Movie;
+	ExtensionToFileType["mov"]= FT_Movie;
+	ExtensionToFileType["ogv"]= FT_Movie;
+	ExtensionToFileType["webm"]= FT_Movie;
+	ExtensionToFileType["wmv"]= FT_Movie;
+
+	ExtensionToFileType["sprite"]= FT_Sprite;
+
+	ExtensionToFileType["txt"]= FT_Model;
+
+	// When adding new extensions, do not add them below this line.  This line
+	// marks the point where the function switches to building the reverse map.
+	for(etft_cont_t::iterator curr_ext= ExtensionToFileType.begin();
+		curr_ext != ExtensionToFileType.end(); ++curr_ext)
+	{
+		FileTypeToExtensionList[curr_ext->second].push_back(curr_ext->first);
+	}
+}
+
+vector<RString> const& ActorUtil::GetTypeExtensionList(FileType ft)
+{
+	return FileTypeToExtensionList[ft];
+}
+
+void ActorUtil::AddTypeExtensionsToList(FileType ft, vector<RString>& add_to)
+{
+	fttel_cont_t::iterator ext_list= FileTypeToExtensionList.find(ft);
+	if(ext_list != FileTypeToExtensionList.end())
+	{
+		add_to.reserve(add_to.size() + ext_list->second.size());
+		for(vector<RString>::iterator curr= ext_list->second.begin();
+				curr != ext_list->second.end(); ++curr)
+		{
+			add_to.push_back(*curr);
+		}
+	}
+}
 
 FileType ActorUtil::GetFileType( const RString &sPath )
 {
 	RString sExt = GetExtension( sPath );
 	sExt.MakeLower();
-	
-	if( sExt=="lua" )		return FT_Lua;
-	else if(sExt=="xml")		return FT_Xml;
-	else if( 
-		sExt=="png" ||
-		sExt=="jpg" || 
-		sExt=="jpeg" || 
-		sExt=="gif" || 
-		sExt=="bmp" )		return FT_Bitmap;
-	else if( 
-		sExt=="ogg" ||
-		sExt=="oga" ||
-		sExt=="wav" || 
-		sExt=="mp3" )		return FT_Sound;
-	else if( 
-		sExt=="ogv" || 
-		sExt=="avi" || 
-		sExt=="mpeg" ||
-		sExt=="mp4"	||
-		sExt=="mkv"	||
-		sExt=="mov" ||
-		sExt=="flv" ||
-		sExt=="f4v" ||			
-		sExt=="mpg" )		return FT_Movie;
-	else if(
-		sExt=="sprite" )	return FT_Sprite;
-	else if( 
-		sExt=="txt" )		return FT_Model;
-	else if( sPath.size() > 0 && sPath[sPath.size()-1] == '/' )
-					return FT_Directory;
+
+	etft_cont_t::iterator conversion_entry= ExtensionToFileType.find(sExt);
+	if(conversion_entry != ExtensionToFileType.end())
+	{
+		return conversion_entry->second;
+	}
+	else if(sPath.size() > 0 && sPath[sPath.size()-1] == '/')
+	{
+		return FT_Directory;
+	}
 	/* Do this last, to avoid the IsADirectory in most cases. */
-	else if( IsADirectory(sPath)  )	return FT_Directory;
-	else				return FileType_Invalid;
+	else if(IsADirectory(sPath))
+	{
+		return FT_Directory;
+	}
+	return FileType_Invalid;
 }
 
 
@@ -556,13 +621,14 @@ namespace
 	{
 		RString sPath( SArg(1) );
 		int iLevel = IArg(2);
+		bool optional= lua_toboolean(L, 3);
 		luaL_where( L, iLevel );
 		RString sWhere = lua_tostring( L, -1 );
 		if( sWhere.size() > 2 && sWhere.substr(sWhere.size()-2, 2) == ": " )
 			sWhere = sWhere.substr( 0, sWhere.size()-2 ); // remove trailing ": "
 
 		LUA->YieldLua();
-		bool bRet = ActorUtil::ResolvePath( sPath, sWhere );
+		bool bRet = ActorUtil::ResolvePath(sPath, sWhere, optional);
 		LUA->UnyieldLua();
 
 		if( !bRet )
@@ -575,21 +641,31 @@ namespace
 		lua_pushboolean( L, IsRegistered(SArg(1)) );
 		return 1;
 	}
+	static void name_error(Actor* p, lua_State* L)
+	{
+		if(p->GetName() == "")
+		{
+			luaL_error(L, "LoadAllCommands requires the actor to have a name.");
+		}
+	}
 	static int LoadAllCommands( lua_State *L )
 	{
 		Actor *p = Luna<Actor>::check( L, 1 );
+		name_error(p, L);
 		ActorUtil::LoadAllCommands( p, SArg(2) );
 		return 0;
 	}
 	static int LoadAllCommandsFromName( lua_State *L )
 	{
 		Actor *p = Luna<Actor>::check( L, 1 );
+		name_error(p, L);
 		ActorUtil::LoadAllCommandsFromName( *p, SArg(2), SArg(3) );
 		return 0;
 	}
 	static int LoadAllCommandsAndSetXY( lua_State *L )
 	{
 		Actor *p = Luna<Actor>::check( L, 1 );
+		name_error(p, L);
 		ActorUtil::LoadAllCommandsAndSetXY( p, SArg(2) );
 		return 0;
 	}
@@ -602,7 +678,7 @@ namespace
 		LIST_METHOD( LoadAllCommands ),
 		LIST_METHOD( LoadAllCommandsFromName ), 
 		LIST_METHOD( LoadAllCommandsAndSetXY ),
-		{ NULL, NULL }
+		{ nullptr, nullptr }
 	};
 }
 

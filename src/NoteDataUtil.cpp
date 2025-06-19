@@ -433,7 +433,7 @@ void NoteDataUtil::LoadFromSMNoteDataString( NoteData &out, const RString &sSMNo
 		NoteData &nd = vParts.back();
 
 		nd.SetNumTracks( iNumTracks );
-
+		LoadFromSMNoteDataStringWithPlayer( nd, vsNotes[i], 0, vsNotes[i].size(), i + 1, iNumTracks );
 	}
 
 	/*
@@ -444,6 +444,7 @@ void NoteDataUtil::LoadFromSMNoteDataString( NoteData &out, const RString &sSMNo
 		split( sSMNoteData, "&", start, size, false );
 		if( unsigned(start) == sSMNoteData.size() )
 			break;
+
 		vParts.push_back( NoteData() );
 		NoteData &nd = vParts.back();
 
@@ -495,6 +496,8 @@ void NoteDataUtil::GetSMNoteDataString( const NoteData &in, RString &sRet )
 
 	int iLastMeasure = int( fLastBeat/BEATS_PER_MEASURE );
 
+	bool bIsComposite = ( parts.size() > 1 );	//xMAx - added
+
 	sRet = "";
 	FOREACH( NoteData, parts, nd )
 	{
@@ -520,18 +523,52 @@ void NoteDataUtil::GetSMNoteDataString( const NoteData &in, RString &sRet )
 
 			for( int r=iMeasureStartRow; r<=iMeasureLastRow; r+=iRowSpacing )
 			{
+				if( nd->IsRowEmpty( r ) && PREFSMAN->bAllowBossPower )
+				{
+					sRet += "R0\n";
+					continue;
+				}
+
 				for( int t = 0; t < nd->GetNumTracks(); ++t )
 				{
 					const TapNote &tn = nd->GetTapNote(t, r);
-					char c;
+					char c = '0'; // xMAx - added initial condition, "empty" note
 					switch( tn.type )
 					{
 					case TapNote::empty:			c = '0'; break;
-					case TapNote::tap:				c = '1'; break;
+					case TapNote::tap:			// c = '1'; break;
+						if( bIsComposite )
+						{
+							c = '1';
+						}
+						else
+						{
+							switch( tn.nsp )
+							{
+								case TapNote::def_nsp:	c = '1'; break;	//xMAx
+								case TapNote::p1_nsp:	c = 'X'; break; //xMAx
+								case TapNote::p2_nsp:	c = 'Y'; break; //xMAx
+								case TapNote::p3_nsp:	c = 'Z'; break; //xMAx
+							}
+						} break;
 					case TapNote::hold_head:
 						switch( tn.subType )
 						{
-						case TapNote::hold_head_hold:	c = '2'; break;
+						case TapNote::hold_head_hold:
+							if( bIsComposite )
+							{
+								c = '2';
+							}
+							else
+							{
+								switch( tn.nsp )
+								{
+									case TapNote::def_nsp:	c = '2'; break;	//xMAx
+									case TapNote::p1_nsp:	c = 'x'; break; //xMAx
+									case TapNote::p2_nsp:	c = 'y'; break; //xMAx
+									case TapNote::p3_nsp:	c = 'z'; break; //xMAx
+								}
+							} break;
 						case TapNote::hold_head_roll:	c = '4'; break;
 						//case TapNote::hold_head_mine:	c = 'N'; break;
 						default:
@@ -541,14 +578,50 @@ void NoteDataUtil::GetSMNoteDataString( const NoteData &in, RString &sRet )
 					case TapNote::hold_tail:		c = '3'; break;
 					case TapNote::mine:			c = 'M'; break;
 					case TapNote::attack:			c = 'A'; break;
-					case TapNote::autoKeysound:	c = 'K'; break;
+					case TapNote::autoKeysound:		c = 'K'; break;
 					case TapNote::lift:			c = 'L'; break;
 					//case TapNote::fake:			c = 'F'; break;
 					default: 
 						c = '\0';
 						FAIL_M(ssprintf("Invalid tap note type: %i", tn.type));
 					}
-					sRet.append( 1, c );
+					//sRet.append( 1, c );
+
+					if( tn.type == TapNote::tap && tn.appearance == TapNote::normal && tn.judge == TapNote::fake )
+						c = 'F';
+
+					bool bUseNewFormat = false;
+
+					if( tn.appearance != TapNote::normal || tn.judge != TapNote::normal_judge )
+						bUseNewFormat = true;
+
+					if( c == 'F' )
+						bUseNewFormat = false;
+
+
+					// xMAx ---------------------
+					//if( PREFSMAN->bAllowBossPower || ( c != 'F' && (tn.appearance != TapNote::normal || tn.judge == TapNote::fake) ) )
+					if( PREFSMAN->bAllowBossPower || bUseNewFormat )
+					{
+						if( c == 'F' )
+							c = '1';
+
+						RString cLetter;
+						switch( tn.appearance )
+						{
+							case TapNote::normal: cLetter = "n"; break;
+							case TapNote::hidden: cLetter = "h"; break;
+							case TapNote::sudden: cLetter = "s"; break;
+							case TapNote::vanish: cLetter = "v"; break;
+						}
+						sRet.append( 1, '{' );
+						sRet.append( 1, c );
+						sRet.append( ssprintf( "|%s|%i|0}", cLetter.c_str(), ( tn.judge == TapNote::fake ) ? 1 : 0 ) );
+					}
+					else
+						sRet.append( 1, c );
+
+					//----------------------------
 
 					if( tn.type == TapNote::attack )
 					{
@@ -621,6 +694,8 @@ void NoteDataUtil::CombineCompositeNoteData( NoteData &out, const vector<NoteDat
 				int row = i->first;
 				if( out.IsHoldNoteAtRow(track, i->first) )
 					continue;
+
+				TapNote tn = i->second; // xMAx, para pasar el player1 a player 2 (ver mas arriba)
 				if( i->second.type == TapNote::hold_head )
 					out.AddHoldNote( track, row, row + i->second.iDuration, i->second );
 				else
@@ -937,11 +1012,15 @@ RadarStats CalculateRadarStatsFast( const NoteData &in, RadarStats &out )
 				continue;
 			
 			const TapNote &tn = in.GetTapNote(t, r);
+
+			if( tn.judge == TapNote::fake )
+				continue;
+
 			switch( tn.type )
 			{
 				case TapNote::mine:
 				case TapNote::empty:
-				case TapNote::fake:
+				//case TapNote::fake:
 				case TapNote::autoKeysound:
 					continue;	// skip these types - they don't count
 				default: break;
@@ -972,7 +1051,7 @@ RadarStats CalculateRadarStatsFast( const NoteData &in, RadarStats &out )
 					{
 						case TapNote::mine:
 						case TapNote::empty:
-						case TapNote::fake:
+						// case TapNote::fake: // ya esta considerado arriba xMAx
 							continue;	// skip these types - they don't count
 						default: break;
 					}
@@ -1229,7 +1308,12 @@ void NoteDataUtil::RemoveLifts( NoteData &inout, int iStartIndex, int iEndIndex 
 
 void NoteDataUtil::RemoveFakes( NoteData &inout, int iStartIndex, int iEndIndex )
 {
-	/*RemoveSpecificTapNotes( inout, TapNote::fake, iStartIndex, iEndIndex );*/
+	//RemoveSpecificTapNotes( inout, TapNote::fake, iStartIndex, iEndIndex );
+	//Codigo copiado de la function "RemoveSpecificTapNotes"
+	for( int t = 0; t < inout.GetNumTracks(); t++ )
+		FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE( inout, t, r, iStartIndex, iEndIndex )
+		if( inout.GetTapNote( t, r ).judge == TapNote::fake )
+			inout.SetTapNote( t, r, TAP_EMPTY );
 }
 
 void NoteDataUtil::RemoveAllButOneTap( NoteData &inout, int row )
@@ -1612,7 +1696,7 @@ static void SuperShuffleTaps( NoteData &inout, int iStartIndex, int iEndIndex )
 			case TapNote::mine:
 			case TapNote::attack:
 			case TapNote::lift:
-			// case TapNote::fake:
+			//case TapNote::fake:
 				break;	// shuffle this
 			DEFAULT_FAIL( tn1.type );
 			}
@@ -1644,7 +1728,7 @@ static void SuperShuffleTaps( NoteData &inout, int iStartIndex, int iEndIndex )
 				case TapNote::mine:
 				case TapNote::attack:
 				case TapNote::lift:
-				// case TapNote::fake:
+				//case TapNote::fake:
 					break;	// ok to swap with this
 				DEFAULT_FAIL( tn2.type );
 				}
@@ -1776,9 +1860,10 @@ void NoteDataUtil::Wide( NoteData &inout, int iStartIndex, int iEndIndex )
 			iTrackToAdd--;
 		CLAMP( iTrackToAdd, 0, inout.GetNumTracks()-1 );
 
-		if( inout.GetTapNote(iTrackToAdd, i).type != TapNote::empty  &&  inout.GetTapNote(iTrackToAdd, i).type != TapNote::fake )
+		//if( inout.GetTapNote(iTrackToAdd, i).type != TapNote::empty  &&  inout.GetTapNote(iTrackToAdd, i).type != TapNote::fake )
+		if( inout.GetTapNote(iTrackToAdd, i).type != TapNote::empty  &&  !(inout.GetTapNote(iTrackToAdd, i).judge == TapNote::fake ) )
 		{
-			iTrackToAdd = (iTrackToAdd+1) % inout.GetNumTracks();
+			iTrackToAdd = (iTrackToAdd+1) % inout.GetNumTracks(); 
 		}
 		inout.SetTapNote(iTrackToAdd, i, TAP_ADDITION_TAP);
 	}
@@ -2728,7 +2813,8 @@ bool NoteDataUtil::GetPrevEditorPosition( const NoteData& in, int &rowInOut )
 unsigned int NoteDataUtil::GetTotalHoldTicks( NoteData* nd, const TimingData* td )
 {
 	unsigned int ret = 0;
-	int end = nd->GetLastRow();
+	// Last row must be included. -- Matt
+	int end = nd->GetLastRow()+1;
 	vector<TimingSegment*> segments = td->GetTimingSegments( SEGMENT_TICKCOUNT );
 	// We start with the LAST TimingSegment and work our way backwards.
 	// This way we can continually update end instead of having to lookup when
@@ -2739,9 +2825,10 @@ unsigned int NoteDataUtil::GetTotalHoldTicks( NoteData* nd, const TimingData* td
 		if( ts->GetTicks() > 0)
 		{
 			// Jump to each point where holds would tick and add the number of holds there to ret.
-			// XXX: Assuming each segment starts on the beat
-			for(int j = ts->GetRow(); j < end; j += ROWS_PER_BEAT / ts->GetTicks() )
-				ret += nd->GetNumTracksHeldAtRow(j);
+			for( int j = ts->GetRow(); j < end; j += ROWS_PER_BEAT / ts->GetTicks() )
+				// 1 tick per row.
+				if( nd->GetNumTracksHeldAtRow( j ) > 0 )
+					ret++;
 		}
 		end = ts->GetRow();
 	}

@@ -48,7 +48,7 @@ void PlayerOptions::Init()
 	ZERO( m_bTurns );
 	ZERO( m_bTransforms );
 	m_bMuteOnError = false;
-	m_FailType = FAIL_IMMEDIATE;
+	m_FailType = FailType_Immediate;
 	m_sNoteSkin = "";
 }
 
@@ -229,10 +229,10 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 
 	switch( m_FailType )
 	{
-	case FAIL_IMMEDIATE:							break;
-	case FAIL_IMMEDIATE_CONTINUE:		AddTo.push_back("FailImmediateContinue");	break;
-	case FAIL_AT_END:			AddTo.push_back("FailAtEnd");	break;
-	case FAIL_OFF:				AddTo.push_back("FailOff");	break;
+	case FailType_Immediate:								break;
+	case FailType_ImmediateContinue:	AddTo.push_back("FailImmediateContinue");	break;
+	case FailType_EndOfSong:		AddTo.push_back("FailAtEnd");	break;
+	case FailType_Off:			AddTo.push_back("FailOff");	break;
 	default:
 		FAIL_M(ssprintf("Invalid FailType: %i", m_FailType));
 	}
@@ -457,11 +457,11 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "noteskin" && !on ) /* "no noteskin" */	m_sNoteSkin = CommonMetrics::DEFAULT_NOTESKIN_NAME;
 	else if( sBit == "randomspeed" ) 			SET_FLOAT( fRandomSpeed )
 	else if( sBit == "failarcade" || 
-		 sBit == "failimmediate" )			m_FailType = FAIL_IMMEDIATE;
+		 sBit == "failimmediate" )			m_FailType = FailType_Immediate;
 	else if( sBit == "failendofsong" ||
-		 sBit == "failimmediatecontinue" )		m_FailType = FAIL_IMMEDIATE_CONTINUE;
-	else if( sBit == "failatend" )				m_FailType = FAIL_AT_END;
-	else if( sBit == "failoff" )				m_FailType = FAIL_OFF;
+		 sBit == "failimmediatecontinue" )		m_FailType = FailType_ImmediateContinue;
+	else if( sBit == "failatend" )				m_FailType = FailType_EndOfSong;
+	else if( sBit == "failoff" )				m_FailType = FailType_Off;
 	else if( sBit == "faildefault" )
 	{
 		PlayerOptions po;

@@ -92,7 +92,7 @@ int MersenneTwister::operator()()
 }
 
 /* Extend MersenneTwister into Lua space. This is intended to replace
- * math.randomseed and math.random, so we conform to their behavior. */
+* math.randomseed and math.random, so we conform to their behavior. */
 
 namespace
 {
@@ -206,7 +206,7 @@ bool IsHexVal( const RString &s )
 
 	for( size_t i=0; i < s.size(); ++i )
 		if( !(s[i] >= '0' && s[i] <= '9') && 
-			!(toupper(s[i]) >= 'A' && toupper(s[i]) <= 'F'))
+		    !(toupper(s[i]) >= 'A' && toupper(s[i]) <= 'F'))
 			return false;
 
 	return true;
@@ -332,17 +332,46 @@ RString Commify( int iNum )
 	return Commify( sNum );
 }
 
-RString Commify( RString sNum, RString sSeperator ) 
+RString Commify(const RString& num, const RString& sep, const RString& dot)
 {
-	RString sReturn;
-	for( unsigned i=0; i<sNum.length(); i++ )
+	size_t num_start= 0;
+	size_t num_end= num.size();
+	size_t dot_pos= num.find(dot);
+	size_t dash_pos= num.find('-');
+	if(dot_pos != string::npos)
 	{
-		char cDigit = sNum[sNum.length()-1-i];
-		if( i!=0 && i%3 == 0 )
-			sReturn = sSeperator + sReturn;
-		sReturn = cDigit + sReturn;
+		num_end= dot_pos;
 	}
-	return sReturn;
+	if(dash_pos != string::npos)
+	{
+		num_start= dash_pos + 1;
+	}
+	size_t num_size= num_end - num_start;
+	size_t commies= (num_size / 3) - (!(num_size % 3));
+	if(commies < 1)
+	{
+		return num;
+	}
+	size_t commified_len= num.size() + (commies * sep.size());
+	RString ret;
+	ret.resize(commified_len);
+	size_t dest= 0;
+	size_t next_comma= (num_size % 3) + (3 * (!(num_size % 3))) + num_start;
+	for(size_t c= 0; c < num.size(); ++c)
+	{
+		if(c == next_comma && c < num_end)
+		{
+			for(size_t s= 0; s < sep.size(); ++s)
+			{
+				ret[dest]= sep[s];
+				++dest;
+			}
+			next_comma+= 3;
+		}
+		ret[dest]= num[c];
+		++dest;
+	}
+	return ret;
 }
 
 static LocalizedString NUM_PREFIX	( "RageUtil", "NumPrefix" );
@@ -355,10 +384,10 @@ RString FormatNumberAndSuffix( int i )
 	RString sSuffix;
 	switch( i%10 )
 	{
-	case 1:		sSuffix = NUM_ST; break;
-	case 2:		sSuffix = NUM_ND; break;
-	case 3:		sSuffix = NUM_RD; break;
-	default:	sSuffix = NUM_TH; break;
+		case 1:		sSuffix = NUM_ST; break;
+		case 2:		sSuffix = NUM_ND; break;
+		case 3:		sSuffix = NUM_RD; break;
+		default:	sSuffix = NUM_TH; break;
 	}
 
 	// "11th", "113th", etc.
@@ -412,8 +441,8 @@ RString vssprintf( const char *szFormat, va_list argList )
 	if( !bInitialized )
 	{
 		/* Some systems return the actual size required when snprintf
-		 * doesn't have enough space.  This lets us avoid wasting time
-		 * iterating, and wasting memory. */
+		* doesn't have enough space.  This lets us avoid wasting time
+		* iterating, and wasting memory. */
 		char ignore;
 		bExactSizeSupported = ( snprintf( &ignore, 0, "Hello World" ) == 11 );
 		bInitialized = true;
@@ -458,8 +487,8 @@ RString vssprintf( const char *szFormat, va_list argList )
 }
 
 /* Windows uses %I64i to format a 64-bit int, instead of %lli. Convert "a b %lli %-3llu c d"
- * to "a b %I64 %-3I64u c d". This assumes a well-formed format string; invalid format strings
- * should not crash, but the results are undefined. */
+* to "a b %I64 %-3I64u c d". This assumes a well-formed format string; invalid format strings
+* should not crash, but the results are undefined. */
 #if defined(WIN32)
 RString ConvertI64FormatString( const RString &sStr )
 {
@@ -499,8 +528,8 @@ RString ConvertI64FormatString( const RString &sStr ) { return sStr; }
 #endif
 
 /* ISO-639-1 codes: http://www.loc.gov/standards/iso639-2/php/code_list.php
- * native forms: http://people.w3.org/rishida/names/languages.html
- * We don't use 3-letter codes, so we don't bother supporting them. */
+* native forms: http://people.w3.org/rishida/names/languages.html
+* We don't use 3-letter codes, so we don't bother supporting them. */
 static const LanguageInfo g_langs[] =
 {
 	{"aa", "Afar"},
@@ -667,6 +696,14 @@ RString join( const RString &sDeliminator, const vector<RString> &sSource)
 		return RString();
 
 	RString sTmp;
+	size_t final_size= 0;
+	size_t delim_size= sDeliminator.size();
+	for(size_t n= 0; n < sSource.size()-1; ++n)
+	{
+		final_size+= sSource[n].size() + delim_size;
+	}
+	final_size+= sSource.back().size();
+	sTmp.reserve(final_size);
 
 	for( unsigned iNum = 0; iNum < sSource.size()-1; iNum++ )
 	{
@@ -683,6 +720,18 @@ RString join( const RString &sDelimitor, vector<RString>::const_iterator begin, 
 		return RString();
 
 	RString sRet;
+	size_t final_size= 0;
+	size_t delim_size= sDelimitor.size();
+	for(vector<RString>::const_iterator curr= begin; curr != end; ++curr)
+	{
+		final_size+= curr->size();
+		if(curr != end)
+		{
+			final_size+= delim_size;
+		}
+	}
+	sRet.reserve(final_size);
+
 	while( begin != end )
 	{
 		sRet += *begin;
@@ -715,7 +764,7 @@ RString SmEscape( const char *cUnescaped, int len )
 			continue;
 		}
 		if( cUnescaped[i] == '\\' || cUnescaped[i] == ':' || cUnescaped[i] == ';' )
-		    answer += "\\";
+			answer += "\\";
 		answer += cUnescaped[i];
 	}
 	return answer;
@@ -733,13 +782,13 @@ RString DwiEscape( const char *cUnescaped, int len )
 	{
 		switch( cUnescaped[i] )
 		{
-		// TODO: Which of these characters actually affect DWI?
-		case '\\':
-		case ':':
-		case ';': answer += '|'; break;
-		case '[': answer += '('; break;
-		case ']': answer += ')'; break;
-		default: answer += cUnescaped[i];
+			// TODO: Which of these characters actually affect DWI?
+			case '\\':
+			case ':':
+			case ';': answer += '|'; break;
+			case '[': answer += '('; break;
+			case ']': answer += ')'; break;
+			default: answer += cUnescaped[i];
 		}
 	}
 	return answer;
@@ -765,7 +814,7 @@ template <class S, class C>
 void do_split( const S &Source, const C Delimitor, vector<S> &AddIt, const bool bIgnoreEmpty )
 {
 	/* Short-circuit if the source is empty; we want to return an empty vector if
-	 * the string is empty, even if bIgnoreEmpty is true. */
+	* the string is empty, even if bIgnoreEmpty is true. */
 	if( Source.empty() )
 		return;
 
@@ -780,7 +829,7 @@ void do_split( const S &Source, const C Delimitor, vector<S> &AddIt, const bool 
 		if( pos-startpos > 0 || !bIgnoreEmpty )
 		{
 			/* Optimization: if we're copying the whole string, avoid substr; this
-			 * allows this copy to be refcounted, which is much faster. */
+			* allows this copy to be refcounted, which is much faster. */
 			if( startpos == 0 && pos-startpos == Source.size() )
 				AddIt.push_back(Source);
 			else
@@ -816,10 +865,10 @@ RString str="a,b,c";
 int start = 0, size = -1;
 while( 1 )
 {
-	do_split( str, ",", start, size );
-	if( start == str.size() )
-		break;
-	str[start] = 'Q';
+do_split( str, ",", start, size );
+if( start == str.size() )
+break;
+str[start] = 'Q';
 }
 
 */
@@ -840,12 +889,12 @@ void do_split( const S &Source, const S &Delimitor, int &begin, int &size, int l
 	{
 		// Skip delims.
 		while( begin + Delimitor.size() < Source.size() &&
-			!Source.compare( begin, Delimitor.size(), Delimitor ) )
+		       !Source.compare( begin, Delimitor.size(), Delimitor ) )
 			++begin;
 	}
 
 	/* Where's the string function to find within a substring?
-	 * C++ strings apparently are missing that ... */
+	* C++ strings apparently are missing that ... */
 	size_t pos;
 	if( Delimitor.size() == 1 )
 		pos = Source.find( Delimitor[0], begin );
@@ -877,10 +926,10 @@ void split( const wstring &Source, const wstring &Delimitor, int &begin, int &si
 }
 
 /*
- * foo\fum\          -> "foo\fum\", "", ""
- * c:\foo\bar.txt    -> "c:\foo\", "bar", ".txt"
- * \\foo\fum         -> "\\foo\", "fum", ""
- */
+* foo\fum\          -> "foo\fum\", "", ""
+* c:\foo\bar.txt    -> "c:\foo\", "bar", ".txt"
+* \\foo\fum         -> "\\foo\", "fum", ""
+*/
 void splitpath( const RString &sPath, RString &sDir, RString &sFilename, RString &sExt )
 {
 	sDir = sFilename = sExt = "";
@@ -888,10 +937,10 @@ void splitpath( const RString &sPath, RString &sDir, RString &sFilename, RString
 	vector<RString> asMatches;
 
 	/*
-	 * One level of escapes for the regex, one for C. Ew. 
-	 * This is really:
-	 * ^(.*[\\/])?(.*)$ 
-	 */
+	* One level of escapes for the regex, one for C. Ew. 
+	* This is really:
+	* ^(.*[\\/])?(.*)$ 
+	*/
 	static Regex sep("^(.*[\\\\/])?(.*)$");
 	bool bCheck = sep.Compare( sPath, asMatches );
 	ASSERT( bCheck );
@@ -913,8 +962,8 @@ void splitpath( const RString &sPath, RString &sDir, RString &sFilename, RString
 }
 
 /* "foo.bar", "baz" -> "foo.baz"
- * "foo", "baz" -> "foo.baz"
- * "foo.bar", "" -> "foo" */
+* "foo", "baz" -> "foo.baz"
+* "foo.bar", "" -> "foo" */
 RString SetExtension( const RString &sPath, const RString &sExt )
 {
 	RString sDir, sFileName, sOldExt;
@@ -950,8 +999,8 @@ void MakeValidFilename( RString &sName )
 	{
 		wchar_t w = wsName[i];
 		if( w >= 32 &&
-			w < 126 &&
-			wsInvalid.find_first_of(w) == wsInvalid.npos )
+		    w < 126 &&
+		    wsInvalid.find_first_of(w) == wsInvalid.npos )
 			continue;
 
 		if( w == L'"' )
@@ -961,13 +1010,54 @@ void MakeValidFilename( RString &sName )
 		}
 
 		/* We could replace with closest matches in ASCII: convert the character
-		 * to UTF-8 NFD (decomposed) (maybe NFKD?), and see if the first
-		 * character is ASCII. This is useless for non-Western languages,
-		 * since we'll replace the whole filename. */
+		* to UTF-8 NFD (decomposed) (maybe NFKD?), and see if the first
+		* character is ASCII. This is useless for non-Western languages,
+		* since we'll replace the whole filename. */
 		wsName[i] = '_';
 	}
 
 	sName = WStringToRString( wsName );
+}
+
+bool FindFirstFilenameContaining(const vector<RString>& filenames,
+				  RString& out, const vector<RString>& starts_with,
+				  const vector<RString>& contains, const vector<RString>& ends_with)
+{
+	for(size_t i= 0; i < filenames.size(); ++i)
+	{
+		RString lower= GetFileNameWithoutExtension(filenames[i]);
+		lower.MakeLower();
+		for(size_t s= 0; s < starts_with.size(); ++s)
+		{
+			if(!lower.compare(0, starts_with[s].size(), starts_with[s]))
+			{
+				out= filenames[i];
+				return true;
+			}
+		}
+		size_t lower_size= lower.size();
+		for(size_t s= 0; s < ends_with.size(); ++s)
+		{
+			if(lower_size >= ends_with[s].size())
+			{
+				size_t end_pos= lower_size - ends_with[s].size();
+				if(!lower.compare(end_pos, string::npos, ends_with[s]))
+				{
+					out= filenames[i];
+					return true;
+				}
+			}
+		}
+		for(size_t s= 0; s < contains.size(); ++s)
+		{
+			if(lower.find(contains[s]) != string::npos)
+			{
+				out= filenames[i];
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 int g_argc = 0;
@@ -986,10 +1076,10 @@ void GetCommandLineArguments( int &argc, char **&argv )
 }
 
 /* Search for the commandline argument given; eg. "test" searches for the
- * option "--test".  All commandline arguments are getopt_long style: --foo;
- * short arguments (-x) are not supported.  (These are not intended for
- * common, general use, so having short options isn't currently needed.)
- * If argument is non-NULL, accept an argument. */
+* option "--test".  All commandline arguments are getopt_long style: --foo;
+* short arguments (-x) are not supported.  (These are not intended for
+* common, general use, so having short options isn't currently needed.)
+* If argument is non-NULL, accept an argument. */
 bool GetCommandlineArgument( const RString &option, RString *argument, int iIndex )
 {
 	const RString optstr = "--" + option;
@@ -1033,11 +1123,11 @@ RString GetCwd()
 }
 
 /*
- * Calculate a standard CRC32.  iCRC should be initialized to 0.
- * References:
- *   http://www.theorem.com/java/CRC32.java,
- *   http://www.faqs.org/rfcs/rfc1952.html
- */
+* Calculate a standard CRC32.  iCRC should be initialized to 0.
+* References:
+*   http://www.theorem.com/java/CRC32.java,
+*   http://www.faqs.org/rfcs/rfc1952.html
+*/
 void CRC32( unsigned int &iCRC, const void *pVoidBuffer, size_t iSize )
 {
 	static unsigned tab[256];
@@ -1102,7 +1192,7 @@ bool CompareRStringsDesc( const RString &sStr1, const RString &sStr2 )
 void SortRStringArray( vector<RString> &arrayRStrings, const bool bSortAscending )
 {
 	sort( arrayRStrings.begin(), arrayRStrings.end(),
-			bSortAscending?CompareRStringsAsc:CompareRStringsDesc );
+	      bSortAscending?CompareRStringsAsc:CompareRStringsDesc );
 }
 
 float calc_mean( const float *pStart, const float *pEnd )
@@ -1126,7 +1216,7 @@ float calc_stddev( const float *pStart, const float *pEnd, bool bSample )
 }
 
 bool CalcLeastSquares( const vector< pair<float, float> > &vCoordinates,
-                       float &fSlope, float &fIntercept, float &fError )
+		       float &fSlope, float &fIntercept, float &fError )
 {
 	if( vCoordinates.empty() ) 
 		return false;
@@ -1154,7 +1244,7 @@ bool CalcLeastSquares( const vector< pair<float, float> > &vCoordinates,
 }
 
 void FilterHighErrorPoints( vector< pair<float, float> > &vCoordinates,
-                            float fSlope, float fIntercept, float fCutoff )
+			    float fSlope, float fIntercept, float fCutoff )
 {
 	unsigned int iOut = 0;
 	for( unsigned int iIn = 0; iIn < vCoordinates.size(); ++iIn )
@@ -1185,7 +1275,7 @@ void TrimRight( RString &sStr, const char *s )
 		n--;
 
 	/* Delete from n to the end. If n == sStr.size(), nothing is deleted;
-	 * if n == 0, the whole string is erased. */
+	* if n == 0, the whole string is erased. */
 	sStr.erase( sStr.begin()+n, sStr.end() );
 }
 
@@ -1237,8 +1327,8 @@ RString URLEncode( const RString &sStr )
 static bool CVSOrSVN( const RString& s )
 {
 	return s.Right(3).EqualsNoCase("CVS") ||
-			s.Right(4) == ".svn" ||
-			s.Right(3).EqualsNoCase(".hg");
+		s.Right(4) == ".svn" ||
+		s.Right(3).EqualsNoCase(".hg");
 }
 
 void StripCvsAndSvn( vector<RString> &vs )
@@ -1342,7 +1432,11 @@ bool GetFileContents( const RString &sFile, vector<RString> &asOut )
 	return true;
 }
 
+#ifndef USE_SYSTEM_PCRE
 #include "../extern/pcre/pcre.h"
+#else
+#include <pcre.h>
+#endif
 void Regex::Compile()
 {
 	const char *error;
@@ -1453,7 +1547,7 @@ bool Regex::Replace( const RString &sReplacement, const RString &sSubject, RStri
 }
 
 /* Given a UTF-8 byte, return the length of the codepoint (if a start code)
- * or 0 if it's a continuation byte. */
+* or 0 if it's a continuation byte. */
 int utf8_get_char_len( char p )
 {
 	if( !(p & 0x80) ) return 1; /* 0xxxxxxx - 1 */
@@ -1472,14 +1566,14 @@ static inline bool is_utf8_continuation_byte( char c )
 }
 
 /* Decode one codepoint at start; advance start and place the result in ch.
- * If the encoded string is invalid, false is returned. */
+* If the encoded string is invalid, false is returned. */
 bool utf8_to_wchar_ec( const RString &s, unsigned &start, wchar_t &ch )
 {
 	if( start >= s.size() )
 		return false;
 
 	if( is_utf8_continuation_byte( s[start] ) || /* misplaced continuation byte */
-		(s[start] & 0xFE) == 0xFE ) /* 0xFE, 0xFF */
+	    (s[start] & 0xFE) == 0xFE ) /* 0xFE, 0xFF */
 	{
 		start += 1;
 		return false;
@@ -1496,7 +1590,7 @@ bool utf8_to_wchar_ec( const RString &s, unsigned &start, wchar_t &ch )
 		if( start+i >= s.size() )
 		{
 			/* We expected a continuation byte, but didn't get one. Return error, and point
-			 * start at the unexpected byte; it's probably a new sequence. */
+			* start at the unexpected byte; it's probably a new sequence. */
 			start += i;
 			return false;
 		}
@@ -1505,7 +1599,7 @@ bool utf8_to_wchar_ec( const RString &s, unsigned &start, wchar_t &ch )
 		if( !is_utf8_continuation_byte(byte) )
 		{
 			/* We expected a continuation byte, but didn't get one. Return error, and point
-			 * start at the unexpected byte; it's probably a new sequence. */
+			* start at the unexpected byte; it's probably a new sequence. */
 			start += i;
 			return false;
 		}
@@ -1522,9 +1616,9 @@ bool utf8_to_wchar_ec( const RString &s, unsigned &start, wchar_t &ch )
 		    (c & 0xFFF0) == 0xF080 ||
 		    (c & 0xFFF8) == 0xF880 ||
 		    (c & 0xFFFC) == 0xFC80 )
-	    {
-		    bValid = false;
-	    }
+		{
+			bValid = false;
+		}
 	}
 
 	if( ch == 0xFFFE || ch == 0xFFFF )
@@ -1552,40 +1646,40 @@ bool utf8_to_wchar( const char *s, size_t iLength, unsigned &start, wchar_t &ch 
 
 	switch( len )
 	{
-	case 1:
-		ch = (s[start+0] & 0x7F);
-		break;
-	case 2:
-		ch = ( (s[start+0] & 0x1F) << 6 ) |
-		       (s[start+1] & 0x3F);
-		break;
-	case 3:
-		ch = ( (s[start+0] & 0x0F) << 12 ) |
-		     ( (s[start+1] & 0x3F) << 6 ) |
-		       (s[start+2] & 0x3F);
-		break;
-	case 4:
-		ch = ( (s[start+0] & 0x07) << 18 ) |
-		     ( (s[start+1] & 0x3F) << 12 ) |
-		     ( (s[start+2] & 0x3F) << 6 ) |
-		     (s[start+3] & 0x3F);
-		break;
-	case 5:
-		ch = ( (s[start+0] & 0x03) << 24 ) |
-		     ( (s[start+1] & 0x3F) << 18 ) |
-		     ( (s[start+2] & 0x3F) << 12 ) |
-		     ( (s[start+3] & 0x3F) << 6 ) |
-		     (s[start+4] & 0x3F);
-		break;
+		case 1:
+			ch = (s[start+0] & 0x7F);
+			break;
+		case 2:
+			ch = ( (s[start+0] & 0x1F) << 6 ) |
+				(s[start+1] & 0x3F);
+			break;
+		case 3:
+			ch = ( (s[start+0] & 0x0F) << 12 ) |
+				( (s[start+1] & 0x3F) << 6 ) |
+				(s[start+2] & 0x3F);
+			break;
+		case 4:
+			ch = ( (s[start+0] & 0x07) << 18 ) |
+				( (s[start+1] & 0x3F) << 12 ) |
+				( (s[start+2] & 0x3F) << 6 ) |
+				(s[start+3] & 0x3F);
+			break;
+		case 5:
+			ch = ( (s[start+0] & 0x03) << 24 ) |
+				( (s[start+1] & 0x3F) << 18 ) |
+				( (s[start+2] & 0x3F) << 12 ) |
+				( (s[start+3] & 0x3F) << 6 ) |
+				(s[start+4] & 0x3F);
+			break;
 
-	case 6:
-		ch = ( (s[start+0] & 0x01) << 30 ) |
-		     ( (s[start+1] & 0x3F) << 24 ) |
-		     ( (s[start+2] & 0x3F) << 18 ) |
-		     ( (s[start+3] & 0x3F) << 12) |
-		     ( (s[start+4] & 0x3F) << 6 ) |
-		     (s[start+5] & 0x3F);
-		break;
+		case 6:
+			ch = ( (s[start+0] & 0x01) << 30 ) |
+				( (s[start+1] & 0x3F) << 24 ) |
+				( (s[start+2] & 0x3F) << 18 ) |
+				( (s[start+3] & 0x3F) << 12) |
+				( (s[start+4] & 0x3F) << 6 ) |
+				(s[start+5] & 0x3F);
+			break;
 
 	}
 
@@ -1656,7 +1750,7 @@ bool utf8_is_valid( const RString &s )
 }
 
 /* Windows tends to drop garbage BOM characters at the start of UTF-8 text files.
- * Remove them. */
+* Remove them. */
 void utf8_remove_bom( RString &sLine )
 {
 	if( !sLine.compare(0, 3, "\xef\xbb\xbf") )
@@ -1688,8 +1782,8 @@ static int UnicodeDoUpper( char *p, size_t iLen, const unsigned char pMapping[25
 }
 
 /* Fast in-place MakeUpper and MakeLower. This only replaces characters with characters of the same UTF-8
- * length, so we never have to move the whole string. This is optimized for strings that have no
- * non-ASCII characters. */
+* length, so we never have to move the whole string. This is optimized for strings that have no
+* non-ASCII characters. */
 void MakeUpper( char *p, size_t iLen )
 {
 	char *pStart = p;
@@ -1805,7 +1899,7 @@ wstring RStringToWstring( const RString &s )
 			++start;
 			continue;
 		}
-		
+
 		wchar_t ch = L'\0';
 		if( !utf8_to_wchar( s.data(), s.size(), start, ch ) )
 			ch = INVALID_CHAR;
@@ -1991,9 +2085,9 @@ RString WcharDisplayText( wchar_t c )
 }
 
 /* Return the last named component of dir:
- * a/b/c -> c
- * a/b/c/ -> c
- */
+* a/b/c -> c
+* a/b/c/ -> c
+*/
 RString Basename( const RString &sDir )
 {
 	size_t iEnd = sDir.find_last_not_of( "/\\" );
@@ -2010,13 +2104,13 @@ RString Basename( const RString &sDir )
 }
 
 /* Return all but the last named component of dir:
- *
- * a/b/c -> a/b/
- * a/b/c/ -> a/b/
- * c/ -> ./
- * /foo -> /
- * / -> /
- */
+*
+* a/b/c -> a/b/
+* a/b/c/ -> a/b/
+* c/ -> ./
+* /foo -> /
+* / -> /
+*/
 RString Dirname( const RString &dir )
 {
 	// Special case: "/" -> "/".
@@ -2099,19 +2193,19 @@ void FixSlashesInPlace( RString &sPath )
 }
 
 /* Keep trailing slashes, since that can be used to illustrate that a path always
- * represents a directory.
- *
- * foo/bar -> foo/bar
- * foo/bar/ -> foo/bar/
- * foo///bar/// -> foo/bar/
- * foo/bar/./baz -> foo/bar/baz
- * foo/bar/../baz -> foo/baz
- * ../foo -> ../foo
- * ../../foo -> ../../foo
- * ./foo -> foo (if bRemoveLeadingDot), ./foo (if !bRemoveLeadingDot)
- * ./ -> ./
- * ./// -> ./
- */
+* represents a directory.
+*
+* foo/bar -> foo/bar
+* foo/bar/ -> foo/bar/
+* foo///bar/// -> foo/bar/
+* foo/bar/./baz -> foo/bar/baz
+* foo/bar/../baz -> foo/baz
+* ../foo -> ../foo
+* ../../foo -> ../../foo
+* ./foo -> foo (if bRemoveLeadingDot), ./foo (if !bRemoveLeadingDot)
+* ./ -> ./
+* ./// -> ./
+*/
 
 void CollapsePath( RString &sPath, bool bRemoveLeadingDot )
 {
@@ -2147,7 +2241,7 @@ void CollapsePath( RString &sPath, bool bRemoveLeadingDot )
 		if( iNext - iPos == 3 && sPath[iPos] == '.' && sPath[iPos+1] == '.' && sPath[iPos+2] == '/' )
 		{
 			/* If this is the first path element (nothing to delete),
-			 * or all we have is a slash, leave it. */
+			* or all we have is a slash, leave it. */
 			if( sOut.empty() || (sOut.size() == 1 && sOut[0] == '/') )
 			{
 				sOut.append( sPath, iPos, iNext-iPos );
@@ -2175,7 +2269,7 @@ void CollapsePath( RString &sPath, bool bRemoveLeadingDot )
 
 		sOut.append( sPath, iPos, iNext-iPos );
 	}
-	
+
 	sOut.swap( sPath );
 }
 
@@ -2259,7 +2353,7 @@ bool FileCopy( const RString &sSrcFile, const RString &sDstFile )
 	if( !FileCopy(in, out, sError) )
 	{
 		LOG->Warn( "FileCopy(%s,%s): %s",
-				sSrcFile.c_str(), sDstFile.c_str(), sError.c_str() );
+			   sSrcFile.c_str(), sDstFile.c_str(), sError.c_str() );
 		return false;
 	}
 
@@ -2319,28 +2413,118 @@ LuaFunction( PrettyPercent, PrettyPercent( FArg(1), FArg(2) ) );
 //LuaFunction( IsHexVal, IsHexVal( SArg(1) ) );
 static bool UndocumentedFeature( RString s ){ sm_crash(s); return true; }
 LuaFunction( UndocumentedFeature, UndocumentedFeature(SArg(1)) );
+LuaFunction( lerp, lerp(FArg(1), FArg(2), FArg(3)) );
+
+int LuaFunc_commify(lua_State* L);
+int LuaFunc_commify(lua_State* L)
+{
+	RString num= SArg(1);
+	RString sep= ",";
+	RString dot= ".";
+	if(!lua_isnoneornil(L, 2))
+	{
+		sep= lua_tostring(L, 2);
+	}
+	if(!lua_isnoneornil(L, 3))
+	{
+		dot= lua_tostring(L, 3);
+	}
+	RString ret= Commify(num, sep, dot);
+	LuaHelpers::Push(L, ret);
+	return 1;
+}
+LUAFUNC_REGISTER_COMMON(commify);
+
+void luafunc_approach_internal(lua_State* L, int valind, int goalind, int speedind);
+void luafunc_approach_internal(lua_State* L, int valind, int goalind, int speedind, int process_index)
+{
+#define TONUMBER_NICE(dest, num_name, index) \
+	if(!lua_isnumber(L, index)) \
+	{ \
+		luaL_error(L, "approach: " #num_name " for approach %d is not a number.", process_index); \
+	} \
+	dest= lua_tonumber(L, index);
+	float val= 0;
+	float goal= 0;
+	float speed= 0;
+	TONUMBER_NICE(val, current, valind);
+	TONUMBER_NICE(goal, goal, goalind);
+	TONUMBER_NICE(speed, speed, speedind);
+#undef TONUMBER_NICE
+	if(speed < 0)
+	{
+		luaL_error(L, "approach: speed %d is negative.", process_index);
+	}
+	fapproach(val, goal, speed);
+	lua_pushnumber(L, val);
+}
+
+int LuaFunc_approach(lua_State* L);
+int LuaFunc_approach(lua_State* L)
+{
+	// Args:  current, goal, speed
+	// Returns:  new_current
+	luafunc_approach_internal(L, 1, 2, 3, 1);
+	return 1;
+}
+LUAFUNC_REGISTER_COMMON(approach);
+
+int LuaFunc_multiapproach(lua_State* L);
+int LuaFunc_multiapproach(lua_State* L)
+{
+	// Args:  {currents}, {goals}, {speeds}
+	// Returns:  {currents}
+	// Modifies the values in {currents} in place.
+	if(lua_gettop(L) != 3)
+	{
+		luaL_error(L, "multiapproach:  A table of current values, a table of goal values, and a table of speeds must be passed.");
+	}
+	size_t currents_len= lua_objlen(L, 1);
+	size_t goals_len= lua_objlen(L, 2);
+	size_t speeds_len= lua_objlen(L, 3);
+	if(currents_len != goals_len || currents_len != speeds_len)
+	{
+		luaL_error(L, "multiapproach:  There must be the same number of current values, goal values, and speeds.");
+	}
+	if(!lua_istable(L, 1) || !lua_istable(L, 2) || !lua_istable(L, 3))
+	{
+		luaL_error(L, "multiapproach:  current, goal, and speed must all be tables.");
+	}
+	for(size_t i= 1; i <= currents_len; ++i)
+	{
+		lua_rawgeti(L, 1, i);
+		lua_rawgeti(L, 2, i);
+		lua_rawgeti(L, 3, i);
+		luafunc_approach_internal(L, -3, -2, -1, i);
+		lua_rawseti(L, 1, i);
+		lua_pop(L, 3);
+	}
+	lua_pushvalue(L, 1);
+	return 1;
+}
+LUAFUNC_REGISTER_COMMON(multiapproach);
 
 /*
- * Copyright (c) 2001-2005 Chris Danford, Glenn Maynard
- * All rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* Copyright (c) 2001-2005 Chris Danford, Glenn Maynard
+* All rights reserved.
+*
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

@@ -5,6 +5,7 @@
 
 #include <map>
 #include <vector>
+#include <sstream>
 class RageFileDriver;
 
 /** @brief Safely delete pointers. */
@@ -20,7 +21,7 @@ class RageFileDriver;
 #define ARRAYLEN(a) (sizeof(a) / sizeof((a)[0]))
 
 /* Common harmless mismatches.  All min(T,T) and max(T,T) cases are handled
- * by the generic template we get from <algorithm>. */
+* by the generic template we get from <algorithm>. */
 inline float min( float a, int b ) { return a < b? a:b; }
 inline float min( int a, float b ) { return a < b? a:b; }
 inline float max( float a, int b ) { return a > b? a:b; }
@@ -34,13 +35,13 @@ inline unsigned long max( unsigned long a, unsigned int b ) { return a > b? a:b;
 #define clamp(val,low,high)		( max( (low), min((val),(high)) ) )
 
 /**
- * @brief Scales x so that l1 corresponds to l2 and h1 corresponds to h2.
- *
- * This does not modify x, so it MUST assign the result to something!
- * Do the multiply before the divide to that integer scales have more precision.
- *
- * One such example: SCALE(x, 0, 1, L, H); interpolate between L and H.
- */
+* @brief Scales x so that l1 corresponds to l2 and h1 corresponds to h2.
+*
+* This does not modify x, so it MUST assign the result to something!
+* Do the multiply before the divide to that integer scales have more precision.
+*
+* One such example: SCALE(x, 0, 1, L, H); interpolate between L and H.
+*/
 #define SCALE(x, l1, h1, l2, h2)	(((x) - (l1)) * ((h2) - (l2)) / ((h1) - (l1)) + (l2))
 
 template<typename T, typename U>
@@ -49,24 +50,14 @@ inline U lerp( T x, U l, U h )
 	return U(x * (h - l) + l);
 }
 
-inline bool CLAMP( int &x, int l, int h )
+template<typename T, typename U, typename V>
+inline bool CLAMP(T& x, U l, V h)
 {
-	if (x > h)	{ x = h; return true; }
-	else if (x < l) { x = l; return true; }
+	if(x > static_cast<T>(h)) { x= static_cast<T>(h); return true; }
+	else if(x < static_cast<T>(l)) { x= static_cast<T>(l); return true; }
 	return false;
 }
-inline bool CLAMP( unsigned &x, unsigned l, unsigned h )
-{
-	if (x > h)	{ x = h; return true; }
-	else if (x < l) { x = l; return true; }
-	return false;
-}
-inline bool CLAMP( float &x, float l, float h )
-{
-	if (x > h)	{ x = h; return true; }
-	else if (x < l) { x = l; return true; }
-	return false;
-}
+
 template<class T>
 inline bool ENUM_CLAMP( T &x, T l, T h )
 {
@@ -118,10 +109,10 @@ template<typename Type, typename Ret>
 static Ret *CreateClass() { return new Type; }
 
 /*
- * Helper function to remove all objects from an STL container for which the
- * Predicate pred is true. If you want to remove all objects for which the predicate
- * returns false, wrap the predicate with not1().
- */
+* Helper function to remove all objects from an STL container for which the
+* Predicate pred is true. If you want to remove all objects for which the predicate
+* returns false, wrap the predicate with not1().
+*/
 template<typename Container, typename Predicate>
 inline void RemoveIf( Container& c, Predicate p )
 {
@@ -156,10 +147,10 @@ private:
 };
 
 /* Safely temporarily convert between types.  For example,
- *
- * float f = 10.5;
- * *ConvertValue<int>(&f) = 12;
- */
+*
+* float f = 10.5;
+* *ConvertValue<int>(&f) = 12;
+*/
 template<typename TO, typename FROM>
 ConvertValueHelper<TO, FROM> ConvertValue( FROM *pValue )
 {
@@ -167,18 +158,18 @@ ConvertValueHelper<TO, FROM> ConvertValue( FROM *pValue )
 }
 
 /* Safely add an integer to an enum.
- *
- * This is illegal:
- *
- *  ((int&)val) += iAmt;
- *
- * It breaks aliasing rules; the compiler is allowed to assume that "val" doesn't
- * change (unless it's declared volatile), and in some cases, you'll end up getting
- * old values for "val" following the add.  (What's probably really happening is
- * that the memory location is being added to, but the value is stored in a register,
- * and breaking aliasing rules means the compiler doesn't know that the register
- * value is invalid.)
- */
+*
+* This is illegal:
+*
+*  ((int&)val) += iAmt;
+*
+* It breaks aliasing rules; the compiler is allowed to assume that "val" doesn't
+* change (unless it's declared volatile), and in some cases, you'll end up getting
+* old values for "val" following the add.  (What's probably really happening is
+* that the memory location is being added to, but the value is stored in a register,
+* and breaking aliasing rules means the compiler doesn't know that the register
+* value is invalid.)
+*/
 template<typename T>
 static inline void enum_add( T &val, int iAmt )
 {
@@ -201,12 +192,12 @@ static inline T enum_cycle( T val, int iMax, int iAmt = 1 )
 
 
 /* We only have unsigned swaps; byte swapping a signed value doesn't make sense. 
- *
- * Platform-specific, optimized versions are defined in arch_setup, with the names
- * ArchSwap32, ArchSwap24, and ArchSwap16; we define them to their real names here,
- * to force inclusion of this file when swaps are in use (to prevent different dependencies
- * on different systems).
- */
+*
+* Platform-specific, optimized versions are defined in arch_setup, with the names
+* ArchSwap32, ArchSwap24, and ArchSwap16; we define them to their real names here,
+* to force inclusion of this file when swaps are in use (to prevent different dependencies
+* on different systems).
+*/
 #ifdef HAVE_BYTE_SWAPS
 #define Swap32 ArchSwap32
 #define Swap24 ArchSwap24
@@ -270,20 +261,20 @@ typedef MersenneTwister RandomGen;
 extern RandomGen g_RandomNumberGenerator;
 
 /**
- * @brief Generate a random float between 0 inclusive and 1 exclusive.
- * @return the random float.
- */
+* @brief Generate a random float between 0 inclusive and 1 exclusive.
+* @return the random float.
+*/
 inline float RandomFloat()
 {
 	return g_RandomNumberGenerator() / 2147483648.0f;
 }
 
 /**
- * @brief Return a float between the low and high values.
- * @param fLow the low value, inclusive.
- * @param fHigh the high value, inclusive.
- * @return the random float.
- */
+* @brief Return a float between the low and high values.
+* @param fLow the low value, inclusive.
+* @param fHigh the high value, inclusive.
+* @return the random float.
+*/
 inline float RandomFloat( float fLow, float fHigh )
 {
 	return SCALE( RandomFloat(), 0.0f, 1.0f, fLow, fHigh );
@@ -370,7 +361,7 @@ RString SecondsToMMSS( float fSecs );
 RString PrettyPercent( float fNumerator, float fDenominator );
 inline RString PrettyPercent( int fNumerator, int fDenominator ) { return PrettyPercent( float(fNumerator), float(fDenominator) ); }
 RString Commify( int iNum );
-RString Commify( RString sNum, RString sSeperator = "," );
+RString Commify(const RString& num, const RString& sep= ",", const RString& dot= ".");
 RString FormatNumberAndSuffix( int i );
 
 
@@ -381,16 +372,21 @@ RString vssprintf( const char *fmt, va_list argList );
 RString ConvertI64FormatString( const RString &sStr );
 
 /*
- * Splits a Path into 4 parts (Directory, Drive, Filename, Extention).  Supports UNC path names.
- * If Path is a directory (eg. c:\games\stepmania"), append a slash so the last
- * element will end up in Dir, not FName: "c:\games\stepmania\".
- * */
+* Splits a Path into 4 parts (Directory, Drive, Filename, Extention).  Supports UNC path names.
+* If Path is a directory (eg. c:\games\stepmania"), append a slash so the last
+* element will end up in Dir, not FName: "c:\games\stepmania\".
+* */
 void splitpath( const RString &Path, RString &Dir, RString &Filename, RString &Ext );
 
 RString SetExtension( const RString &path, const RString &ext );
 RString GetExtension( const RString &sPath );
 RString GetFileNameWithoutExtension( const RString &sPath );
 void MakeValidFilename( RString &sName );
+
+bool FindFirstFilenameContaining(
+	const vector<RString>& filenames, RString& out,
+	const vector<RString>& starts_with,
+	const vector<RString>& contains, const vector<RString>& ends_with);
 
 extern const wchar_t INVALID_CHAR;
 
@@ -406,18 +402,24 @@ void MakeLower( char *p, size_t iLen );
 void MakeUpper( wchar_t *p, size_t iLen );
 void MakeLower( wchar_t *p, size_t iLen );
 /**
- * @brief Have a standard way of converting Strings to integers.
- * @param sString the string to convert.
- * @return the integer we are after. */
+* @brief Have a standard way of converting Strings to integers.
+* @param sString the string to convert.
+* @return the integer we are after. */
 int StringToInt( const RString &sString );
 /**
- * @brief Have a standard way of converting integers to Strings.
- * @param iNum the integer to convert.
- * @return the string we are after. */
+* @brief Have a standard way of converting integers to Strings.
+* @param iNum the integer to convert.
+* @return the string we are after. */
 RString IntToString( const int &iNum );
 float StringToFloat( const RString &sString );
 RString FloatToString( const float &num );
 bool StringToFloat( const RString &sString, float &fOut );
+// Better than IntToString because you can check for success.
+template<class T>
+inline bool operator>>(const RString& lhs, T& rhs)
+{
+	return !!(istringstream(lhs) >> rhs);
+}
 
 RString WStringToRString( const wstring &sString );
 RString WcharToUTF8( wchar_t c );
@@ -477,27 +479,27 @@ void SortRStringArray( vector<RString> &asAddTo, const bool bSortAscending = tru
 /* Find the mean and standard deviation of all numbers in [start,end). */
 float calc_mean( const float *pStart, const float *pEnd );
 /* When bSample is true, it calculates the square root of an unbiased estimator for the population
- * variance. Note that this is not an unbiased estimator for the population standard deviation but
- * it is close and an unbiased estimator is complicated (apparently).
- * When the entire population is known, bSample should be false to calculate the exact standard
- * deviation. */
+* variance. Note that this is not an unbiased estimator for the population standard deviation but
+* it is close and an unbiased estimator is complicated (apparently).
+* When the entire population is known, bSample should be false to calculate the exact standard
+* deviation. */
 float calc_stddev( const float *pStart, const float *pEnd, bool bSample = false );
 
 /* 
- * Find the slope, intercept, and error of a linear least squares regression 
- * of the points given.  Error is returned as the sqrt of the average squared
- * Y distance from the chosen line. 
- * Returns true on success, false on failure. 
- */
+* Find the slope, intercept, and error of a linear least squares regression 
+* of the points given.  Error is returned as the sqrt of the average squared
+* Y distance from the chosen line. 
+* Returns true on success, false on failure. 
+*/
 bool CalcLeastSquares( const vector< pair<float, float> > &vCoordinates,
-                       float &fSlope, float &fIntercept, float &fError );
+		       float &fSlope, float &fIntercept, float &fError );
 
 /* 
- * This method throws away any points that are more than fCutoff away from
- * the line defined by fSlope and fIntercept.
- */
+* This method throws away any points that are more than fCutoff away from
+* the line defined by fSlope and fIntercept.
+*/
 void FilterHighErrorPoints( vector< pair<float, float> > &vCoordinates,
-                            float fSlope, float fIntercept, float fCutoff );
+			    float fSlope, float fIntercept, float fCutoff );
 
 template<class T1, class T2>
 int FindIndex( T1 begin, T1 end, const T2 *p )
@@ -596,7 +598,7 @@ struct char_traits_char_nocase: public char_traits<char>
 	{
 		return g_UpperCase[(unsigned char)a];
 	}
-	
+
 	static const char *find( const char* s, int n, char a )
 	{
 		a = fasttoupper(a);
@@ -611,7 +613,7 @@ struct char_traits_char_nocase: public char_traits<char>
 typedef basic_string<char,char_traits_char_nocase> istring;
 
 /* Compatibility/convenience shortcuts. These are actually defined in RageFileManager.h, but
- * declared here since they're used in many places. */
+* declared here since they're used in many places. */
 void GetDirListing( const RString &sPath, vector<RString> &AddTo, bool bOnlyDirs=false, bool bReturnPathToo=false );
 void GetDirListingRecursive( const RString &sDir, const RString &sMatch, vector<RString> &AddTo );	/* returns path too */
 void GetDirListingRecursive( RageFileDriver *prfd, const RString &sDir, const RString &sMatch, vector<RString> &AddTo );	/* returns path too */
@@ -669,28 +671,28 @@ void GetConnectsDisconnects( const vector<T> &before, const vector<T> &after, ve
 #endif
 
 /**
- * @file
- * @author Chris Danford, Glenn Maynard (c) 2001-2005
- * @section LICENSE
- * All rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* @file
+* @author Chris Danford, Glenn Maynard (c) 2001-2005
+* @section LICENSE
+* All rights reserved.
+*
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

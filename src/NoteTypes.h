@@ -35,6 +35,7 @@ struct TapNoteResult
 /** @brief The result of holding (or letting go of) a hold note. */
 struct HoldNoteResult
 {
+	// xMAx - fLife was 1.0f by default..changed it to 0
 	HoldNoteResult() : hns(HNS_None), fLife(1.f), fOverlappedTime(0), iLastHeldRow(0), iCheckpointsHit(0), iCheckpointsMissed(0), bHeld(false), bActive(false) { }
 	float GetLastHeldBeat() const;
 
@@ -124,7 +125,6 @@ struct TapNote
 		Judge_Invalid
 	};
 
-
 	/** @brief The different places a TapNote could come from. */
 	enum Source
 	{
@@ -159,7 +159,7 @@ struct TapNote
 	NoteSkinPlayer	nsp; // 0 - default, 1 = player1, etc...
 	Appearance	appearance;
 	Judge		judge;
-
+	bool		bIsFake;
 
 	// used only if Type == attack:
 	RString		sAttackModifiers;

@@ -54,6 +54,45 @@ enum InstrumentTrack
 const RString& InstrumentTrackToString( InstrumentTrack it );
 InstrumentTrack StringToInstrumentTrack( const RString& s );
 
+/**------------------------------------------------------------------------------------------------------------------*/
+/**------------------------------------------------------------------------------------------------------------------*/
+/** @brief Indica que tipo de cancion es, para poder diferenciar cuantos corazones tomar */
+/** xMAx */
+enum SongType
+{
+	SONGTYPE_ARCADE,	// 2 hearts
+	SONGTYPE_SHORTCUT,	// 1 hearts
+	SONGTYPE_REMIX,		// 3 hearts
+	SONGTYPE_FULLSONG,	// 4 hearts
+	SONGTYPE_MUSICTRAIN,	// All hearts
+	SONGTYPE_SPECIAL,
+	NUM_SongType,
+	SongType_Invalid
+};
+const RString &SongTypeToString( SongType st );
+const RString &SongTypeToLozalizedString( SongType st );
+SongType StringToSongType( const RString &s );
+LuaDeclareType( SongType );
+// TODO: Faltan las funciones de Get y Set - utiles para MusicWHeel.cpp
+/** @brief Indica la categoria de la cancion */
+enum SongCategory
+{
+	SONGCATEGORY_NEWTUNES, // CHANGE TO ALL TUNES IN FUTURE? (Phyrebird Theme)
+	SONGCATEGORY_ORIGINAL,
+	SONGCATEGORY_KPOP,
+	SONGCATEGORY_WORLDMUSIC,
+	SONGCATEGORY_JMUSIC,
+	SONGCATEGORY_USE_GENRE,
+	NUM_SongCategory,
+	SongCategory_Invalid
+};
+const RString &SongCategoryToString( SongCategory st );
+const RString &SongCategoryToLocalizedString( SongCategory st );
+SongCategory StringToSongCategory( const RString &s );
+LuaDeclareType( SongCategory );
+// TODO: Faltan las funciones de Get y Set - utiles para MusicWHeel.cpp
+/**------------------------------------------------------------------------------------------------------------------*/
+/**------------------------------------------------------------------------------------------------------------------*/
 /** @brief The collection of lyrics for the Song. */
 struct LyricSegment
 {
@@ -87,7 +126,7 @@ public:
 	 *
 	 * This assumes that there is no song present right now.
 	 * @param sDir the song directory from which to load. */
-	bool LoadFromSongDir( RString sDir );
+	bool LoadFromSongDir( RString sDir, bool bForceNoCache = false );	// xMAx - added bForceNoCache
 	// This one takes the effort to reuse Steps pointers as best as it can
 	bool ReloadFromSongDir( RString sDir );
 
@@ -290,6 +329,8 @@ public:
 	float GetFirstSecond() const;
 	float GetLastBeat() const;
 	float GetLastSecond() const;
+	RString GetGroupName() const;
+
 	float GetSpecifiedLastBeat() const;
 	float GetSpecifiedLastSecond() const;
 
@@ -300,14 +341,14 @@ public:
 	typedef vector<BackgroundChange> 	VBackgroundChange;
 
 	// xMAx -----------------------------------------------------------------------------------
-
-
+	SongType	m_SongType;
+	SongCategory	m_SongCategory;
 	int		m_iVolume;
 
-
-
-
-	bool		m_bCanBeEdit;
+	/** @brief El nombre de la carpeta que contiene a esta cancion */ 
+	RString m_sSongFolder;
+	RString GetSongFolder() const;
+	bool	m_bCanBeEdit;
 
 private:
 	/** @brief The first second that a note is hit. */
@@ -455,7 +496,7 @@ public:
 
 	// xMAx ---------------------------------------------------------------------
 	// Para separar BPMChanges de Los Stops
-
+	bool HasSignificantBpmChanges() const;
 	DisplayBPM GetDisplayBPM () const { return this->m_DisplayBPMType; };
 
 private:

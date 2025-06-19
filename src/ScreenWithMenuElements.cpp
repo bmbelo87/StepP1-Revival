@@ -9,7 +9,6 @@
 #include "GameSoundManager.h"
 #include "MemoryCardDisplay.h"
 #include "InputEventPlus.h"
-#include "arch/Dialog/Dialog.h" // wow I import this for JUST ONE THING. -aj
 
 #define TIMER_STEALTH				THEME->GetMetricB(m_sName,"TimerStealth")
 #define SHOW_STAGE_DISPLAY			THEME->GetMetricB(m_sName,"ShowStageDisplay")
@@ -194,17 +193,15 @@ void ScreenWithMenuElements::StartPlayingMusic()
 		 */
 		if( ft == FT_Lua )
 		{
-			RString sScript;
-			RString sError;
-			if( GetFileContents(m_sPathToMusic, sScript) )
+			RString Script;
+			RString Error;
+			if( GetFileContents(m_sPathToMusic, Script) )
 			{
 				Lua *L = LUA->Get();
 
-				if( !LuaHelpers::RunScript(L, sScript, "@"+m_sPathToMusic, sError, 0, 1) )
+				if( !LuaHelpers::RunScript(L, Script, "@"+m_sPathToMusic, Error, 0, 1) )
 				{
 					LUA->Release( L );
-					sError = ssprintf( "Lua runtime error: %s", sError.c_str() );
-					Dialog::OK( sError, "LUA_ERROR" );
 					return;
 				}
 				else
@@ -376,20 +373,29 @@ bool ScreenWithMenuElementsSimple::MenuBack( const InputEventPlus &input )
 class LunaScreenWithMenuElements: public Luna<ScreenWithMenuElements>
 {
 public:
-	static int Cancel( T* p, lua_State *L )		{ p->Cancel( SM_GoToPrevScreen ); return 0; }
+	static int Cancel( T* p, lua_State *L )		{ p->Cancel( SM_GoToPrevScreen ); COMMON_RETURN_SELF; }
 	static int IsTransitioning( T* p, lua_State *L ) { lua_pushboolean( L, p->IsTransitioning() ); return 1; }
 	static int SetAllowLateJoin( T* p, lua_State *L )
 	{
 		p->m_bShouldAllowLateJoin= BArg(1);
-		return 0;
+		COMMON_RETURN_SELF;
 	}
 
+	static int StartTransitioningScreen( T* p, lua_State *L )
+	{
+		RString sMessage = SArg(1);
+		ScreenMessage SM = ScreenMessageHelpers::ToScreenMessage( sMessage );
+		p->StartTransitioningScreen( SM );
+		COMMON_RETURN_SELF;
+	}
 
 	LunaScreenWithMenuElements()
 	{
 		ADD_METHOD( Cancel );
 		ADD_METHOD( IsTransitioning );
 		ADD_METHOD( SetAllowLateJoin );
+		ADD_METHOD( StartTransitioningScreen );
+
 	}
 };
 

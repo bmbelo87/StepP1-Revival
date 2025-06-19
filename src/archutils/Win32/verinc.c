@@ -61,6 +61,7 @@ int main(void)
 	if ( f = fopen("verstub.cpp","w") )
 	{
 		fprintf(f,
+			"#include \"ver.h\"\n"
 			"unsigned long version_num = %ld;\n"
 			"extern const char *const version_date = \"%s\";\n"
 			"extern const char *const version_time = \"%s\";\n",

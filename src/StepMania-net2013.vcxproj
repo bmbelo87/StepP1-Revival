@@ -1892,6 +1892,7 @@ cl /Zl /nologo /c verstub.cpp /Fo"$(IntDir)"</Command>
     <ClInclude Include="ScoreKeeperShared.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="MsdFile.h" />
+    <ClInclude Include="ver.h" />
     <ClInclude Include="XmlFile.h" />
     <ClInclude Include="XmlFileUtil.h" />
     <ClInclude Include="GameLoop.h" />

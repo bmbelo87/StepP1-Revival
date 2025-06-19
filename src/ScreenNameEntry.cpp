@@ -252,7 +252,7 @@ void ScreenNameEntry::Init()
 		{
 			LockNoteSkin l( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.GetCurrent().m_sNoteSkin );
 
-			m_ReceptorArrowRow[p].Load( GAMESTATE->m_pPlayerState[p], 0 );
+			m_ReceptorArrowRow[p].Load( GAMESTATE->m_pPlayerState[p] );
 			m_ReceptorArrowRow[p].SetX( fPlayerX );
 			m_ReceptorArrowRow[p].SetY( GRAY_ARROWS_Y );
 			this->AddChild( &m_ReceptorArrowRow[p] );

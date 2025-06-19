@@ -39,6 +39,7 @@
 #include "ThemeManager.h"
 #include "NoteSkinManager.h"
 #include "PrefsManager.h"
+#include "Song.h"
 #include "SongManager.h"
 #include "CharacterManager.h"
 #include "GameState.h"
@@ -67,6 +68,11 @@
 #include "GameLoop.h"
 #include "SpecialFiles.h"
 #include "Profile.h"
+#include "ActorUtil.h"
+
+#ifdef HAVE_VERSION_INFO
+#include "ver.h"
+#endif
 
 #if defined(WIN32)
 #include <windows.h>
@@ -87,6 +93,9 @@ void StepMania::GetPreferredVideoModeParams( VideoModeParams &paramsOut )
 		//float fRatio = PREFSMAN->m_iDisplayHeight;
 		//iWidth = PREFSMAN->m_iDisplayHeight * fRatio;
 		iWidth = static_cast<int>(ceilf(PREFSMAN->m_iDisplayHeight * PREFSMAN->m_fDisplayAspectRatio));
+		// ceilf causes the width to come out odd when it shoundn't.
+		// 756 * 1.7778 = 1024.0128, which is rounded to 1025. -Kyz
+		iWidth -= iWidth % 2;
 	}
 
 	paramsOut = VideoModeParams(
@@ -480,7 +489,7 @@ struct VideoCardDefaults
 	),
 	VideoCardDefaults(
 		"GeForce|Radeon|Wonder 9|Quadro",
-		"d3d,opengl",
+		"d3d,opengl",	// changed just for 'freezed screen' when we access the Graphics menu - bSilver
 		640,480,
 		32,32,32,	// 32 bit textures are faster to load
 		2048,
@@ -886,23 +895,13 @@ static void MountTreeOfZips( const RString &dir )
 	}
 }
 
-#if defined(HAVE_VERSION_INFO)
-extern unsigned long version_num;
-extern const char *const version_date;
-extern const char *const version_time;
-#endif
-
 static void WriteLogHeader()
 {
-	LOG->Info( PRODUCT_ID_VER );
+	LOG->Info("%s%s", PRODUCT_FAMILY, product_version);
 
 #if defined(HAVE_VERSION_INFO)
 	LOG->Info( "Compiled %s @ %s (build %lu)", version_date, version_time, version_num );
 #endif
-
-	// this code should only be enabled in distributed builds
-	//LOG->Info("sm-ssc is Copyright �2009 the spinal shark collective, all rights reserved. Commercial use of this binary is prohibited by law and will be prosecuted to the fullest extent of the law.");
-	// end limited code
 
 	time_t cur_time;
 	time(&cur_time);
@@ -953,6 +952,10 @@ int main(int argc, char* argv[])
 	HOOKS->Init();
 
 	LUA		= new LuaManager;
+
+	// Initialize the file extension type lists so everything can ask ActorUtil
+	// what the type of a file is.
+	ActorUtil::InitFileTypeLists();
 
 	// Almost everything uses this to read and write files.  Load this early.
 	FILEMAN = new RageFileManager( argv[0] );

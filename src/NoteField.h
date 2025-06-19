@@ -26,7 +26,8 @@ public:
 	virtual void Load( 
 		const NoteData* pNoteData, 
 		int iDrawDistanceAfterTargetsPixels, 
-		int iDrawDistanceBeforeTargetsPixels, bool bIsDoublePerformance );
+		int iDrawDistanceBeforeTargetsPixels,
+		bool bIsDoublePerformance );
 	virtual void Unload();
 
 	virtual void HandleMessage( const Message &msg );
@@ -41,11 +42,10 @@ public:
 	void DidTapNote( int iCol, TapNoteScore score, bool bBright );
 	void DidHoldNote( int iCol, HoldNoteScore score, bool bBright );
 
-
 	const PlayerState *GetPlayerState() const { return m_pPlayerState; }
 
 	int	m_iBeginMarker, m_iEndMarker;	// only used with MODE_EDIT
-	void UpdateHoldBody( TapNote *tn );
+	void UpdateHoldBody(TapNote *tn);
 
 protected:
 	void CacheNoteSkin( const RString &sNoteSkin );
@@ -96,7 +96,9 @@ protected:
 	/* All loaded note displays, mapped by their name. */
 	map<RString, NoteDisplayCols *> m_NoteDisplays;
 	NoteDisplayCols		*m_pCurDisplay;
-	NoteDisplayCols		*m_pDisplays[NUM_PlayerNumber];
+	//NoteDisplayCols		*m_pDisplays[NUM_PlayerNumber];
+	NoteDisplayCols *m_pDisplays[4]; //xMAx
+	BitmapText	m_textNoteTypeWord;
 
 	// decorations, mostly used in MODE_EDIT
 	AutoActor	m_sprBoard;
@@ -110,8 +112,21 @@ protected:
 	Quad		m_rectAreaHighlight;
 
 	// xMAx
-
+	vector<RString> asSkinNames;
 	bool m_bUseRandomSkin;
+	bool m_bIsRoutine;
+	NoteDisplayCols *m_pReceptorDisplay;
+
+	// xMAx -----------
+	struct NoteDrawData
+	{
+		float fYPos;
+		float fAlpha;
+		//NoteDrawData(float ypos, float alpha) { fYPos = ypos; fAlpha = alpha; }
+	};
+
+	map<int, NoteDrawData> m_NoteDrawData;
+
 };
 
 #endif

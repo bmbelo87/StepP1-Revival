@@ -18,18 +18,19 @@ static void SuperMeterPercentChangeInit( size_t /*ScoreEvent*/ i, RString &sName
 	sNameOut = "SuperMeterPercentChange" + ScoreEventToString( ci );
 	switch(ci)
 	{
-	case SE_CheckpointHit:	defaultValueOut = +0.05f; break;
-	case SE_W1:				defaultValueOut = +0.05f; break;
-	case SE_W2:				defaultValueOut = +0.04f; break;
-	case SE_W3:				defaultValueOut = +0.02f; break;
-	case SE_W4:				defaultValueOut = +0.00f; break;
-	case SE_W5:				defaultValueOut = +0.00f; break;
-	case SE_Miss:			defaultValueOut = -0.20f; break;
-	case SE_HitMine:		defaultValueOut = -0.40f; break;
-	case SE_CheckpointMiss:	defaultValueOut = -0.20f; break;
-	case SE_Held:			defaultValueOut = +0.04f; break;
-	case SE_Missed:			defaultValueOut = -0.20f; break;
-	DEFAULT_FAIL(ci);
+		case SE_CheckpointHit:	defaultValueOut = +0.05f; break;
+		case SE_W1:				defaultValueOut = +0.05f; break;
+		case SE_W2:				defaultValueOut = +0.04f; break;
+		case SE_W3:				defaultValueOut = +0.02f; break;
+		case SE_W4:				defaultValueOut = +0.00f; break;
+		case SE_W5:				defaultValueOut = +0.00f; break;
+		case SE_Miss:			defaultValueOut = -0.20f; break;
+		case SE_HitMine:		defaultValueOut = -0.40f; break;
+		case SE_CheckpointMiss:	defaultValueOut = -0.20f; break;
+		case SE_Held:			defaultValueOut = +0.04f; break;
+		case SE_LetGo:			defaultValueOut = -0.20f; break;
+		case SE_Missed:			defaultValueOut = -0.00f; break;
+			DEFAULT_FAIL(ci);
 	}
 }
 
@@ -94,6 +95,7 @@ void ScoreKeeperRave::HandleHoldScore( const TapNote &tn )
 	switch( holdScore )
 	{
 		case HNS_Held: fPercentToMove = g_fSuperMeterPercentChange[SE_Held]; break;
+		case HNS_LetGo: fPercentToMove = g_fSuperMeterPercentChange[SE_LetGo]; break;
 		case HNS_Missed: fPercentToMove = g_fSuperMeterPercentChange[SE_Missed]; break;
 		default: break;
 	}
@@ -114,10 +116,10 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		float fLifePercentage = 0;
 		switch( m_pPlayerState->m_PlayerNumber )
 		{
-		case PLAYER_1:	fLifePercentage = GAMESTATE->m_fTugLifePercentP1;		break;
-		case PLAYER_2:	fLifePercentage = 1 - GAMESTATE->m_fTugLifePercentP1;	break;
-		default:
-			FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
+			case PLAYER_1:	fLifePercentage = GAMESTATE->m_fTugLifePercentP1;		break;
+			case PLAYER_2:	fLifePercentage = 1 - GAMESTATE->m_fTugLifePercentP1;	break;
+			default:
+				FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
 		}
 		CLAMP( fLifePercentage, 0.f, 1.f );
 		if( fUnscaledPercentChange > 0 )
@@ -151,11 +153,11 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		bool bWinning;
 		switch( m_pPlayerState->m_PlayerNumber )
 		{
-		case PLAYER_1:	bWinning = GAMESTATE->m_fTugLifePercentP1 > 0.5f;	break;
-		case PLAYER_2:	bWinning = GAMESTATE->m_fTugLifePercentP1 < 0.5f;	break;
-		default:
-			bWinning = false;
-			FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
+			case PLAYER_1:	bWinning = GAMESTATE->m_fTugLifePercentP1 > 0.5f;	break;
+			case PLAYER_2:	bWinning = GAMESTATE->m_fTugLifePercentP1 < 0.5f;	break;
+			default:
+				bWinning = false;
+				FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
 		}
 		if( !bWinning )
 			m_pPlayerState->EndActiveAttacks();
@@ -169,7 +171,7 @@ void ScoreKeeperRave::LaunchAttack( AttackLevel al )
 	RString* asAttacks = GAMESTATE->m_pCurCharacters[pn]->m_sAttacks[al];	// [NUM_ATTACKS_PER_LEVEL]
 	RString sAttackToGive;
 
-	if (GAMESTATE->m_pCurCharacters[pn] != NULL)		
+	if (GAMESTATE->m_pCurCharacters[pn] != nullptr)		
 		sAttackToGive = asAttacks[ RandomInt(NUM_ATTACKS_PER_LEVEL) ];
 	else
 	{
@@ -193,30 +195,30 @@ void ScoreKeeperRave::LaunchAttack( AttackLevel al )
 	// apply new attack
 	pPlayerStateToAttack->LaunchAttack( a );
 
-//	SCREENMAN->SystemMessage( ssprintf( "attacking %d with %s", pnToAttack, sAttackToGive.c_str() ) );
+	//	SCREENMAN->SystemMessage( ssprintf( "attacking %d with %s", pnToAttack, sAttackToGive.c_str() ) );
 }
 
 /*
- * (c) 2001-2004 Chris Danford
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2004 Chris Danford
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

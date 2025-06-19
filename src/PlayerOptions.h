@@ -35,7 +35,7 @@ public:
 		m_fSkew(0), m_SpeedfSkew(1.0f),
 		m_fPassmark(0), m_SpeedfPassmark(1.0f),
 		m_fRandomSpeed(0), m_SpeedfRandomSpeed(1.0f),
-		m_bMuteOnError(false), m_FailType(FAIL_IMMEDIATE),
+		m_bMuteOnError(false), m_FailType(FailType_Immediate),
 		m_bNX(false), m_bJudgmentReverse(false)
 	{
 		m_sNoteSkin = "";
@@ -198,13 +198,7 @@ public:
 	bool		m_bTurns[NUM_TURNS];
 	bool		m_bTransforms[NUM_TRANSFORMS];
 	bool		m_bMuteOnError;
-	/** @brief How can the Player fail a song? */
-	enum FailType {
-		FAIL_IMMEDIATE=0,		/**< fail immediately when life touches 0 */
-		FAIL_IMMEDIATE_CONTINUE,	/**< Same as above, but allow playing the rest of the song */
-		FAIL_AT_END,			/**< fail if life is at 0 when the song ends */
-		FAIL_OFF			/**< never fail */
-	};
+
 	/** @brief The method for which a player can fail a song. */
 	FailType m_FailType;
 
@@ -243,6 +237,10 @@ public:
 	Judgment	m_iJudgment;
 	bool		m_bFreePerformance;
 	bool		m_bJudgmentReverse;
+	bool		m_bEW;
+	bool		m_bAutoNoteskin;
+	bool		m_bRouletteNoteskin;
+	bool		m_bRandomSkin;
 };
 
 #endif

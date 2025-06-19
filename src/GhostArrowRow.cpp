@@ -10,10 +10,9 @@
 #include "Style.h"
 #include "ActorUtil.h"
 
-void GhostArrowRow::Load( const PlayerState* pPlayerState, float fYReverseOffset )
+void GhostArrowRow::Load( const PlayerState* pPlayerState )
 {
 	m_pPlayerState = pPlayerState;
-	m_fYReverseOffsetPixels = fYReverseOffset;
 
 	const Style* pStyle = GAMESTATE->GetCurrentStyle();
 	const PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
@@ -49,8 +48,8 @@ void GhostArrowRow::Update( float fDeltaTime )
 		m_Ghost[c]->Update( fDeltaTime );
 
 		float fX = ArrowEffects::GetXPos( m_pPlayerState, c, 0 );
-		float fY = ArrowEffects::GetYPos( m_pPlayerState, c, 0, m_fYReverseOffsetPixels );
-		float fZ = ArrowEffects::GetZPos( m_pPlayerState, c, 0 );
+		float fY = ArrowEffects::GetYPos( c, 0 );
+		float fZ = ArrowEffects::GetZPos( c, 0 );
 
 		m_Ghost[c]->SetX( fX );
 		m_Ghost[c]->SetY( fY );

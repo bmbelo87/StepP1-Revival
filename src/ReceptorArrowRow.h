@@ -15,7 +15,7 @@ public:
 	virtual void Update( float fDeltaTime );
 	virtual void DrawPrimitives();
 
-	void Load( const PlayerState* pPlayerState, float fYReverseOffset );
+	void Load( const PlayerState* pPlayerState );
 
 	void Step( int iCol, TapNoteScore score );
 	void SetPressed( int iCol );

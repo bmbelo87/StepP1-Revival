@@ -14,7 +14,7 @@ enum NotePart
 	NotePart_Tap, /**< The part representing a traditional TapNote. */
 	NotePart_Mine, /**< The part representing a mine. */
 	NotePart_Lift, /**< The part representing a lift note. */
-	NotePart_Fake, /**< The part representing a fake note. */
+	//NotePart_Fake, /**< The part representing a fake note. */
 	NotePart_HoldHead, /**< The part representing a hold head. */
 	NotePart_HoldTail, /**< The part representing a hold tail. */
 	NotePart_HoldTopCap, /**< The part representing a hold's top cap. */
@@ -48,7 +48,10 @@ private:
 /** @brief What types of holds are there? */
 enum HoldType 
 {
-	hold, /**< Merely keep your foot held on the body for it to count. */
+	hold = 0, /**< Merely keep your foot held on the body for it to count. */
+	/*hold_p1,
+	hold_p2,
+	hold_p3,*/
 	roll, /**< Keep hitting the hold body for it to stay alive. */
 	// minefield,
 	NUM_HoldType,
@@ -76,7 +79,8 @@ public:
 	NoteDisplay();
 	~NoteDisplay();
 
-	void Load( int iColNum, const PlayerState* pPlayerState, float fYReverseOffsetPixels );
+	//void Load( int iColNum, const PlayerState* pPlayerState, float fYReverseOffsetPixels );
+	void Load( int iColNum, const PlayerState* pPlayerState );
 
 	static void Update( float fDeltaTime );
 
@@ -99,10 +103,14 @@ public:
 		     float fReverseOffsetPixels,
 		     float fDrawDistanceAfterTargetsPixels,
 		     float fDrawDistanceBeforeTargetsPixels,
-		     float fFadeInPercentOfDrawFar );
-	void DrawHold( const TapNote& tn, int iCol, int iRow, bool bIsBeingHeld, const HoldNoteResult &Result, 
-		bool bIsAddition, float fPercentFadeToFail, float fReverseOffsetPixels, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, 
-		float fDrawDistanceBeforeTargetsPixels2, float fFadeInPercentOfDrawFar );
+		     float fFadeInPercentOfDrawFar,
+		     float fCenterLine,
+		     float fYOffset = -1); //xMAx - added
+
+	void DrawHold( const TapNote &tn, int iCol, int iRow, bool bIsBeingHeld, const HoldNoteResult &Result,
+		       bool bIsAddition, float fPercentFadeToFail, float fReverseOffsetPixels, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels,
+		       //float fDrawDistanceBeforeTargetsPixels2, float fFadeInPercentOfDrawFar ); //xMAx
+		       float fDrawDistanceBeforeTargetsPixels2, float fFadeInPercentOfDrawFar, float fStartYOffset, float fEndYOffset, bool bStartIsPastPeak, bool bEndIsPastPeak, float fCenterLine ); //xMAx
 	
 	bool DrawHoldHeadForTapsOnSameRow() const;
 	
@@ -111,17 +119,23 @@ public:
 private:
 	void SetActiveFrame( float fNoteBeat, Actor &actorToSet, float fAnimationLength, bool bVivid );
 	Actor *GetTapActor( NoteColorActor &nca, NotePart part, float fNoteBeat );
-	Actor *GetHoldActor( NoteColorActor nca[NUM_HoldType][NUM_ActiveType], NotePart part, float fNoteBeat, bool bIsRoll, bool bIsBeingHeld );
-	Sprite *GetHoldSprite( NoteColorSprite ncs[NUM_HoldType][NUM_ActiveType], NotePart part, float fNoteBeat, bool bIsRoll, bool bIsBeingHeld );
+	// Nota: No se utilizan mas los player noteskins de esta forma - xMAx
+	Actor *GetHoldActor( NoteColorActor nca[NUM_HoldType][NUM_ActiveType], NotePart part, float fNoteBeat, bool bIsRoll, bool bIsBeingHeld );	// xMAx
+	//Actor *GetHoldActor( NoteColorActor nca[NUM_HoldType][NUM_ActiveType], NotePart part, float fNoteBeat, bool bIsRoll, bool bIsBeingHeld, int htype = 0 );
+	Sprite *GetHoldSprite( NoteColorSprite ncs[NUM_HoldType][NUM_ActiveType], NotePart part, float fNoteBeat, bool bIsRoll, bool bIsBeingHeld );	// xMAx
+	//Sprite *GetHoldSprite( NoteColorSprite ncs[NUM_HoldType][NUM_ActiveType], NotePart part, float fNoteBeat, bool bIsRoll, bool bIsBeingHeld, int htype = 0 );	
 
 	void DrawActor( const TapNote& tn, Actor* pActor, NotePart part, int iCol, float fYOffset, float fBeat, bool bIsAddition, float fPercentFadeToFail,
-			float fReverseOffsetPixels, float fColorScale, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar );
+			float fReverseOffsetPixels, float fColorScale, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fCenterLine );
 	void DrawHoldBody( const TapNote& tn, int iCol, float fBeat, bool bIsBeingHeld, float fYHead, float fYTail, bool bIsAddition, float fPercentFadeToFail, 
 			   float fColorScale, 
-			   bool bGlow, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar );
+			   bool bGlow, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fCenterLine );
 	void DrawHoldPart( vector<Sprite*> &vpSpr, int iCol, int fYStep, float fPercentFadeToFail, float fColorScale, bool bGlow,
 			   float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fOverlappedTime,
-			   float fYTop, float fYBottom, float fYStartPos, float fYEndPos, bool bWrapping, bool bAnchorToTop, bool bFlipTextureVertically );
+			   float fYTop, float fYBottom,
+			   float fYStartPos, float fYEndPos,
+			   bool bWrapping, bool bAnchorToTop, bool bFlipTextureVertically, bool bIsHidden, float fYHoldHead,
+			   float fCenterLine, bool bForceSudden, bool bForceVanish );	// xMAx added bIsHidden & fYHoldHead & Force conditions
 
 	const PlayerState	*m_pPlayerState;	// to look up PlayerOptions
 	NoteMetricCache_t	*cache;
@@ -129,7 +143,12 @@ private:
 	NoteColorActor		m_TapNote;
 	NoteColorActor		m_TapMine;
 	NoteColorActor		m_TapLift;
-	NoteColorActor		m_TapFake;
+	//NoteColorActor		m_TapFake;
+	/* New TapNotes - xMAx */
+	NoteColorActor		m_TapNoteP1;
+	NoteColorActor		m_TapNoteP2;
+	NoteColorActor		m_TapNoteP3;
+	/*----*/
 	NoteColorActor		m_HoldHead[NUM_HoldType][NUM_ActiveType];
 	NoteColorSprite		m_HoldTopCap[NUM_HoldType][NUM_ActiveType];
 	NoteColorSprite		m_HoldBody[NUM_HoldType][NUM_ActiveType];

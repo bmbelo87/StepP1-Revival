@@ -250,8 +250,9 @@ LuaDeclareType( TapNoteScore );
 enum HoldNoteScore 
 { 
 	HNS_None,		/**< The HoldNote was not scored yet. */
-	HNS_Missed,		/**< The HoldNote has passed, but the player missed it. */
+	HNS_LetGo,		/**< The HoldNote has passed, but the player missed it. */
 	HNS_Held,		/**< The HoldNote has passed, and was successfully held all the way. */
+	HNS_Missed,		/**< The HoldNote has passed, and was never initialized. */
 	NUM_HoldNoteScore,	/**< The number of hold note scores. */
 	HoldNoteScore_Invalid,
 };
@@ -287,6 +288,7 @@ enum TimingWindow
 	TW_Attack,
 	TW_Hold,
 	TW_Roll,
+	TW_Checkpoint,
 	NUM_TimingWindow
 };
 const RString& TimingWindowToString( TimingWindow tw );
@@ -304,6 +306,7 @@ enum ScoreEvent
 	SE_HitMine,
 	SE_CheckpointMiss,
 	SE_Held,
+	SE_LetGo,
 	SE_Missed,
 	NUM_ScoreEvent
 };
@@ -313,8 +316,7 @@ const RString& ScoreEventToString( ScoreEvent se );
 enum GameButtonType
 {
 	GameButtonType_Step,
-	GameButtonType_Menu,
-	GameButtonType_INVALID
+	GameButtonType_Menu
 };
 
 /** @brief The list of judge types for the tap note scores. */
@@ -686,6 +688,20 @@ const RString& CourseTypeToString( CourseType i );
 const RString& CourseTypeToLocalizedString( CourseType i );
 LuaDeclareType( CourseType );
 
+/** @brief How can the Player fail a song? */
+enum FailType
+{
+	FailType_Immediate,		/**< fail immediately when life touches 0 */
+	FailType_ImmediateContinue,	/**< Same as above, but allow playing the rest of the song */
+	FailType_EndOfSong,			/**< fail if life is at 0 when the song ends */
+	FailType_Off,			/**< never fail */
+	NUM_FailType,
+	FailType_Invalid
+};
+
+const RString& FailTypeToString( FailType cat );
+const RString& FailTypeToLocalizedString( FailType cat );
+LuaDeclareType( FailType );
 
 #endif
 

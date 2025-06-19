@@ -31,7 +31,8 @@ static const float g_fTimeMeterSecondsChangeInit[] =
 	-2.0f, // SE_HitMine
 	-0.0f, // SE_CheckpointMiss
 	-0.0f, // SE_Held
-	-4.0f, // SE_Missed
+	-4.0f, // SE_LetGo
+	-0.0f, // SE_Missed
 };
 COMPILE_ASSERT( ARRAYLEN(g_fTimeMeterSecondsChangeInit) == NUM_ScoreEvent );
 

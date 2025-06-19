@@ -9,6 +9,11 @@
 
 struct Game;
 struct NoteSkinData;
+struct NoteSkinInfo
+{
+	RString m_name;
+	RString m_path;
+};
 
 /** @brief Loads note skins. */
 class NoteSkinManager
@@ -25,7 +30,8 @@ public:
 
 	void SetCurrentNoteSkin( const RString &sNoteSkin ) { m_sCurrentNoteSkin = sNoteSkin; }
 	const RString &GetCurrentNoteSkin() { return m_sCurrentNoteSkin; }
-	void SetPlayerNumber( PlayerNumber pn ) { m_PlayerNumber = pn; }
+
+	void SetPlayerNumber( PlayerNumber pn ) { m_PlayerNumber = pn; }
 	void SetGameController( GameController gc ) { m_GameController = gc; }
 	RString GetPath( const RString &sButtonName, const RString &sElement );
 	bool PushActorTemplate( Lua *L, const RString &sButton, const RString &sElement, bool bSpriteOnly );
@@ -40,6 +46,9 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 
+	vector<NoteSkinInfo>	m_vNoteSkinsInfo;
+
+
 protected:
 	RString GetPathFromDirAndFile( const RString &sDir, const RString &sFileName );
 	void GetAllNoteSkinNamesForGame( const Game *pGame, vector<RString> &AddTo );
@@ -52,6 +61,7 @@ protected:
 	// xxx: is this the best way to implement this? -freem
 	PlayerNumber m_PlayerNumber;
 	GameController m_GameController;
+
 };
 
 extern NoteSkinManager*	NOTESKIN;	// global and accessible from anywhere in our program

@@ -148,18 +148,18 @@ void AdjustSync::HandleAutosync( float fNoteOffBySeconds, float fStepTime )
 {
 	if( GAMESTATE->IsCourseMode() )
 		return;
-	SongOptions::AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
+	AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
 	switch( type ) {
-	case SongOptions::AUTOSYNC_OFF:
+	case AutosyncType_Off:
 		return;
-	case SongOptions::AUTOSYNC_TEMPO:
+	case AutosyncType_Tempo:
 	{
 		// We collect all of the data and process it at the end
 		s_vAutosyncTempoData.push_back( make_pair(fStepTime, fNoteOffBySeconds) );
 		break;
 	}
-	case SongOptions::AUTOSYNC_MACHINE:
-	case SongOptions::AUTOSYNC_SONG:
+	case AutosyncType_Machine:
+	case AutosyncType_Song:
 	{
 		s_fAutosyncOffset[s_iAutosyncOffsetSample] = fNoteOffBySeconds;
 		++s_iAutosyncOffsetSample;
@@ -179,7 +179,7 @@ void AdjustSync::HandleSongEnd()
 {
 	if( GAMESTATE->IsCourseMode() )
 		return;
-	if( GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType == SongOptions::AUTOSYNC_TEMPO )
+	if( GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType == AutosyncType_Tempo )
 	{
 		AutosyncTempo();
 	}
@@ -193,14 +193,14 @@ void AdjustSync::AutosyncOffset()
 	const float stddev = calc_stddev( s_fAutosyncOffset, s_fAutosyncOffset+OFFSET_SAMPLE_COUNT );
 
 	RString sAutosyncType;
-	SongOptions::AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
+	AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
 	switch( type )
 	{
-	case SongOptions::AUTOSYNC_SONG:
-		sAutosyncType = AUTOSYNC_SONG;
+	case AutosyncType_Song:
+		sAutosyncType = AutosyncType_Song;
 		break;
-	case SongOptions::AUTOSYNC_MACHINE:
-		sAutosyncType = AUTOSYNC_MACHINE;
+	case AutosyncType_Machine:
+		sAutosyncType = AutosyncType_Machine;
 		break;
 	default:
 		FAIL_M(ssprintf("Invalid autosync type: %i", type));
@@ -210,7 +210,7 @@ void AdjustSync::AutosyncOffset()
 	{
 		switch( type )
 		{
-			case SongOptions::AUTOSYNC_SONG:
+			case AutosyncType_Song:
 			{
 				GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += mean;
 				const vector<Steps *>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
@@ -224,7 +224,7 @@ void AdjustSync::AutosyncOffset()
 				}
 				break;
 			}
-			case SongOptions::AUTOSYNC_MACHINE:
+			case AutosyncType_Machine:
 				// Step timing is not needed for this operation.
 				PREFSMAN->m_fGlobalOffsetSeconds.Set( PREFSMAN->m_fGlobalOffsetSeconds + mean );
 				break;

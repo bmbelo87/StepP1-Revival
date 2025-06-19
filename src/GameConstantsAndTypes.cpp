@@ -233,21 +233,23 @@ LuaFunction( TapNoteScoreToLocalizedString, TapNoteScoreToLocalizedString(Enum::
 
 static const char *HoldNoteScoreNames[] = {
 	"None",
-	"Missed",
+	"LetGo",
 	"Held",
+	"MissedHold",
 };
 XToString( HoldNoteScore );
 LuaXType( HoldNoteScore );
 HoldNoteScore StringToHoldNoteScore( const RString &s )
 {
 	// for backward compatibility
-	if     ( s == "NG" )	return HNS_Missed;
+	if( s == "NG" )	return HNS_LetGo;
 	else if( s == "OK" )	return HNS_Held;
 
 	// new style
 	else if( s == "None" )	return HNS_None;
-	else if( s == "Missed" )return HNS_Missed;
+	else if( s == "LetGo" )	return HNS_LetGo;
 	else if( s == "Held" )	return HNS_Held;
+	else if( s == "MissedHold" ) return HNS_Missed;
 
 	return HoldNoteScore_Invalid;
 }
@@ -263,6 +265,7 @@ static const char *TimingWindowNames[] = {
 	"Attack",
 	"Hold",
 	"Roll",
+	"Checkpoint",
 };
 XToString( TimingWindow );
 
@@ -278,6 +281,7 @@ static const char *ScoreEventNames[] = {
 	"CheckpointMiss",
 	"Held",
 	"LetGo",
+	"MissedHold",
 };
 XToString( ScoreEvent );
 

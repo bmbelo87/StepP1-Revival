@@ -330,6 +330,8 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 
+	bool				bAllowBossPower;
+
 protected:
 	void ReadPrefsFromFile( const RString &sIni, const RString &sSection, bool bIsStatic );
 	void ReadDefaultsFromFile( const RString &sIni, const RString &sSection );

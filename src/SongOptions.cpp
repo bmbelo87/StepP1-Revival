@@ -13,10 +13,38 @@ XToString( LifeType );
 XToLocalizedString( LifeType );
 LuaXType( LifeType );
 
+static const char *DrainTypeNames [] = {
+	"Normal",
+	"NoRecover",
+	"SuddenDeath",
+};
+XToString( DrainType );
+XToLocalizedString( DrainType );
+LuaXType( DrainType );
+
+static const char *AutosyncTypeNames [] = {
+	"Off",
+	"Song",
+	"Machine",
+	"Tempo",
+};
+XToString( AutosyncType );
+XToLocalizedString( AutosyncType );
+LuaXType( AutosyncType );
+
+static const char *SoundEffectTypeNames [] = {
+	"Off",
+	"Speed",
+	"Pitch",
+};
+XToString( SoundEffectType );
+XToLocalizedString( SoundEffectType );
+LuaXType( SoundEffectType );
+
 void SongOptions::Init() 
 {
 	m_LifeType = LifeType_Bar;
-	m_DrainType = DRAIN_NORMAL;
+	m_DrainType = DrainType_Normal;
 	m_iBatteryLives = 4;
 	m_bAssistClap = false;
 	m_bAssistMetronome = false;
@@ -24,8 +52,8 @@ void SongOptions::Init()
 	m_SpeedfMusicRate = 1.0f;
 	m_fHaste = 0.0f;
 	m_SpeedfHaste = 1.0f;
-	m_AutosyncType = AUTOSYNC_OFF;
-	m_SoundEffectType = SOUNDEFFECT_OFF;
+	m_AutosyncType = AutosyncType_Off;
+	m_SoundEffectType = SoundEffectType_Off;
 	m_bStaticBackground = false;
 	m_bRandomBGOnly = false;
 	m_bSaveScore = true;
@@ -33,6 +61,10 @@ void SongOptions::Init()
 
 	// xMAx
 	m_bUseBGAOff = false;
+	m_bUseBGADark = false;
+	m_bShowSingles = true;
+	m_bShowHalfDoubles = true;
+	m_bShowDoubles = true;
 }
 
 void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
@@ -56,6 +88,10 @@ void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
 	DO_COPY( m_bSaveScore );
 	DO_COPY( m_bSaveReplay );
 	DO_COPY( m_bUseBGAOff ); //
+	DO_COPY( m_bUseBGADark ); //
+	DO_COPY( m_bShowSingles ); //
+	DO_COPY( m_bShowHalfDoubles ); //
+	DO_COPY( m_bShowDoubles ); //
 #undef APPROACH
 #undef DO_COPY
 }
@@ -77,9 +113,9 @@ void SongOptions::GetMods( vector<RString> &AddTo ) const
 	case LifeType_Bar:		
 		switch( m_DrainType )
 		{
-		case DRAIN_NORMAL:						break;
-		case DRAIN_NO_RECOVER:		AddTo.push_back("NoRecover");	break;
-		case DRAIN_SUDDEN_DEATH:	AddTo.push_back("SuddenDeath");	break;
+		case DrainType_Normal:							break;
+		case DrainType_NoRecover:		AddTo.push_back("NoRecover");	break;
+		case DrainType_SuddenDeath:		AddTo.push_back("SuddenDeath");	break;
 		}
 		break;
 	case LifeType_Battery:
@@ -105,19 +141,19 @@ void SongOptions::GetMods( vector<RString> &AddTo ) const
 
 	switch( m_AutosyncType )
 	{
-	case AUTOSYNC_OFF:	                                	break;
-	case AUTOSYNC_SONG:	AddTo.push_back("AutosyncSong");	break;
-	case AUTOSYNC_MACHINE:	AddTo.push_back("AutosyncMachine");	break;
-	case AUTOSYNC_TEMPO:	AddTo.push_back("AutosyncTempo");	break;
+	case AutosyncType_Off:			                        	break;
+	case AutosyncType_Song:		AddTo.push_back("AutosyncSong");	break;
+	case AutosyncType_Machine:	AddTo.push_back("AutosyncMachine");	break;
+	case AutosyncType_Tempo:	AddTo.push_back("AutosyncTempo");	break;
 	default:
 		FAIL_M(ssprintf("Invalid autosync type: %i", m_AutosyncType));
 	}
 
 	switch( m_SoundEffectType )
 	{
-	case SOUNDEFFECT_OFF:	                                	break;
-	case SOUNDEFFECT_SPEED:	AddTo.push_back("EffectSpeed");		break;
-	case SOUNDEFFECT_PITCH:	AddTo.push_back("EffectPitch");		break;
+	case SoundEffectType_Off:	                                	break;
+	case SoundEffectType_Speed:	AddTo.push_back("EffectSpeed");		break;
+	case SoundEffectType_Pitch:	AddTo.push_back("EffectPitch");		break;
 	default:
 		FAIL_M(ssprintf("Invalid sound effect type: %i", m_SoundEffectType));
 	}
@@ -203,19 +239,19 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 			on = false;
 	}
 
-	if(	 sBit == "norecover" )				m_DrainType = DRAIN_NO_RECOVER;
-	else if( sBit == "suddendeath" || sBit == "death" )	m_DrainType = DRAIN_SUDDEN_DEATH;
-	else if( sBit == "power-drop" )				m_DrainType = DRAIN_NO_RECOVER;
-	else if( sBit == "normal-drain" )			m_DrainType = DRAIN_NORMAL;
+	if( sBit == "norecover" )				m_DrainType = DrainType_NoRecover;
+	else if( sBit == "suddendeath" || sBit == "death" )	m_DrainType = DrainType_SuddenDeath;
+	else if( sBit == "power-drop" )				m_DrainType = DrainType_NoRecover;
+	else if( sBit == "normal-drain" )			m_DrainType = DrainType_Normal;
 
 	else if( sBit == "clap" )				m_bAssistClap = on;
 	else if( sBit == "metronome" )				m_bAssistMetronome = on;
-	else if( sBit == "autosync" || sBit == "autosyncsong" )	m_AutosyncType = on ? AUTOSYNC_SONG : AUTOSYNC_OFF;
-	else if( sBit == "autosyncmachine" )			m_AutosyncType = on ? AUTOSYNC_MACHINE : AUTOSYNC_OFF; 
-	else if( sBit == "autosynctempo" )			m_AutosyncType = on ? AUTOSYNC_TEMPO : AUTOSYNC_OFF;
-	else if( sBit == "effect" && !on )			m_SoundEffectType = SOUNDEFFECT_OFF;
-	else if( sBit == "effectspeed" )			m_SoundEffectType = on ? SOUNDEFFECT_SPEED : SOUNDEFFECT_OFF;
-	else if( sBit == "effectpitch" )			m_SoundEffectType = on ? SOUNDEFFECT_PITCH : SOUNDEFFECT_OFF;
+	else if( sBit == "autosync" || sBit == "autosyncsong" )	m_AutosyncType = on ? AutosyncType_Song : AutosyncType_Off;
+	else if( sBit == "autosyncmachine" )			m_AutosyncType = on ? AutosyncType_Machine : AutosyncType_Off;
+	else if( sBit == "autosynctempo" )			m_AutosyncType = on ? AutosyncType_Tempo : AutosyncType_Off;
+	else if( sBit == "effect" && !on )			m_SoundEffectType = SoundEffectType_Off;
+	else if( sBit == "effectspeed" )			m_SoundEffectType = on ? SoundEffectType_Speed : SoundEffectType_Off;
+	else if( sBit == "effectpitch" )			m_SoundEffectType = on ? SoundEffectType_Pitch : SoundEffectType_Off;
 	else if( sBit == "staticbg" )				m_bStaticBackground = on;
 	else if( sBit == "randombg" )				m_bRandomBGOnly = on;
 	else if( sBit == "savescore" )				m_bSaveScore = on;

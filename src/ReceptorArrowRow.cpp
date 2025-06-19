@@ -10,14 +10,12 @@
 ReceptorArrowRow::ReceptorArrowRow()
 {
 	m_pPlayerState = NULL;
-	m_fYReverseOffsetPixels = 0;
 	m_fFadeToFailPercent = 0;
 }
 
-void ReceptorArrowRow::Load( const PlayerState* pPlayerState, float fYReverseOffset )
+void ReceptorArrowRow::Load( const PlayerState* pPlayerState )
 {
 	m_pPlayerState = pPlayerState;
-	m_fYReverseOffsetPixels = fYReverseOffset;
 
 	const Style* pStyle = GAMESTATE->GetCurrentStyle();
 
@@ -50,8 +48,8 @@ void ReceptorArrowRow::Update( float fDeltaTime )
 
 		// set arrow XYZ
 		float fX = ArrowEffects::GetXPos( m_pPlayerState, c, 0 );
-		const float fY = ArrowEffects::GetYPos( m_pPlayerState, c, 0, m_fYReverseOffsetPixels );
-		const float fZ = ArrowEffects::GetZPos( m_pPlayerState, c, 0 );
+		const float fY = ArrowEffects::GetYPos( c, 0 );
+		const float fZ = ArrowEffects::GetZPos( c, 0 );
 		m_ReceptorArrow[c]->SetX( fX );
 		m_ReceptorArrow[c]->SetY( fY );
 		m_ReceptorArrow[c]->SetZ( fZ );

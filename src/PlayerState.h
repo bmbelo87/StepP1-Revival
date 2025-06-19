@@ -24,6 +24,16 @@ struct CacheNoteStat {
 	int notesUpper;
 };
 
+struct SpeedFlags
+{
+	float m_NewSpeed;
+	bool m_IsActive;
+	float m_StartTime;
+	float m_EndTime;
+	float m_OldSpeed;
+	float m_CurSpeed;
+};
+
 /** @brief The player's indivdual state. */
 class PlayerState
 {
@@ -147,6 +157,10 @@ public:
 	void PushSelf( lua_State *L );
 
 	float m_fReadBPM;
+
+	SpeedFlags	m_SpeedFlags;
+	void SetSpeed( float fSpeed );
+	float		m_fSpeed;
 };
 
 #endif

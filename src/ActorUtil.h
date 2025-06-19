@@ -37,7 +37,8 @@ enum FileType
 	FT_Directory, 
 	FT_Xml,
 	FT_Model, 
-	FT_Lua, 
+	FT_Lua,
+	FT_Ini,
 	NUM_FileType, 
 	FileType_Invalid
 };
@@ -46,6 +47,10 @@ const RString& FileTypeToString( FileType ft );
 /** @brief Utility functions for creating and manipulating Actors. */
 namespace ActorUtil
 {
+	void InitFileTypeLists();
+	vector<RString> const& GetTypeExtensionList(FileType ft);
+	void AddTypeExtensionsToList( FileType ft, vector<RString> &add_to );
+
 	// Every screen should register its class at program initialization.
 	void Register( const RString& sClassName, CreateActorFn pfn );
 
@@ -114,10 +119,10 @@ namespace ActorUtil
 	Actor* MakeActor( const RString &sPath, Actor *pParentActor = NULL );
 	RString GetSourcePath( const XNode *pNode );
 	RString GetWhere( const XNode *pNode );
-	bool GetAttrPath( const XNode *pNode, const RString &sName, RString &sOut );
+	bool GetAttrPath( const XNode *pNode, const RString &sName, RString &sOut, bool optional= false );
 	bool LoadTableFromStackShowErrors( Lua *L );
 
-	bool ResolvePath( RString &sPath, const RString &sName );
+	bool ResolvePath( RString &sPath, const RString &sName, bool optional= false);
 
 	void SortByZPosition( vector<Actor*> &vActors );
 

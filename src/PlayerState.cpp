@@ -205,6 +205,10 @@ const TimingData &PlayerState::GetDisplayedTiming() const
 	return *steps->GetTimingData();
 }
 
+void PlayerState::SetSpeed( float fSpeed )
+{
+	m_fSpeed = fSpeed;
+}
 
 // lua start
 #include "LuaBinding.h"

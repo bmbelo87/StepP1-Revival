@@ -9,7 +9,10 @@
 #include "arch/Dialog/Dialog.h"
 #include "XmlFile.h"
 #include "Command.h"
+#include "RageLog.h"
 #include "RageTypes.h"
+#include "MessageManager.h"
+#include "ver.h"
 
 #include <sstream> // conversion for lua functions.
 #include <csetjmp>
@@ -28,9 +31,9 @@ struct Impl
 static Impl *pImpl = NULL;
 
 #if defined(_MSC_VER)
-	/* "interaction between '_setjmp' and C++ object destruction is non-portable"
-	 * We don't care; we'll throw a fatal exception immediately anyway. */
-	#pragma warning (disable : 4611)
+/* "interaction between '_setjmp' and C++ object destruction is non-portable"
+* We don't care; we'll throw a fatal exception immediately anyway. */
+#pragma warning (disable : 4611)
 #endif
 
 /** @brief Utilities for working with Lua. */
@@ -45,6 +48,8 @@ namespace LuaHelpers
 	template<> bool FromStack<float>( Lua *L, float &Object, int iOffset );
 	template<> bool FromStack<int>( Lua *L, int &Object, int iOffset );
 	template<> bool FromStack<RString>( Lua *L, RString &Object, int iOffset );
+
+	bool InReportScriptError= false;
 }
 
 void LuaManager::SetGlobal( const RString &sName, int val )
@@ -77,6 +82,7 @@ namespace LuaHelpers
 	template<> void Push<bool>( lua_State *L, const bool &Object ) { lua_pushboolean( L, Object ); }
 	template<> void Push<float>( lua_State *L, const float &Object ) { lua_pushnumber( L, Object ); }
 	template<> void Push<int>( lua_State *L, const int &Object ) { lua_pushinteger( L, Object ); }
+	template<> void Push<unsigned int>( lua_State *L, const unsigned int &Object ) { lua_pushnumber( L, double(Object) ); }
 	template<> void Push<RString>( lua_State *L, const RString &Object ) { lua_pushlstring( L, Object.data(), Object.size() ); }
 
 	template<> bool FromStack<bool>( Lua *L, bool &Object, int iOffset ) { Object = !!lua_toboolean( L, iOffset ); return true; }
@@ -160,9 +166,9 @@ static int GetLuaStack( lua_State *L )
 {
 	RString sErr;
 	LuaHelpers::Pop( L, sErr );
-	
+
 	lua_Debug ar;
-	
+
 	for( int iLevel = 0; lua_getstack(L, iLevel, &ar); ++iLevel )
 	{
 		if( !lua_getinfo(L, "nSluf", &ar) )
@@ -171,7 +177,7 @@ static int GetLuaStack( lua_State *L )
 		const char *file = ar.source[0] == '@' ? ar.source + 1 : ar.short_src;
 		const char *name;
 		vector<RString> vArgs;
-		
+
 		if( !strcmp(ar.what, "C") )
 		{
 			for( int i = 1; i <= ar.nups && (name = lua_getupvalue(L, -1, i)) != NULL; ++i )
@@ -319,31 +325,31 @@ void LuaManager::Release( Lua *&p )
 }
 
 /*
- * Low-level access to Lua is always serialized through pImpl->g_pLock; we never run the Lua
- * core simultaneously from multiple threads.  However, when a thread has an acquired
- * lua_State, it can release Lua for use by other threads.  This allows Lua bindings
- * to process long-running actions, without blocking all other threads from using Lua
- * until it finishes.
- *
- * Lua *L = LUA->Get();			// acquires L and locks Lua
- * lua_newtable(L);				// does something with Lua
- * LUA->YieldLua();				// unlocks Lua for lengthy operation; L is still owned, but can't be used
- * RString s = ReadFile("/filename.txt");	// time-consuming operation; other threads may use Lua in the meantime
- * LUA->UnyieldLua();			// relock Lua
- * lua_pushstring( L, s );		// finish working with it
- * LUA->Release( L );			// release L and unlock Lua
- *
- * YieldLua() must not be called when already yielded, or when a lua_State has not been
- * acquired (you have nothing to yield), and always unyield before releasing the
- * state.  Recursive handling is OK:
- *
- * L1 = LUA->Get();
- * LUA->YieldLua();				// yields
- *   L2 = LUA->Get();			// unyields
- *   LUA->Release(L2);			// re-yields
- * LUA->UnyieldLua();
- * LUA->Release(L1);
- */
+* Low-level access to Lua is always serialized through pImpl->g_pLock; we never run the Lua
+* core simultaneously from multiple threads.  However, when a thread has an acquired
+* lua_State, it can release Lua for use by other threads.  This allows Lua bindings
+* to process long-running actions, without blocking all other threads from using Lua
+* until it finishes.
+*
+* Lua *L = LUA->Get();			// acquires L and locks Lua
+* lua_newtable(L);				// does something with Lua
+* LUA->YieldLua();				// unlocks Lua for lengthy operation; L is still owned, but can't be used
+* RString s = ReadFile("/filename.txt");	// time-consuming operation; other threads may use Lua in the meantime
+* LUA->UnyieldLua();			// relock Lua
+* lua_pushstring( L, s );		// finish working with it
+* LUA->Release( L );			// release L and unlock Lua
+*
+* YieldLua() must not be called when already yielded, or when a lua_State has not been
+* acquired (you have nothing to yield), and always unyield before releasing the
+* state.  Recursive handling is OK:
+*
+* L1 = LUA->Get();
+* LUA->YieldLua();				// yields
+*   L2 = LUA->Get();			// unyields
+*   LUA->Release(L2);			// re-yields
+* LUA->UnyieldLua();
+* LUA->Release(L1);
+*/
 void LuaManager::YieldLua()
 {
 	ASSERT( pImpl->g_pLock.IsLockedByThisThread() );
@@ -573,69 +579,69 @@ XNode *LuaHelpers::GetLuaInformation()
 
 		switch( lua_type(L, -1) )
 		{
-		case LUA_TTABLE:
-		{
-			if( luaL_getmetafield(L, -1, "class") )
+			case LUA_TTABLE:
 			{
-				const char *name = lua_tostring( L, -1 );
-
-				if( !name )
-					break;
-				LClass &c = mClasses[name];
-				lua_pop( L, 1 ); // pop name
-
-				// Get base class.
-				luaL_getmetatable( L, name );
-				ASSERT( !lua_isnil(L, -1) );
-				lua_getfield( L, -1, "base" );
-				name = lua_tostring( L, -1 );
-
-				if( name )
-					c.m_sBaseName = name;
-				lua_pop( L, 2 ); // pop name and metatable
-
-				// Get methods.
-				FOREACH_LUATABLE( L, -1 )
+				if( luaL_getmetafield(L, -1, "class") )
 				{
-					RString sMethod;
-					if( LuaHelpers::FromStack(L, sMethod, -1) )
-						c.m_vMethods.push_back( sMethod );
+					const char *name = lua_tostring( L, -1 );
+
+					if( !name )
+						break;
+					LClass &c = mClasses[name];
+					lua_pop( L, 1 ); // pop name
+
+					// Get base class.
+					luaL_getmetatable( L, name );
+					ASSERT( !lua_isnil(L, -1) );
+					lua_getfield( L, -1, "base" );
+					name = lua_tostring( L, -1 );
+
+					if( name )
+						c.m_sBaseName = name;
+					lua_pop( L, 2 ); // pop name and metatable
+
+					// Get methods.
+					FOREACH_LUATABLE( L, -1 )
+					{
+						RString sMethod;
+						if( LuaHelpers::FromStack(L, sMethod, -1) )
+							c.m_vMethods.push_back( sMethod );
+					}
+					sort( c.m_vMethods.begin(), c.m_vMethods.end() );
+					break;
 				}
-				sort( c.m_vMethods.begin(), c.m_vMethods.end() );
+			}
+			// fall through
+			case LUA_TUSERDATA: // table or userdata: class instance
+			{
+				if( !luaL_callmeta(L, -1, "__type") )
+					break;
+				RString sType;
+				if( !LuaHelpers::Pop(L, sType) )
+					break;
+				if( sType == "Enum" )
+					LuaHelpers::ReadArrayFromTable( mEnums[sKey], L );
+				else
+					mSingletons[sKey] = sType;
 				break;
 			}
-		}
-		// fall through
-		case LUA_TUSERDATA: // table or userdata: class instance
-		{
-			if( !luaL_callmeta(L, -1, "__type") )
+			case LUA_TNUMBER:
+				LuaHelpers::FromStack( L, mConstants[sKey], -1 );
 				break;
-			RString sType;
-			if( !LuaHelpers::Pop(L, sType) )
+			case LUA_TSTRING:
+				LuaHelpers::FromStack( L, mStringConstants[sKey], -1 );
 				break;
-			if( sType == "Enum" )
-				LuaHelpers::ReadArrayFromTable( mEnums[sKey], L );
-			else
-				mSingletons[sKey] = sType;
-			break;
-		}
-		case LUA_TNUMBER:
-			LuaHelpers::FromStack( L, mConstants[sKey], -1 );
-			break;
-		case LUA_TSTRING:
-			LuaHelpers::FromStack( L, mStringConstants[sKey], -1 );
-			break;
-		case LUA_TFUNCTION:
-			vFunctions.push_back( sKey );
-			/*
-			{
+			case LUA_TFUNCTION:
+				vFunctions.push_back( sKey );
+				/*
+				{
 				lua_Debug ar;
 				lua_getfield( L, LUA_GLOBALSINDEX, sKey );
 				lua_getinfo( L, ">S", &ar ); // Pops the function
 				printf( "%s: %s\n", sKey.c_str(), ar.short_src );
-			}
-			*/
-			break;
+				}
+				*/
+				break;
 		}
 	}
 
@@ -787,52 +793,102 @@ bool LuaHelpers::LoadScript( Lua *L, const RString &sScript, const RString &sNam
 	return true;
 }
 
-bool LuaHelpers::RunScriptOnStack( Lua *L, RString &sError, int iArgs, int iReturnValues )
+void LuaHelpers::ScriptErrorMessage(RString const& Error)
+{
+	Message msg("ScriptError");
+	msg.SetParam("message", Error);
+	MESSAGEMAN->Broadcast(msg);
+}
+
+Dialog::Result LuaHelpers::ReportScriptError(RString const& Error, RString ErrorType, bool UseAbort)
+{
+	// Protect from a recursion loop resulting from a mistake in the error reporting lua.
+	if(!InReportScriptError)
+	{
+		InReportScriptError= true;
+		ScriptErrorMessage(Error);
+		InReportScriptError= false;
+	}
+	LOG->Warn( "%s", Error.c_str());
+	if(UseAbort)
+	{
+		RString with_correct= Error + "  Correct this and click Retry, or Cancel to break.";
+		return Dialog::AbortRetryIgnore(with_correct, ErrorType);
+	}
+	Dialog::OK(Error, ErrorType);
+	return Dialog::ok;
+}
+
+// For convenience when replacing uses of LOG->Warn.
+void LuaHelpers::ReportScriptErrorFmt(const char *fmt, ...)
+{
+	va_list	va;
+	va_start( va, fmt );
+	RString Buff = vssprintf( fmt, va );
+	va_end( va );
+	ReportScriptError(Buff);
+}
+
+bool LuaHelpers::RunScriptOnStack( Lua *L, RString &Error, int Args, int ReturnValues, bool ReportError )
 {
 	lua_pushcfunction( L, GetLuaStack );
 
 	// move the error function above the function and params
-	int iErrFunc = lua_gettop(L) - iArgs - 1;
-	lua_insert( L, iErrFunc );
+	int ErrFunc = lua_gettop(L) - Args - 1;
+	lua_insert( L, ErrFunc );
 
 	// evaluate
-	int ret = lua_pcall( L, iArgs, iReturnValues, iErrFunc );
+	int ret = lua_pcall( L, Args, ReturnValues, ErrFunc );
 	if( ret )
 	{
-		LuaHelpers::Pop( L, sError );
-		lua_remove( L, iErrFunc );
-		for( int i = 0; i < iReturnValues; ++i )
+		if(ReportError)
+		{
+			RString lerror;
+			LuaHelpers::Pop( L, lerror );
+			Error+= lerror;
+			ReportScriptError(Error);
+		}
+		else
+		{
+			LuaHelpers::Pop( L, Error );
+		}
+		lua_remove( L, ErrFunc );
+		for( int i = 0; i < ReturnValues; ++i )
 			lua_pushnil( L );
 		return false;
 	}
 
-	lua_remove( L, iErrFunc );
+	lua_remove( L, ErrFunc );
 	return true;
 }
 
-bool LuaHelpers::RunScript( Lua *L, const RString &sScript, const RString &sName, RString &sError, int iArgs, int iReturnValues )
+bool LuaHelpers::RunScript( Lua *L, const RString &Script, const RString &Name, RString &Error, int Args, int ReturnValues, bool ReportError )
 {
-	if( !LoadScript(L, sScript, sName, sError) )
+	RString lerror;
+	if( !LoadScript(L, Script, Name, lerror) )
 	{
-		lua_pop( L, iArgs );
-		for( int i = 0; i < iReturnValues; ++i )
+		Error+= lerror;
+		if(ReportError)
+		{
+			ReportScriptError(Error);
+		}
+		lua_pop( L, Args );
+		for( int i = 0; i < ReturnValues; ++i )
 			lua_pushnil( L );
 		return false;
 	}
 
 	// move the function above the params
-	lua_insert( L, lua_gettop(L) - iArgs );
+	lua_insert( L, lua_gettop(L) - Args );
 
-	return LuaHelpers::RunScriptOnStack( L, sError, iArgs, iReturnValues );
+	return LuaHelpers::RunScriptOnStack( L, Error, Args, ReturnValues, ReportError );
 }
 
 bool LuaHelpers::RunExpression( Lua *L, const RString &sExpression, const RString &sName )
 {
-	RString sError;
-	if( !LuaHelpers::RunScript(L, "return " + sExpression, sName.empty()? RString("in"):sName, sError, 0, 1) )
+	RString sError= ssprintf("Lua runtime error parsing \"%s\": ", sName.size()? sName.c_str():sExpression.c_str());
+	if(!LuaHelpers::RunScript(L, "return " + sExpression, sName.empty()? RString("in"):sName, sError, 0, 1, true))
 	{
-		sError = ssprintf( "Lua runtime error parsing \"%s\": %s", sName.size()? sName.c_str():sExpression.c_str(), sError.c_str() );
-		Dialog::OK( sError, "LUA_ERROR" );
 		return false;
 	}
 	return true;
@@ -873,16 +929,16 @@ void LuaHelpers::ParseCommandList( Lua *L, const RString &sCommands, const RStri
 			s << "\tself:" << sCmdName << "(";
 
 			bool bFirstParamIsString = bLegacy && (
-					sCmdName == "horizalign" ||
-					sCmdName == "vertalign" ||
-					sCmdName == "effectclock" ||
-					sCmdName == "blend" ||
-					sCmdName == "ztestmode" ||
-					sCmdName == "cullmode" ||
-					sCmdName == "playcommand" ||
-					sCmdName == "queuecommand" ||
-					sCmdName == "queuemessage" ||
-					sCmdName == "settext");
+				sCmdName == "horizalign" ||
+				sCmdName == "vertalign" ||
+				sCmdName == "effectclock" ||
+				sCmdName == "blend" ||
+				sCmdName == "ztestmode" ||
+				sCmdName == "cullmode" ||
+				sCmdName == "playcommand" ||
+				sCmdName == "queuecommand" ||
+				sCmdName == "queuemessage" ||
+				sCmdName == "settext");
 
 			for( unsigned i=1; i<cmd.m_vsArgs.size(); i++ )
 			{
@@ -928,7 +984,7 @@ void LuaHelpers::ParseCommandList( Lua *L, const RString &sCommands, const RStri
 }
 
 /* Like luaL_typerror, but without the special case for argument 1 being "self"
- * in method calls, so we give a correct error message after we remove self. */
+* in method calls, so we give a correct error message after we remove self. */
 int LuaHelpers::TypeError( Lua *L, int iArgNo, const char *szName )
 {
 	RString sType;
@@ -939,13 +995,13 @@ int LuaHelpers::TypeError( Lua *L, int iArgNo, const char *szName )
 	if( !lua_getstack( L, 0, &debug ) )
 	{
 		return luaL_error( L, "invalid type (%s expected, got %s)",
-			szName, sType.c_str() );
+				   szName, sType.c_str() );
 	}
 	else
 	{
 		lua_getinfo( L, "n", &debug );
 		return luaL_error( L, "bad argument #%d to \"%s\" (%s expected, got %s)",
-			iArgNo, debug.name? debug.name:"(unknown)", szName, sType.c_str() );
+				   iArgNo, debug.name? debug.name:"(unknown)", szName, sType.c_str() );
 	}
 }
 
@@ -985,7 +1041,7 @@ void LuaHelpers::PushValueFunc( lua_State *L, int iArgs )
 
 #include "ProductInfo.h"
 LuaFunction( ProductFamily, (RString) PRODUCT_FAMILY );
-LuaFunction( ProductVersion, (RString) PRODUCT_VER );
+LuaFunction( ProductVersion, (RString) product_version );
 LuaFunction( ProductID, (RString) PRODUCT_ID );
 
 extern const char *const version_date;
@@ -1033,7 +1089,7 @@ namespace
 		RString sPath = SArg(1);
 
 		/* Release Lua while we call GetFileContents, so we don't access
-		 * it while we read from the disk. */
+		* it while we read from the disk. */
 		LUA->YieldLua();
 
 		RString sFileContents;
@@ -1054,8 +1110,8 @@ namespace
 	}
 
 	/* RunWithThreadVariables(func, { a = "x", b = "y" }, arg1, arg2, arg3 ... }
-	 * calls func(arg1, arg2, arg3) with two LuaThreadVariable set, and returns
-	 * the return values of func(). */
+	* calls func(arg1, arg2, arg3) with two LuaThreadVariable set, and returns
+	* the return values of func(). */
 	static int RunWithThreadVariables( lua_State *L )
 	{
 		luaL_checktype( L, 1, LUA_TFUNCTION );
@@ -1072,7 +1128,7 @@ namespace
 		lua_remove( L, 2 );
 
 		/* XXX: We want to clean up apVars on errors, but if we lua_pcall,
-		 * we won't propagate the error upwards. */
+		* we won't propagate the error upwards. */
 		int iArgs = lua_gettop(L) - 1;
 		lua_call( L, iArgs, LUA_MULTRET );
 		int iVals = lua_gettop(L);
@@ -1090,6 +1146,22 @@ namespace
 		return 1;
 	}
 
+	static int ReportScriptError(lua_State* L)
+	{
+		RString error= "Script error occurred.";
+		RString error_type= "LUA_ERROR";
+		if(lua_isstring(L, 1))
+		{
+			error= SArg(1);
+		}
+		if(lua_isstring(L, 2))
+		{
+			error_type= SArg(2);
+		}
+		LuaHelpers::ReportScriptError(error, error_type);
+		return 0;
+	}
+
 	const luaL_Reg luaTable[] =
 	{
 		LIST_METHOD( Trace ),
@@ -1099,6 +1171,7 @@ namespace
 		LIST_METHOD( ReadFile ),
 		LIST_METHOD( RunWithThreadVariables ),
 		LIST_METHOD( GetThreadVariable ),
+		LIST_METHOD( ReportScriptError ),
 		{ NULL, NULL }
 	};
 }
@@ -1106,26 +1179,26 @@ namespace
 LUA_REGISTER_NAMESPACE( lua )
 
 /*
- * (c) 2004-2006 Glenn Maynard, Steve Checkoway
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2004-2006 Glenn Maynard, Steve Checkoway
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/
