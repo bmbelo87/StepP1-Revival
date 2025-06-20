@@ -169,6 +169,10 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 
+
+
+	void UpdateSortArrays();
+
 protected:
 	void LoadStepManiaSongDir( RString sDir, LoadingWindow *ld );
 	void LoadDWISongDir( RString sDir );

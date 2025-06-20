@@ -73,6 +73,7 @@ public:
 	 * Note: there are probably a lot of variables. */
 	Profile(): m_sDisplayName(""), m_sCharacterID(""),
 		m_sLastUsedHighScoreName(""), m_iWeightPounds(0),
+		m_Voomax(0),
 		m_sGuid(MakeGuid()), m_sDefaultModifiers(),
 		m_SortOrder(SortOrder_Invalid),
 		m_LastDifficulty(Difficulty_Invalid),
@@ -152,6 +153,9 @@ public:
 	 * so that it can be ready quickly. */
 	RString m_sLastUsedHighScoreName;
 	int m_iWeightPounds;	// 0 == not set
+	// Voomax and BirthYear are used for calculating calories from heart rate.
+	float m_Voomax; // 0 == not set
+	int m_BirthYear; // 0 == not set
 	//RString m_sProfileImageName;	// todo: add a default image -aj
 
 	// General data
@@ -381,6 +385,8 @@ public:
 
 	// Lua
 	void PushSelf( lua_State *L );
+
+	int		m_iAvatarID;
 
 private:
 	const HighScoresForASong *GetHighScoresForASong( const SongID& songID ) const;

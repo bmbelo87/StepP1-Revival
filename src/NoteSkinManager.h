@@ -9,6 +9,7 @@
 
 struct Game;
 struct NoteSkinData;
+
 struct NoteSkinInfo
 {
 	RString m_name;
@@ -47,7 +48,6 @@ public:
 	void PushSelf( lua_State *L );
 
 	vector<NoteSkinInfo>	m_vNoteSkinsInfo;
-
 
 protected:
 	RString GetPathFromDirAndFile( const RString &sDir, const RString &sFileName );

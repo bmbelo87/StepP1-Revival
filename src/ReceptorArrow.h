@@ -19,12 +19,16 @@ public:
 	void Step( TapNoteScore score );
 	void SetPressed() { m_bIsPressed = true; };
 	void SetNoteUpcoming( bool b );
+//  AutoActor*	GetReceptorActorOnly() { return &m_pReceptor; }; // xMAx - para ocultar el receptor solamente en "freedom"
+	inline void	SetReceptorAlpha(float val) { m_pReceptor->SetDiffuseAlpha(val); };
+
 private:
 
 	const PlayerState* m_pPlayerState;
 	int m_iColNo;
 
 	AutoActor m_pReceptor;
+	AutoActor m_pPress; //xMAx
 
 	bool m_bIsPressed;
 	bool m_bWasPressed;	// set in Update

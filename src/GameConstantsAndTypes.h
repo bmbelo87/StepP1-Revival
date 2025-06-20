@@ -703,6 +703,22 @@ const RString& FailTypeToString( FailType cat );
 const RString& FailTypeToLocalizedString( FailType cat );
 LuaDeclareType( FailType );
 
+enum BattleMode
+{
+	BATTLE_MODE_SCORE_BATTLE,
+	BATTLE_MODE_LOW_SCORE_BATTLE,
+	BATTLE_MODE_COMBO_BATTLE,
+	BATTLE_MODE_LOW_COMBO_BATTLE,
+	BATTLE_MODE_MORE_GOOD,
+	BATTLE_MODE_BRAIN_IQ,		// StepP1 revival - bsilver - Not implemented
+	BATTLE_MODE_HYPER_POTION,	// StepP1 revival - bsilver - Not implemented
+	NUM_BattleMode,
+	BattleMode_Invalid
+};
+const RString &BattleModeToString( BattleMode bm );
+const RString &BattleModeToLocalizedString( BattleMode bm );
+LuaDeclareType( BattleMode );
+
 #endif
 
 /**

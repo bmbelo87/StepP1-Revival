@@ -85,6 +85,7 @@ void Profile::InitEditableData()
 	m_sCharacterID = "";
 	m_sLastUsedHighScoreName = "";
 	m_iWeightPounds = 0;
+	m_Voomax = 0;
 }
 
 void Profile::ClearStats()
@@ -922,6 +923,7 @@ ProfileLoadResult Profile::LoadStatsXmlFromNode( const XNode *xml, bool bIgnoreE
 	RString sCharacterID = m_sCharacterID;
 	RString sLastUsedHighScoreName = m_sLastUsedHighScoreName;
 	int iWeightPounds = m_iWeightPounds;
+	float Voomax = m_Voomax;
 
 	LOAD_NODE( GeneralData );
 	LOAD_NODE( SongScores );
@@ -936,6 +938,7 @@ ProfileLoadResult Profile::LoadStatsXmlFromNode( const XNode *xml, bool bIgnoreE
 		m_sCharacterID = sCharacterID;
 		m_sLastUsedHighScoreName = sLastUsedHighScoreName;
 		m_iWeightPounds = iWeightPounds;
+		m_Voomax = Voomax;
 	}
 
 	return ProfileLoadResult_Success;
@@ -1063,6 +1066,7 @@ void Profile::SaveEditableDataToDir( RString sDir ) const
 	ini.SetValue( "Editable", "CharacterID",			m_sCharacterID );
 	ini.SetValue( "Editable", "LastUsedHighScoreName",		m_sLastUsedHighScoreName );
 	ini.SetValue( "Editable", "WeightPounds",			m_iWeightPounds );
+	ini.SetValue( "Editable", "Voomax",				m_Voomax );
 
 	ini.WriteFile( sDir + EDITABLE_INI );
 }
@@ -1078,6 +1082,7 @@ XNode* Profile::SaveGeneralDataCreateNode() const
 	pGeneralDataNode->AppendChild( "CharacterID",			m_sCharacterID );
 	pGeneralDataNode->AppendChild( "LastUsedHighScoreName",		m_sLastUsedHighScoreName );
 	pGeneralDataNode->AppendChild( "WeightPounds",			m_iWeightPounds );
+	pGeneralDataNode->AppendChild( "Voomax",			m_Voomax );
 	pGeneralDataNode->AppendChild( "IsMachine",			IsMachine() );
 	pGeneralDataNode->AppendChild( "IsWeightSet",			m_iWeightPounds != 0 );
 
@@ -1242,6 +1247,7 @@ ProfileLoadResult Profile::LoadEditableDataFromDir( RString sDir )
 	ini.GetValue( "Editable", "CharacterID",			m_sCharacterID );
 	ini.GetValue( "Editable", "LastUsedHighScoreName",		m_sLastUsedHighScoreName );
 	ini.GetValue( "Editable", "WeightPounds",			m_iWeightPounds );
+	ini.GetValue( "Editable", "Voomax",				m_Voomax );
 
 	// This is data that the user can change, so we have to validate it.
 	wstring wstr = RStringToWstring(m_sDisplayName);
@@ -1266,6 +1272,7 @@ void Profile::LoadGeneralDataFromNode( const XNode* pNode )
 	pNode->GetChildValue( "CharacterID",				m_sCharacterID );
 	pNode->GetChildValue( "LastUsedHighScoreName",			m_sLastUsedHighScoreName );
 	pNode->GetChildValue( "WeightPounds",				m_iWeightPounds );
+	pNode->GetChildValue( "Voomax",					m_Voomax );
 	pNode->GetChildValue( "Guid",					m_sGuid );
 	pNode->GetChildValue( "SortOrder",				s );	m_SortOrder = StringToSortOrder( s );
 	pNode->GetChildValue( "LastDifficulty",				s );	m_LastDifficulty = StringToDifficulty( s );
@@ -2023,6 +2030,17 @@ public:
 	static int SetCharacter( T* p, lua_State *L )			{ p->SetCharacter(SArg(1)); return 0; }
 	static int GetWeightPounds( T* p, lua_State *L )		{ lua_pushnumber(L, p->m_iWeightPounds ); return 1; }
 	static int SetWeightPounds( T* p, lua_State *L )		{ p->m_iWeightPounds = IArg(1); return 0; }
+	DEFINE_METHOD( GetVoomax, m_Voomax );
+	static int SetVoomax( T *p, lua_State *L )
+	{
+		p->m_Voomax = FArg( 1 );
+		COMMON_RETURN_SELF;
+	}
+	static int SetBirthYear( T *p, lua_State *L )
+	{
+		p->m_BirthYear = IArg( 1 );
+		COMMON_RETURN_SELF;
+	}
 	static int GetGoalType( T* p, lua_State *L )			{ lua_pushnumber(L, p->m_GoalType ); return 1; }
 	static int SetGoalType( T* p, lua_State *L )			{ p->m_GoalType = Enum::Check<GoalType>(L, 1); return 0; }
 	static int GetGoalCalories( T* p, lua_State *L )		{ lua_pushnumber(L, p->m_iGoalCalories ); return 1; }
@@ -2118,6 +2136,8 @@ public:
 		ADD_METHOD( SetCharacter );
 		ADD_METHOD( GetWeightPounds );
 		ADD_METHOD( SetWeightPounds );
+		ADD_METHOD( GetVoomax );
+		ADD_METHOD( SetVoomax );
 		ADD_METHOD( GetGoalType );
 		ADD_METHOD( SetGoalType );
 		ADD_METHOD( GetGoalCalories );

@@ -3005,6 +3005,9 @@
     <ClInclude Include="ver.h">
       <Filter>StepMania</Filter>
     </ClInclude>
+    <ClInclude Include="OptionsBinding.h">
+      <Filter>Data Structures</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="archutils\Win32\smzip.ico">

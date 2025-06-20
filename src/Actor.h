@@ -453,9 +453,9 @@ public:
 	void SetAux( float f )				{ DestTweenState().aux = f; }
 	float GetAux() const				{ return m_current.aux; }
 
-	void BeginTweening( float time, ITween *pInterp );
+	virtual void BeginTweening( float time, ITween *pInterp );
 	void BeginTweening( float time, TweenType tt = TWEEN_LINEAR );
-	void StopTweening();
+	virtual void StopTweening();
 	void Sleep( float time );
 	void QueueCommand( const RString& sCommandName );
 	void QueueMessage( const RString& sMessageName );
@@ -593,6 +593,12 @@ public:
 	virtual void SetUpdateRate( float ) {}
 
 	HiddenPtr<LuaClass> m_pLuaInstance;
+
+	// xMAx
+	/** 
+	* @brief El Actor no atiende ninguna llamada de alg�n comando.
+	*/
+	//bool m_bListenCommands;
 
 protected:
 	/** @brief the name of the Actor. */

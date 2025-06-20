@@ -493,6 +493,19 @@ LuaXType( CourseType );
 LuaFunction( CourseTypeToLocalizedString, CourseTypeToLocalizedString( Enum::Check<CourseType>( L, 1 ) ) );
 
 
+static const char *BattleModeNames [] = {
+	"BattleModeScoreBattle",
+	"BattleModeLowScoreBattle",
+	"BattleModeComboBattle",
+	"BattleModeLowComboBattle",
+	"BattleModeMoreGood",
+	"BattleModeBrainIQ",		// StepP1 revival - bsilver - Not implemented
+	"BattleModeHyperPotion",	// StepP1 revival - bsilver - Not implemented
+}; // StepP1 revival - bsilver
+XToString( BattleMode );
+XToLocalizedString( BattleMode );
+LuaXType( BattleMode );
+LuaFunction( BattleModeToLocalizedString, BattleModeToLocalizedString( Enum::Check<BattleMode>( L, 1 ) ) );
 
 /*
  * (c) 2001-2004 Chris Danford

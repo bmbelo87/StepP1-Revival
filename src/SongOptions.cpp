@@ -45,7 +45,7 @@ void SongOptions::Init()
 {
 	m_LifeType = LifeType_Bar;
 	m_DrainType = DrainType_Normal;
-	m_iBatteryLives = 4;
+	m_BatteryLives = 4;
 	m_bAssistClap = false;
 	m_bAssistMetronome = false;
 	m_fMusicRate = 1.0f;
@@ -76,7 +76,7 @@ void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
 
 	DO_COPY( m_LifeType );
 	DO_COPY( m_DrainType );
-	DO_COPY( m_iBatteryLives );
+	DO_COPY( m_BatteryLives );
 	APPROACH( fMusicRate );
 	APPROACH( fHaste );
 	DO_COPY( m_bAssistClap );
@@ -119,7 +119,7 @@ void SongOptions::GetMods( vector<RString> &AddTo ) const
 		}
 		break;
 	case LifeType_Battery:
-		AddTo.push_back( ssprintf( "%dLives", m_iBatteryLives ) );
+		AddTo.push_back( ssprintf( "%dLives", m_BatteryLives ) );
 		break;
 	case LifeType_Time:
 		AddTo.push_back( "LifeTime" );
@@ -225,7 +225,7 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 	Regex lives("^([0-9]+) ?(lives|life)$");
 	if( lives.Compare(sBit, matches) )
 	{
-		m_iBatteryLives = StringToInt( matches[0] );
+		m_BatteryLives = StringToInt( matches[0] );
 		return true;
 	}
 
@@ -271,7 +271,7 @@ bool SongOptions::operator==( const SongOptions &other ) const
 #define COMPARE(x) { if( x != other.x ) return false; }
 	COMPARE( m_LifeType );
 	COMPARE( m_DrainType );
-	COMPARE( m_iBatteryLives );
+	COMPARE( m_BatteryLives );
 	COMPARE( m_fMusicRate );
 	COMPARE( m_fHaste );
 	COMPARE( m_bAssistClap );
@@ -283,9 +283,63 @@ bool SongOptions::operator==( const SongOptions &other ) const
 	COMPARE( m_bSaveScore );
 	COMPARE( m_bSaveReplay );
 	COMPARE( m_bUseBGAOff ); //
+	COMPARE( m_bUseBGADark ); //
+	COMPARE( m_bShowSingles );//
+	COMPARE( m_bShowHalfDoubles );//
+	COMPARE( m_bShowDoubles );//
 #undef COMPARE
 	return true;
 }
+
+// lua start
+#include "LuaBinding.h"
+#include "OptionsBinding.h"
+
+//* @brief Allow Lua to have access to SongOptions. */
+class LunaSongOptions : public Luna<SongOptions>
+{
+public:
+
+	ENUM_INTERFACE( LifeSetting, LifeType, LifeType );
+	ENUM_INTERFACE( DrainSetting, DrainType, DrainType );
+	ENUM_INTERFACE( AutosyncSetting, AutosyncType, AutosyncType );
+	//ENUM_INTERFACE(SoundEffectSetting, SoundEffectType, SoundEffectType);
+	// Broken, SoundEffectType_Speed disables rate mod, other settings have no effect. -Kyz
+	INT_INTERFACE( BatteryLives, BatteryLives );
+	BOOL_INTERFACE( AssistClap, AssistClap );
+	BOOL_INTERFACE( AssistMetronome, AssistMetronome );
+	BOOL_INTERFACE( StaticBackground, StaticBackground );
+	BOOL_INTERFACE( RandomBGOnly, RandomBGOnly );
+	BOOL_INTERFACE( SaveScore, SaveScore );
+	BOOL_INTERFACE( SaveReplay, SaveReplay );
+	FLOAT_INTERFACE( MusicRate, MusicRate, ( v > 0.0f && v <= 3.0f ) ); // Greater than 3 seems to crash frequently, haven't investigated why. -Kyz
+	FLOAT_INTERFACE( Haste, Haste, ( v >= -1.0f && v <= 1.0f ) );
+
+	// xMAx
+	BOOL_INTERFACE( UseBGAOff, UseBGAOff );
+	LunaSongOptions()
+	{
+		ADD_METHOD( LifeSetting );
+		ADD_METHOD( DrainSetting );
+		ADD_METHOD( AutosyncSetting );
+		//ADD_METHOD(SoundEffectSetting);
+		ADD_METHOD( BatteryLives );
+		ADD_METHOD( AssistClap );
+		ADD_METHOD( AssistMetronome );
+		ADD_METHOD( StaticBackground );
+		ADD_METHOD( RandomBGOnly );
+		ADD_METHOD( SaveScore );
+		ADD_METHOD( SaveReplay );
+		ADD_METHOD( MusicRate );
+		ADD_METHOD( Haste );
+
+		// xMAx
+		ADD_METHOD( UseBGAOff );
+	}
+};
+
+LUA_REGISTER_CLASS( SongOptions )
+// lua end
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

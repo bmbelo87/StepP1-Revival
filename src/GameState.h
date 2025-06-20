@@ -128,6 +128,7 @@ public:
 	const Game*	GetCurrentGame();
 	const Style*	GetCurrentStyle() const;
 	void	SetCurrentStyle( const Style *pStyle );
+	bool	SetCompatibleStyle( StepsType stype );
 
 	void GetPlayerInfo( PlayerNumber pn, bool& bIsEnabledOut, bool& bIsHumanOut );
 	bool IsPlayerEnabled( PlayerNumber pn ) const;
@@ -176,7 +177,7 @@ public:
 
 	BroadcastOnChange<RString>	m_sPreferredSongGroup;		// GROUP_ALL denotes no preferred group
 	BroadcastOnChange<RString>	m_sPreferredCourseGroup;	// GROUP_ALL denotes no preferred group
-	bool		m_bChangedFailTypeOnScreenSongOptions;	// true if FailType was changed in the song options screen
+	bool		m_bFailTypeWasExplicitlySet;	// true if FailType was changed in the song options screen
 	BroadcastOnChange<StepsType>				m_PreferredStepsType;
 	BroadcastOnChange1D<Difficulty,NUM_PLAYERS>		m_PreferredDifficulty;
 	BroadcastOnChange1D<CourseDifficulty,NUM_PLAYERS>	m_PreferredCourseDifficulty;// used in nonstop
@@ -190,7 +191,7 @@ public:
 	 * ScreenGameplay often does special things when this is set to true. */
 	bool		m_bDemonstrationOrJukebox;
 	bool		m_bJukeboxUsesModifiers;
-	int			m_iNumStagesOfThisSong;
+	int		m_iNumStagesOfThisSong;
 	/**
 	 * @brief Increase this every stage while not resetting on a continue.
 	 *
@@ -389,19 +390,33 @@ public:
 	void PushSelf( lua_State *L );
 
 	// xMAx ------------------------------------------------------------------------------------
-
-
-
-
-
+	bool		m_bHasProfile[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccion� un local profile*/
+	int		m_iProfileIndex[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccion� un local profile*/
+	int		m_iProfileIndexRandom[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccion� un local profile*/
+	RString		GetAvatarURLFromPlayerNumber( PlayerNumber pn );
 	bool		m_bBasicMode;
+	bool		m_bNoteSkin1Unlocked;
+	bool		m_bNoteSkin2Unlocked;
+	RString		m_sCurrentGroupName;	/* Se utiliza en el ScreenSelectMusic.cpp */
+	RString		m_sBasicModeGroupName;
 
+	int		GetHighestNumStagesLeftForAnyHumanPlayer() const;
+	inline bool	IsBasicMode ( ) { return m_bBasicMode; };
+	inline void SetBasicMode( bool b ) { m_bBasicMode = b; };
 
+	BroadcastOnChange<BattleMode>		m_BattleMode;			// Tipo de batalla
+	int					m_iNumBattleStagesWon[NUM_PLAYERS];
+	PlayerNumber				m_PlayerWonBattleMode;
+	int					m_iNumBattleStages;		// General for both players
+	void		ResetBattleVars();
 
-
-
-
-	inline bool IsBasicMode ( ) { return m_bBasicMode; };
+	int		m_bPlayerChartIndex[NUM_PLAYERS];
+	bool		IsDouble( void ) const;
+/*	
+	int	m_iNumPlayedStages[NUM_PLAYERS];
+	bool	m_bBlockBonusHeartsForPlayer[NUM_PLAYERS];
+*/
+	// ----------------------------------------------------------------------------------------------
 
 
 	// Keep extra stage logic internal to GameState.

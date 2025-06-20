@@ -83,11 +83,22 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	StripCvsAndSvn( asNoteSkinNames );
 	StripMacResourceForks( asNoteSkinNames );
 
+	// Clean Vector before including data -- StepP1 Revival - bSilver
+	m_vNoteSkinsInfo.clear();
+
 	g_mapNameToData.clear();
 	for( unsigned j=0; j<asNoteSkinNames.size(); j++ )
 	{
 		RString sName = asNoteSkinNames[j];
 		sName.MakeLower();
+
+		// Including Noteskinsdata to Vector -- StepP1 Revival - bSilver
+		NoteSkinInfo info;
+		info.m_name = sName;
+		info.m_path = sBaseSkinFolder + sName;
+		m_vNoteSkinsInfo.push_back( info );
+
+		// Load normal data
 		LoadNoteSkinData( sName, g_mapNameToData[sName] );
 	}
 }

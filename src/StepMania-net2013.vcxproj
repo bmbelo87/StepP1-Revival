@@ -1722,6 +1722,7 @@ cl /Zl /nologo /c verstub.cpp /Fo"$(IntDir)"</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="OptionsBinding.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="ScreenAttract.h" />
     <ClInclude Include="ScreenBookkeeping.h" />

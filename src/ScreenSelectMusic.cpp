@@ -542,7 +542,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 		}
 	}
 
-	if( input.MenuI == GAME_BUTTON_SELECT && input.type != IET_REPEAT )
+	/*if( input.MenuI == GAME_BUTTON_SELECT && input.type != IET_REPEAT )
 		m_bAcceptSelectRelease[input.pn] = (input.type == IET_FIRST_PRESS);
 
 	if( SELECT_MENU_AVAILABLE && input.MenuI == GAME_BUTTON_SELECT && input.type != IET_REPEAT )
@@ -585,7 +585,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 		if( g_CanOpenOptionsList.Ago() > OPTIONS_LIST_TIMEOUT )
 			m_bAcceptSelectRelease[input.pn] = false;
 		return true;
-	}
+	}*/
 
 	if( m_SelectionState == SelectionState_SelectingSong  &&
 		(input.MenuI == m_GameButtonNextSong || input.MenuI == m_GameButtonPreviousSong || input.MenuI == GAME_BUTTON_SELECT) )
@@ -1248,7 +1248,7 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 			if( pCourse->m_iLives != -1 )
 			{
 				SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_LifeType, LifeType_Battery );
-				SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_iBatteryLives, pCourse->m_iLives );
+				SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_BatteryLives, pCourse->m_iLives );
 			}
 			if( pCourse->GetCourseType() == COURSE_TYPE_SURVIVAL)
 				SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_LifeType, LifeType_Time );

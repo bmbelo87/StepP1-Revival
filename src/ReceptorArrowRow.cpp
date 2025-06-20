@@ -37,14 +37,19 @@ ReceptorArrowRow::~ReceptorArrowRow()
 void ReceptorArrowRow::Update( float fDeltaTime )
 {
 	ActorFrame::Update( fDeltaTime );
-	ArrowEffects::Update();
+	//ArrowEffects::Update(); //xMAx - esto tiene que estar en Player::Update
 
 	for( unsigned c=0; c<m_ReceptorArrow.size(); c++ )
 	{
 		// m_fDark==1 or m_fFadeToFailPercent==1 should make fBaseAlpha==0
-		float fBaseAlpha = (1 - m_pPlayerState->m_PlayerOptions.GetCurrent().m_fDark) * (1 - m_fFadeToFailPercent);
+		float fBaseAlpha = (1 - m_pPlayerState->m_PlayerOptions.GetCurrent().m_fDark);
+		if( m_fFadeToFailPercent != -1 )
+		{
+			fBaseAlpha *= (1 - m_fFadeToFailPercent);
+		}
 		CLAMP( fBaseAlpha, 0.0f, 1.0f );
-		SetBaseAlpha( fBaseAlpha );
+		//m_ReceptorArrow[c]->SetBaseAlpha( fBaseAlpha );	// xMAx - Se oculta solamente el receptor, no el efector del Press
+		m_ReceptorArrow[c]->SetReceptorAlpha( fBaseAlpha );
 
 		// set arrow XYZ
 		float fX = ArrowEffects::GetXPos( m_pPlayerState, c, 0 );
@@ -84,6 +89,7 @@ void ReceptorArrowRow::SetPressed( int iCol )
 	m_ReceptorArrow[iCol]->SetPressed();
 }
 
+
 void ReceptorArrowRow::SetNoteUpcoming( int iCol, bool b )
 {
 	ASSERT( iCol >= 0  &&  iCol < (int) m_ReceptorArrow.size() );
@@ -92,26 +98,26 @@ void ReceptorArrowRow::SetNoteUpcoming( int iCol, bool b )
 
 
 /*
- * (c) 2001-2003 Chris Danford
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2003 Chris Danford
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

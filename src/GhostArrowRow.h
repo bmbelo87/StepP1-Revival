@@ -14,6 +14,7 @@ public:
 	virtual void Update( float fDeltaTime );
 	virtual void DrawPrimitives();
 
+	//void Load( const PlayerState* pPlayerState, float fYReverseOffset );
 	void Load( const PlayerState* pPlayerState );
 
 	void DidTapNote( int iCol, TapNoteScore tns, bool bBright );
@@ -21,7 +22,7 @@ public:
 	void SetHoldShowing( int iCol, const TapNote &tn );
 
 protected:
-	float m_fYReverseOffsetPixels;
+	//float m_fYReverseOffsetPixels;
 	const PlayerState* m_pPlayerState;
 
 	vector<Actor *> 	m_Ghost;

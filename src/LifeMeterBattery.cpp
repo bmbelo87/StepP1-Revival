@@ -9,7 +9,7 @@
 
 LifeMeterBattery::LifeMeterBattery()
 {
-	m_iLivesLeft = GAMESTATE->m_SongOptions.GetStage().m_iBatteryLives;
+	m_iLivesLeft = GAMESTATE->m_SongOptions.GetStage().m_BatteryLives;
 	m_iTrailingLivesLeft = m_iLivesLeft;
 
 	m_soundGainLife.Load( THEME->GetPathS("LifeMeterBattery","gain") );
@@ -80,7 +80,7 @@ void LifeMeterBattery::OnSongEnded()
 	if( m_pPlayerStageStats->m_bFailed || m_iLivesLeft == 0 )
 		return;
 
-	if( m_iLivesLeft < GAMESTATE->m_SongOptions.GetSong().m_iBatteryLives )
+	if( m_iLivesLeft < GAMESTATE->m_SongOptions.GetSong().m_BatteryLives )
 	{
 		m_iTrailingLivesLeft = m_iLivesLeft;
 		PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
@@ -90,7 +90,7 @@ void LifeMeterBattery::OnSongEnded()
 			m_iLivesLeft += pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].iGainLives;
 		else
 			m_iLivesLeft += ( GAMESTATE->m_pCurSteps[pn]->GetMeter()>=8 ? 2 : 1 );
-		m_iLivesLeft = min( m_iLivesLeft, GAMESTATE->m_SongOptions.GetSong().m_iBatteryLives );
+		m_iLivesLeft = min( m_iLivesLeft, GAMESTATE->m_SongOptions.GetSong().m_BatteryLives );
 
 		if( m_iTrailingLivesLeft < m_iLivesLeft )
 			m_soundGainLife.Play();
@@ -202,7 +202,7 @@ bool LifeMeterBattery::IsInDanger() const
 
 bool LifeMeterBattery::IsHot() const
 {
-	return m_iLivesLeft == GAMESTATE->m_SongOptions.GetSong().m_iBatteryLives;
+	return m_iLivesLeft == GAMESTATE->m_SongOptions.GetSong().m_BatteryLives;
 }
 
 bool LifeMeterBattery::IsFailing() const
@@ -212,14 +212,14 @@ bool LifeMeterBattery::IsFailing() const
 
 float LifeMeterBattery::GetLife() const
 {
-	if( !GAMESTATE->m_SongOptions.GetSong().m_iBatteryLives )
+	if( !GAMESTATE->m_SongOptions.GetSong().m_BatteryLives )
 		return 1;
 
-	return float(m_iLivesLeft) / GAMESTATE->m_SongOptions.GetSong().m_iBatteryLives;
+	return float(m_iLivesLeft) / GAMESTATE->m_SongOptions.GetSong().m_BatteryLives;
 }
 int LifeMeterBattery::GetRemainingLives() const
 {
-	if( !GAMESTATE->m_SongOptions.GetSong().m_iBatteryLives )
+	if( !GAMESTATE->m_SongOptions.GetSong().m_BatteryLives )
 		return 1;
 
 	return m_iLivesLeft;
@@ -248,7 +248,7 @@ class LunaLifeMeterBattery: public Luna<LifeMeterBattery>
 {
 public:
 	static int GetLivesLeft( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetLivesLeft() ); return 1; }
-	static int GetTotalLives( T* p, lua_State *L )	{ lua_pushnumber( L, GAMESTATE->m_SongOptions.GetSong().m_iBatteryLives ); return 1; }
+	static int GetTotalLives( T* p, lua_State *L )	{ lua_pushnumber( L, GAMESTATE->m_SongOptions.GetSong().m_BatteryLives ); return 1; }
 	static int ChangeLives( T* p, lua_State *L )	{ p->ChangeLives(IArg(1)); return 0; }
 
 	LunaLifeMeterBattery()

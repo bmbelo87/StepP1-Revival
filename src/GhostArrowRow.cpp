@@ -70,19 +70,10 @@ void GhostArrowRow::Update( float fDeltaTime )
 				m_Ghost[i]->PlayCommand( "HoldingOff" );
 			else if( m_bLastHoldShowing[i] == TapNote::hold_head_roll )
 				m_Ghost[i]->PlayCommand( "RollOff" );
-			/*
-			else if( m_bLastHoldShowing[i] == TapNote::hold_head_mine )
-				m_Ghost[i]->PlayCommand( "MinefieldOff" );
-			*/
-
 			if( m_bHoldShowing[i] == TapNote::hold_head_hold )
 				m_Ghost[i]->PlayCommand( "HoldingOn" );
 			else if( m_bHoldShowing[i] == TapNote::hold_head_roll )
 				m_Ghost[i]->PlayCommand( "RollOn" );
-			/*
-			else if( m_bHoldShowing[i] == TapNote::hold_head_mine )
-				m_Ghost[i]->PlayCommand( "MinefieldOn" );
-			*/
 			m_bLastHoldShowing[i] = m_bHoldShowing[i];
 		}
 		m_bHoldShowing[i] = TapNote::SubType_Invalid;
@@ -103,7 +94,7 @@ void GhostArrowRow::DidTapNote( int iCol, TapNoteScore tns, bool bBright )
 {
 	ASSERT_M( iCol >= 0  &&  iCol < (int) m_Ghost.size(), ssprintf("assert(iCol %i >= 0  && iCol %i < (int)m_Ghost.size() %i) failed",iCol,iCol,(int)m_Ghost.size()) );
 
-	Message msg("ColumnJudgment");
+	/*Message msg("ColumnJudgment");
 	msg.SetParam( "TapNoteScore", tns );
 	// This may be useful for popn styled judgment :) -DaisuMaster
 	msg.SetParam( "Column", iCol );
@@ -115,15 +106,20 @@ void GhostArrowRow::DidTapNote( int iCol, TapNoteScore tns, bool bBright )
 	if( bBright )
 		m_Ghost[iCol]->PlayCommand( "Bright" );
 	else
-		m_Ghost[iCol]->PlayCommand( "Dim" );
-	RString sJudge = TapNoteScoreToString( tns );
-	m_Ghost[iCol]->PlayCommand( Capitalize(sJudge) );
+		m_Ghost[iCol]->PlayCommand( "Dim" );*/
+
+	if(bBright || tns == TNS_HitMine ) // TNS_HitMine se utiliza en Player.CPP (3185) m_pNoteField->DidTapNote( iter.Track(), tn.result.tns, false );
+	{
+		RString sJudge = TapNoteScoreToString( tns );
+		m_Ghost[iCol]->PlayCommand( Capitalize( sJudge ) );
+		m_Ghost[iCol]->PlayCommand( "Bright" ); //xMAx - added
+	}
 }
 
 void GhostArrowRow::DidHoldNote( int iCol, HoldNoteScore hns, bool bBright )
 {
 	ASSERT( iCol >= 0  &&  iCol < (int) m_Ghost.size() );
-	Message msg("ColumnJudgment");
+	/*Message msg("ColumnJudgment");
 	msg.SetParam( "HoldNoteScore", hns );
 	msg.SetParam( "Column", iCol );
 	if( bBright )
@@ -134,9 +130,14 @@ void GhostArrowRow::DidHoldNote( int iCol, HoldNoteScore hns, bool bBright )
 	if( bBright )
 		m_Ghost[iCol]->PlayCommand( "Bright" );
 	else
-		m_Ghost[iCol]->PlayCommand( "Dim" );
-	RString sJudge = HoldNoteScoreToString( hns );
-	m_Ghost[iCol]->PlayCommand( Capitalize(sJudge) );
+		m_Ghost[iCol]->PlayCommand( "Dim" );*/
+
+	if(bBright) 
+	{
+		RString sJudge = HoldNoteScoreToString( hns );
+		m_Ghost[iCol]->PlayCommand( Capitalize( sJudge ) );
+		m_Ghost[iCol]->PlayCommand( "Bright " ); //xMAx - added
+	}
 }
 
 void GhostArrowRow::SetHoldShowing( int iCol, const TapNote &tn )

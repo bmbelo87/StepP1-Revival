@@ -1910,6 +1910,14 @@ int SongManager::GetSongRank(Song* pSong)
 	return index; // -1 means we didn't find it
 }
 
+
+// Se actualizan las listas de canciones segun el tipo y categoria.
+// Las listas se resetean en el GAMESTATE->Reset() y ScreenReloadSongs.CPP
+void SongManager::UpdateSortArrays()
+{
+
+}
+
 // lua start
 #include "LuaBinding.h"
 

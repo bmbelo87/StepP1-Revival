@@ -36,7 +36,9 @@ public:
 		m_fPassmark(0), m_SpeedfPassmark(1.0f),
 		m_fRandomSpeed(0), m_SpeedfRandomSpeed(1.0f),
 		m_bMuteOnError(false), m_FailType(FailType_Immediate),
-		m_bNX(false), m_bJudgmentReverse(false)
+		m_bNX(false), m_bJudgmentReverse(false),
+		m_bRandomSkin(false), m_bEW(false),
+		m_bAutoNoteskin(false), m_bRouletteNoteskin(false)
 	{
 		m_sNoteSkin = "";
 		ZERO( m_fAccels );	ONE( m_SpeedfAccels );

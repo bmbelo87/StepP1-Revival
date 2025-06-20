@@ -557,7 +557,7 @@ static const AutoMappings g_AutoKeyMappings_Pump = AutoMappings (
 // PIU Defaults: RowSpacing = 60; ColSpacing = 52; ArrowSize = 54;
 // apparently column spacing is 48px
 //static ThemeMetric<int>	PUMP_COL_SPACING	("ColumnSpacing","Pump");
-static const int PUMP_COL_SPACING = 48;
+static const int PUMP_COL_SPACING = 50;	//xMAx - cambi� 48 por 50
 
 static const Style g_Style_Pump_Single =
 {	// STYLE_PUMP_SINGLE
@@ -647,7 +647,7 @@ static const Style g_Style_Pump_HalfDouble =
 	6,				// m_iColsPerPlayer
 	{	// m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
 		{	// PLAYER_1
-			{ TRACK_1,	-PUMP_COL_SPACING*2.5f-4, NULL },
+			{ TRACK_1,	-PUMP_COL_SPACING*2.5f-4, NULL },	// xMAx - cambi� el +-2 por +-4
 			{ TRACK_2,	-PUMP_COL_SPACING*1.5f-4, NULL },
 			{ TRACK_3,	-PUMP_COL_SPACING*0.5f-4, NULL },
 			{ TRACK_4,	+PUMP_COL_SPACING*0.5f+4, NULL },
@@ -687,28 +687,28 @@ static const Style g_Style_Pump_Double =
 	10,				// m_iColsPerPlayer
 	{	// m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
 		{	// PLAYER_1
-			{ TRACK_1,	-PUMP_COL_SPACING*4.5f-4, NULL },
-			{ TRACK_2,	-PUMP_COL_SPACING*3.5f-4, NULL },
-			{ TRACK_3,	-PUMP_COL_SPACING*2.5f-4, NULL },
-			{ TRACK_4,	-PUMP_COL_SPACING*1.5f-4, NULL },
-			{ TRACK_5,	-PUMP_COL_SPACING*0.5f-4, NULL },
-			{ TRACK_6,	+PUMP_COL_SPACING*0.5f+4, NULL },
-			{ TRACK_7,	+PUMP_COL_SPACING*1.5f+4, NULL },
-			{ TRACK_8,	+PUMP_COL_SPACING*2.5f+4, NULL },
-			{ TRACK_9,	+PUMP_COL_SPACING*3.5f+4, NULL },
-			{ TRACK_10,	+PUMP_COL_SPACING*4.5f+4, NULL },
+			{ TRACK_1,	-PUMP_COL_SPACING*4.5f-1, NULL },
+			{ TRACK_2,	-PUMP_COL_SPACING*3.5f-1, NULL },
+			{ TRACK_3,	-PUMP_COL_SPACING*2.5f-1, NULL },
+			{ TRACK_4,	-PUMP_COL_SPACING*1.5f-1, NULL },
+			{ TRACK_5,	-PUMP_COL_SPACING*0.5f-1, NULL },
+			{ TRACK_6,	+PUMP_COL_SPACING*0.5f+1, NULL },
+			{ TRACK_7,	+PUMP_COL_SPACING*1.5f+1, NULL },
+			{ TRACK_8,	+PUMP_COL_SPACING*2.5f+1, NULL },
+			{ TRACK_9,	+PUMP_COL_SPACING*3.5f+1, NULL },
+			{ TRACK_10,	+PUMP_COL_SPACING*4.5f+1, NULL },
 		},
 		{	// PLAYER_2
-			{ TRACK_1,	-PUMP_COL_SPACING*4.5f-4, NULL },
-			{ TRACK_2,	-PUMP_COL_SPACING*3.5f-4, NULL },
-			{ TRACK_3,	-PUMP_COL_SPACING*2.5f-4, NULL },
-			{ TRACK_4,	-PUMP_COL_SPACING*1.5f-4, NULL },
-			{ TRACK_5,	-PUMP_COL_SPACING*0.5f-4, NULL },
-			{ TRACK_6,	+PUMP_COL_SPACING*0.5f+4, NULL },
-			{ TRACK_7,	+PUMP_COL_SPACING*1.5f+4, NULL },
-			{ TRACK_8,	+PUMP_COL_SPACING*2.5f+4, NULL },
-			{ TRACK_9,	+PUMP_COL_SPACING*3.5f+4, NULL },
-			{ TRACK_10,	+PUMP_COL_SPACING*4.5f+4, NULL },
+			{ TRACK_1,	-PUMP_COL_SPACING*4.5f-1, NULL },
+			{ TRACK_2,	-PUMP_COL_SPACING*3.5f-1, NULL },
+			{ TRACK_3,	-PUMP_COL_SPACING*2.5f-1, NULL },
+			{ TRACK_4,	-PUMP_COL_SPACING*1.5f-1, NULL },
+			{ TRACK_5,	-PUMP_COL_SPACING*0.5f-1, NULL },
+			{ TRACK_6,	+PUMP_COL_SPACING*0.5f+1, NULL },
+			{ TRACK_7,	+PUMP_COL_SPACING*1.5f+1, NULL },
+			{ TRACK_8,	+PUMP_COL_SPACING*2.5f+1, NULL },
+			{ TRACK_9,	+PUMP_COL_SPACING*3.5f+1, NULL },
+			{ TRACK_10,	+PUMP_COL_SPACING*4.5f+1, NULL },
 		},
 	},
 	{	// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -821,28 +821,28 @@ static const Style g_Style_Pump_Routine =
 	10,				// m_iColsPerPlayer
 	{	// m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
 		{	// PLAYER_1
-			{ TRACK_1,	-PUMP_COL_SPACING*4.5f-4, NULL },
-			{ TRACK_2,	-PUMP_COL_SPACING*3.5f-4, NULL },
-			{ TRACK_3,	-PUMP_COL_SPACING*2.5f-4, NULL },
-			{ TRACK_4,	-PUMP_COL_SPACING*1.5f-4, NULL },
-			{ TRACK_5,	-PUMP_COL_SPACING*0.5f-4, NULL },
-			{ TRACK_6,	+PUMP_COL_SPACING*0.5f+4, NULL },
-			{ TRACK_7,	+PUMP_COL_SPACING*1.5f+4, NULL },
-			{ TRACK_8,	+PUMP_COL_SPACING*2.5f+4, NULL },
-			{ TRACK_9,	+PUMP_COL_SPACING*3.5f+4, NULL },
-			{ TRACK_10,	+PUMP_COL_SPACING*4.5f+4, NULL },
+			{ TRACK_1,	-PUMP_COL_SPACING*4.5f-1, NULL },
+			{ TRACK_2,	-PUMP_COL_SPACING*3.5f-1, NULL },
+			{ TRACK_3,	-PUMP_COL_SPACING*2.5f-1, NULL },
+			{ TRACK_4,	-PUMP_COL_SPACING*1.5f-1, NULL },
+			{ TRACK_5,	-PUMP_COL_SPACING*0.5f-1, NULL },
+			{ TRACK_6,	+PUMP_COL_SPACING*0.5f+1, NULL },
+			{ TRACK_7,	+PUMP_COL_SPACING*1.5f+1, NULL },
+			{ TRACK_8,	+PUMP_COL_SPACING*2.5f+1, NULL },
+			{ TRACK_9,	+PUMP_COL_SPACING*3.5f+1, NULL },
+			{ TRACK_10,	+PUMP_COL_SPACING*4.5f+1, NULL },
 		},
 		{	// PLAYER_2
-			{ TRACK_1,	-PUMP_COL_SPACING*4.5f-4, NULL },
-			{ TRACK_2,	-PUMP_COL_SPACING*3.5f-4, NULL },
-			{ TRACK_3,	-PUMP_COL_SPACING*2.5f-4, NULL },
-			{ TRACK_4,	-PUMP_COL_SPACING*1.5f-4, NULL },
-			{ TRACK_5,	-PUMP_COL_SPACING*0.5f-4, NULL },
-			{ TRACK_6,	+PUMP_COL_SPACING*0.5f+4, NULL },
-			{ TRACK_7,	+PUMP_COL_SPACING*1.5f+4, NULL },
-			{ TRACK_8,	+PUMP_COL_SPACING*2.5f+4, NULL },
-			{ TRACK_9,	+PUMP_COL_SPACING*3.5f+4, NULL },
-			{ TRACK_10,	+PUMP_COL_SPACING*4.5f+4, NULL },
+			{ TRACK_1,	-PUMP_COL_SPACING*4.5f-1, NULL },
+			{ TRACK_2,	-PUMP_COL_SPACING*3.5f-1, NULL },
+			{ TRACK_3,	-PUMP_COL_SPACING*2.5f-1, NULL },
+			{ TRACK_4,	-PUMP_COL_SPACING*1.5f-1, NULL },
+			{ TRACK_5,	-PUMP_COL_SPACING*0.5f-1, NULL },
+			{ TRACK_6,	+PUMP_COL_SPACING*0.5f+1, NULL },
+			{ TRACK_7,	+PUMP_COL_SPACING*1.5f+1, NULL },
+			{ TRACK_8,	+PUMP_COL_SPACING*2.5f+1, NULL },
+			{ TRACK_9,	+PUMP_COL_SPACING*3.5f+1, NULL },
+			{ TRACK_10,	+PUMP_COL_SPACING*4.5f+1, NULL },
 		},
 	},
 	{	// m_iInputColumn[NUM_GameController][NUM_GameButton]
@@ -2990,10 +2990,11 @@ void GameManager::GetCompatibleStyles( const Game *pGame, int iNumPlayers, vecto
 		DEFAULT_FAIL( styleType );
 		case StyleType_OnePlayerOneSide:
 		case StyleType_OnePlayerTwoSides:
+		case StyleType_TwoPlayersSharedSides: // agregado para el DoublePerformance - xMAx
 			iNumPlayersRequired = 1;
 			break;
 		case StyleType_TwoPlayersTwoSides:
-		case StyleType_TwoPlayersSharedSides:
+		//case StyleType_TwoPlayersSharedSides:
 			iNumPlayersRequired = 2;
 			break;
 		}

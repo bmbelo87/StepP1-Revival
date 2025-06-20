@@ -4,7 +4,7 @@
 // This options has weird interactions depending on m_bEventMode;
 // use GameState::GetCoinMode().
 Preference<CoinMode> GamePreferences::m_CoinMode( "CoinMode", CoinMode_Home );
-//Preference<PlayerController> GamePreferences::m_AutoPlay( "AutoPlay", PC_HUMAN ); //xMAx - note uised anymore
+//Preference<PlayerController> GamePreferences::m_AutoPlay( "AutoPlay", PC_HUMAN ); //xMAx - note used anymore
 Preference<PlayerController> GamePreferences::m_AutoPlayP1( "AutoPlayP1", PC_HUMAN );
 Preference<PlayerController> GamePreferences::m_AutoPlayP2( "AutoPlayP2", PC_HUMAN );
 

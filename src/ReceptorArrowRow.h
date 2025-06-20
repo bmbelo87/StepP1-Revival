@@ -15,6 +15,7 @@ public:
 	virtual void Update( float fDeltaTime );
 	virtual void DrawPrimitives();
 
+	//void Load( const PlayerState* pPlayerState, float fYReverseOffset );
 	void Load( const PlayerState* pPlayerState );
 
 	void Step( int iCol, TapNoteScore score );
@@ -25,7 +26,7 @@ public:
 
 protected:
 	const PlayerState* m_pPlayerState;
-	float m_fYReverseOffsetPixels;
+	//float m_fYReverseOffsetPixels;
 	float m_fFadeToFailPercent;
 
 	vector<ReceptorArrow *> 	m_ReceptorArrow;
