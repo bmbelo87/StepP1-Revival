@@ -17,7 +17,7 @@
 #include "InputEventPlus.h"
 #include "SoundEffectControl.h"
 #include "GameplayAssist.h"
-#include "Quad.h"	// xMAx - added for mines flash
+#include "Quad.h"	//xMAx - added for mines flash
 
 class LyricsLoader;
 class ActiveAttackList;
@@ -60,24 +60,24 @@ public:
 	/** @brief The player has lost all of their lives: show the special game over. */
 	void ShowOniGameOver();
 	/**
-	 * @brief Retrieve the player's state and stage stats index.
-	 * @return the player's state and stage stats index.
-	 */
+	* @brief Retrieve the player's state and stage stats index.
+	* @return the player's state and stage stats index.
+	*/
 	MultiPlayer GetPlayerStateAndStageStatsIndex()	{ return m_pn == PLAYER_INVALID ? m_mp : (MultiPlayer)m_pn; }
 	PlayerState *GetPlayerState();
 	PlayerStageStats *GetPlayerStageStats();
 	PlayerNumber GetStepsAndTrailIndex()		{ return m_pn == PLAYER_INVALID ? PLAYER_1 : m_pn; }
 	/**
-	 * @brief Determine if the player information is enabled.
-	 * @return its success or failure. */
+	* @brief Determine if the player information is enabled.
+	* @return its success or failure. */
 	bool IsEnabled();
 	/**
-	 * @brief Determine if we're in MultiPlayer.
-	 * @return true if it is MultiPlayer, false otherwise. */
+	* @brief Determine if we're in MultiPlayer.
+	* @return true if it is MultiPlayer, false otherwise. */
 	bool IsMultiPlayer() const { return m_mp != MultiPlayer_Invalid; }
 	/**
-	 * @brief Retrieve the name of the Player based on the mode.
-	 * @return the name of the Player. */
+	* @brief Retrieve the name of the Player based on the mode.
+	* @return the name of the Player. */
 	RString GetName() const
 	{
 		if( m_bIsDummy )
@@ -104,14 +104,14 @@ public:
 	SoundEffectControl	m_SoundEffectControl;
 
 	/**
-	 * @brief The list of Steps a player has to go through in this set.
-	 *
-	 * The size may be greater than 1 if playing a course. */
+	* @brief The list of Steps a player has to go through in this set.
+	*
+	* The size may be greater than 1 if playing a course. */
 	vector<Steps*>		m_vpStepsQueue;
 	/**
-	 * @brief The list of attack modifiers a player has to go through in this set.
-	 *
-	 * The size may be greater than 1 if playing a course. */
+	* @brief The list of attack modifiers a player has to go through in this set.
+	*
+	* The size may be greater than 1 if playing a course. */
 	vector<AttackArray>	m_asModifiersQueue;
 
 	/** @brief The LifeMeter showing a Player's health. */
@@ -140,9 +140,9 @@ public:
 	Player			*m_pPlayer;
 
 	/**
-	 * @brief The inventory of attacks.
-	 *
-	 * This is mainly used in PLAY_MODE_BATTLE. */
+	* @brief The inventory of attacks.
+	*
+	* This is mainly used in PLAY_MODE_BATTLE. */
 	Inventory		*m_pInventory;
 
 	StepsDisplay	*m_pStepsDisplay;
@@ -166,17 +166,17 @@ public:
 	virtual void Cancel( ScreenMessage smSendWhenDone );
 
 	/**
-	 * @brief Retrieve the current ScreenType.
-	 * @return the gameplay ScreenType. */
+	* @brief Retrieve the current ScreenType.
+	* @return the gameplay ScreenType. */
 	virtual ScreenType GetScreenType() const { return gameplay; }
 
 	/**
-	 * @brief Determine if we are to center the columns for just one player.
-	 * @return true if we center the solo player, false otherwise. */
+	* @brief Determine if we are to center the columns for just one player.
+	* @return true if we center the solo player, false otherwise. */
 	bool Center1Player() const;
 
 	// Lua
-	//virtual void PushSelf( lua_State *L ); // xMAx removed
+	//virtual void PushSelf( lua_State *L ); //xMAx removed
 	Song *GetNextCourseSong() const;
 	LifeMeter *GetLifeMeter( PlayerNumber pn );
 	PlayerInfo *GetPlayerInfo( PlayerNumber pn );
@@ -190,11 +190,11 @@ public:
 	float m_fHasteTimeBetweenUpdates; // Seconds between haste updates.
 	float m_fHasteLifeSwitchPoint; // Life amount below which GAMESTATE->m_fHasteRate is based on the life amount.
 
-	// xMAx
+	// xMAx 
 	float	m_fLastSecondForCurrentSong;
-	float	GetLastSecondForCurrentSong( void );
+	float   GetLastSecondForCurrentSong(void);
 	Quad	m_WhiteFlashForMineExplosion;
-	BGAOff	*m_BGAOff;
+	BGAOff*	m_BGAOff;
 	Quad	m_FadeBGA;
 	virtual void DrawPrimitives();
 
@@ -232,7 +232,7 @@ protected:
 	void ReloadCurrentSong();
 	virtual void LoadNextSong();
 	void StartPlayingSong( float fMinTimeToNotes, float fMinTimeToMusic );
-	// void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic, float &fSecondsToStartTransitioningOut );
+	//void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic, float &fSecondsToStartTransitioningOut );
 	void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic );
 	void LoadLights();
 	void PauseGame( bool bPause, GameController gc = GameController_Invalid );
@@ -270,9 +270,9 @@ protected:
 
 	GameController		m_PauseController;
 	/**
-	 * @brief The songs left to play.
-	 *
-	 * The size can be greater than 1 if playing a course. */
+	* @brief The songs left to play.
+	*
+	* The size can be greater than 1 if playing a course. */
 	vector<Song*>		m_apSongsQueue;
 
 	float			m_fTimeSinceLastDancingComment;	// this counter is only running while STATE_DANCING
@@ -305,9 +305,9 @@ protected:
 	Transition		m_Toasty;
 
 	/**
-	 * @brief How much time has the player survived in the extra stage?
-	 *
-	 * TODO: Move this into a BGA. */
+	* @brief How much time has the player survived in the extra stage?
+	*
+	* TODO: Move this into a BGA. */
 	BitmapText		m_textSurviveTime;
 
 
@@ -330,7 +330,7 @@ protected:
 	virtual PlayerInfo &GetPlayerInfoForInput( const InputEventPlus& iep )  { return m_vPlayerInfo[iep.pn]; }
 
 	RageTimer		m_timerGameplaySeconds;
-	
+
 	// HACK: We have no idea whether we're actually using SMOnline or not.
 	// No, seriously, NOWHERE is it stored what room we're in or whether we're in a room at all.
 	// Apparently we just hope the server is keeping track.
@@ -359,28 +359,28 @@ vector<PlayerInfo>::iterator GetNextVisiblePlayerInfo		( vector<PlayerInfo>::ite
 #endif
 
 /**
- * @file
- * @author Chris Danford, Glenn Maynard (c) 2001-2004
- * @section LICENSE
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* @file
+* @author Chris Danford, Glenn Maynard (c) 2001-2004
+* @section LICENSE
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

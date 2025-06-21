@@ -20,9 +20,9 @@
 ThemeMetric<bool> USE_CREDIT	( "NotesWriterSM", "DescriptionUsesCreditField" );
 
 /**
- * @brief Write out the common tags for .SM files.
- * @param f the file in question.
- * @param out the Song in question. */
+* @brief Write out the common tags for .SM files.
+* @param f the file in question.
+* @param out the Song in question. */
 static void WriteGlobalTags( RageFile &f, Song &out )
 {
 	TimingData &timing = out.m_SongTiming;
@@ -52,26 +52,26 @@ static void WriteGlobalTags( RageFile &f, Song &out )
 		default:
 			FAIL_M(ssprintf("Invalid selection display: %i", out.m_SelectionDisplay));
 		case Song::SHOW_ALWAYS:	f.Write( "YES" );		break;
-		//case Song::SHOW_NONSTOP:	f.Write( "NONSTOP" );	break;
+			//case Song::SHOW_NONSTOP:	f.Write( "NONSTOP" );	break;
 		case Song::SHOW_NEVER:		f.Write( "NO" );		break;
 	}
 	f.PutLine( ";" );
 
 	switch( out.m_DisplayBPMType )
 	{
-	case DISPLAY_BPM_ACTUAL:
-		// write nothing
-		break;
-	case DISPLAY_BPM_SPECIFIED:
-		if( out.m_fSpecifiedBPMMin == out.m_fSpecifiedBPMMax )
-			f.PutLine( ssprintf( "#DISPLAYBPM:%.6f;", out.m_fSpecifiedBPMMin ) );
-		else
-			f.PutLine( ssprintf( "#DISPLAYBPM:%.6f:%.6f;", 
-					    out.m_fSpecifiedBPMMin, out.m_fSpecifiedBPMMax ) );
-		break;
-	case DISPLAY_BPM_RANDOM:
-		f.PutLine( ssprintf( "#DISPLAYBPM:*;" ) );
-		break;
+		case DISPLAY_BPM_ACTUAL:
+			// write nothing
+			break;
+		case DISPLAY_BPM_SPECIFIED:
+			if( out.m_fSpecifiedBPMMin == out.m_fSpecifiedBPMMax )
+				f.PutLine( ssprintf( "#DISPLAYBPM:%.6f;", out.m_fSpecifiedBPMMin ) );
+			else
+				f.PutLine( ssprintf( "#DISPLAYBPM:%.6f:%.6f;", 
+					   out.m_fSpecifiedBPMMin, out.m_fSpecifiedBPMMax ) );
+			break;
+		case DISPLAY_BPM_RANDOM:
+			f.PutLine( ssprintf( "#DISPLAYBPM:*;" ) );
+			break;
 	}
 
 
@@ -147,9 +147,9 @@ static void WriteGlobalTags( RageFile &f, Song &out )
 			f.PutLine( (*bgc).ToString() +"," );
 
 		/* If there's an animation plan at all, add a dummy "-nosongbg-" tag to indicate that
-		 * this file doesn't want a song BG entry added at the end.  See SMLoader::TidyUpData.
-		 * This tag will be removed on load.  Add it at a very high beat, so it won't cause
-		 * problems if loaded in older versions. */
+		* this file doesn't want a song BG entry added at the end.  See SMLoader::TidyUpData.
+		* This tag will be removed on load.  Add it at a very high beat, so it won't cause
+		* problems if loaded in older versions. */
 		if( b==0 && !out.GetBackgroundChanges(b).empty() )
 			f.PutLine( "99999=-nosongbg-=1.000=0=0=0 // don't automatically add -songbackground-" );
 		f.PutLine( ";" );
@@ -178,9 +178,9 @@ static void WriteGlobalTags( RageFile &f, Song &out )
 }
 
 /**
- * @brief Turn a vector of lines into a single line joined by newline characters.
- * @param lines the list of lines to join.
- * @return the joined lines. */
+* @brief Turn a vector of lines into a single line joined by newline characters.
+* @param lines the list of lines to join.
+* @return the joined lines. */
 static RString JoinLineList( vector<RString> &lines )
 {
 	for( unsigned i = 0; i < lines.size(); ++i )
@@ -195,10 +195,10 @@ static RString JoinLineList( vector<RString> &lines )
 }
 
 /**
- * @brief Retrieve the notes from the #NOTES tag.
- * @param song the Song in question.
- * @param in the Steps in question.
- * @return the #NOTES tag. */
+* @brief Retrieve the notes from the #NOTES tag.
+* @param song the Song in question.
+* @param in the Steps in question.
+* @return the #NOTES tag. */
 static RString GetSMNotesTag( const Song &song, const Steps &in )
 {
 	vector<RString> lines;
@@ -206,14 +206,14 @@ static RString GetSMNotesTag( const Song &song, const Steps &in )
 	lines.push_back( "" );
 	// Escape to prevent some clown from making a comment of "\r\n;"
 	lines.push_back( ssprintf("//---------------%s - %s----------------",
-		GAMEMAN->GetStepsTypeInfo(in.m_StepsType).szName, SmEscape(in.GetDescription()).c_str()) );
+			 GAMEMAN->GetStepsTypeInfo(in.m_StepsType).szName, SmEscape(in.GetDescription()).c_str()) );
 	lines.push_back( song.m_vsKeysoundFile.empty() ? "#NOTES:" : "#NOTES2:" );
 	lines.push_back( ssprintf( "     %s:", GAMEMAN->GetStepsTypeInfo(in.m_StepsType).szName ) );
 	RString desc = (USE_CREDIT ? in.GetCredit() : in.GetChartName());
 	lines.push_back( ssprintf( "     %s:", SmEscape(desc).c_str() ) );
 	lines.push_back( ssprintf( "     %s:", DifficultyToString(in.GetDifficulty()).c_str() ) );
 	lines.push_back( ssprintf( "     %d:", in.GetMeter() ) );
-	
+
 	vector<RString> asRadarValues;
 	// OpenITG simfiles use 11 radar categories.
 	int categories = 11;
@@ -222,7 +222,7 @@ static RString GetSMNotesTag( const Song &song, const Steps &in )
 		const RadarValues &rv = in.GetRadarValues( pn );
 		// Can't use the foreach anymore due to flexible radar lines.
 		for( RadarCategory rc = (RadarCategory)0; rc < categories; 
-		    enum_add<RadarCategory>( rc, 1 ) )
+		     enum_add<RadarCategory>( rc, 1 ) )
 		{
 			asRadarValues.push_back( ssprintf("%.6f", rv[rc]) );
 		}
@@ -282,8 +282,8 @@ void NotesWriterSM::GetEditFileContents( const Song *pSong, const Steps *pSteps,
 RString NotesWriterSM::GetEditFileName( const Song *pSong, const Steps *pSteps )
 {
 	/* Try to make a unique name. This isn't guaranteed. Edit descriptions are
-	 * case-sensitive, filenames on disk are usually not, and we decimate certain
-	 * characters for FAT filesystems. */
+	* case-sensitive, filenames on disk are usually not, and we decimate certain
+	* characters for FAT filesystems. */
 	RString sFile = pSong->GetTranslitFullTitle() + " - " + pSteps->GetDescription();
 
 	// HACK:
@@ -330,7 +330,7 @@ bool NotesWriterSM::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, RS
 	}
 
 	/* If the file name of the edit has changed since the last save, then delete the old
-	 * file after saving the new one. If we delete it first, then we'll lose data on error. */
+	* file after saving the new one. If we delete it first, then we'll lose data on error. */
 
 	if( bFileNameChanging )
 		FILEMAN->Remove( pSteps->GetFilename() );
@@ -340,26 +340,26 @@ bool NotesWriterSM::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, RS
 }
 
 /*
- * (c) 2001-2004 Chris Danford, Glenn Maynard
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2004 Chris Danford, Glenn Maynard
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

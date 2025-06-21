@@ -215,13 +215,13 @@ void NoteField::CacheAllUsedNoteSkins()
 		RString m_NS;
 		RString m_ChannelName = GAMESTATE->m_pCurSong->m_sGroupName;
 
-		if( m_ChannelName == "06-PRO~PRO2" ) 			m_NS = "pro";
-		else if( m_ChannelName == "08-1ST~3RD" ) 			m_NS = "extra_new";
+		if ( m_ChannelName == "06-PRO~PRO2") 			m_NS = "pro";
+		else if ( m_ChannelName == "08-1ST~3RD") 			m_NS = "extra_new";
 		else if( m_ChannelName == "09-S.E.~EXTRA" )
 		{
 			RString m_SongFolder = GAMESTATE->m_pCurSong->m_sSongFolder;
 
-			if( m_SongFolder.Left( 3 ) == "(1)" )
+			if( m_SongFolder.Left(3) == "(1)" )
 				m_NS = "extra_mix";
 			else
 				m_NS = "extra_new";
@@ -232,21 +232,18 @@ void NoteField::CacheAllUsedNoteSkins()
 		{
 			RString m_SongFolder = GAMESTATE->m_pCurSong->m_sSongFolder;
 
-			if( m_SongFolder.Left( 3 ) == "(2)" )
+			if( m_SongFolder.Left(3) == "(2)" )
 				m_NS = "nx";
 			else
 				m_NS = "nx2";
 		}
-		else if( m_ChannelName == "13-NX ABSOLUTE" )		m_NS = "nxa";
+		else if( m_ChannelName == "13-NX ABSOLUTE" )	m_NS = "nxa";
 		else if( m_ChannelName == "14-FIESTA" )			m_NS = "default";
 		else if( m_ChannelName == "15-FIESTA EX" )		m_NS = "default";
 		else if( m_ChannelName == "16-FIESTA 2" )		m_NS = "fiesta_2";
-		else if( m_ChannelName == "17-PRIME" )			m_NS = "prime";
-		else if( m_ChannelName == "18-PRIME 2" )		m_NS = "prime_2";
-		else if( m_ChannelName == "19-XX" )			m_NS = "xx";
-		else if( m_ChannelName == "20-PHOENIX" )		m_NS = "phoenix";
+		else if( m_ChannelName == "17-PRIME" )			m_NS = "fiesta_2-prime";
 		else if( m_ChannelName == "05-JUMP" )			m_NS = "jump";
-		else if( m_ChannelName == "07-INFINITY" )		m_NS = "infinity";
+		else if( m_ChannelName == "07-INFINITY" )			m_NS = "infinity";
 		else m_NS = "fiesta_2-prime";
 
 		CacheNoteSkin( m_NS );

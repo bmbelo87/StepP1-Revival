@@ -69,6 +69,8 @@ struct BackgroundChange
 	 * @brief Get the string representation of the change.
 	 * @return the string representation. */
 	RString ToString() const;
+
+	bool	bOneLineBGA;
 };
 /** @brief Shared background-related routines. */
 namespace BackgroundUtil

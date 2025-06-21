@@ -22,8 +22,8 @@ typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
 /** @brief The decorations layer. */
 #define DRAW_ORDER_DECORATIONS			   0
 /** @brief The overlay layer.
- *
- * Normal screen elements go here. */
+*
+* Normal screen elements go here. */
 #define DRAW_ORDER_OVERLAY			+100
 /** @brief The transitions layer. */
 #define DRAW_ORDER_TRANSITIONS			+200
@@ -69,27 +69,27 @@ LuaDeclareType( VertAlign );
 /*
 enum EffectAction
 {
-	EffectAction_None,			// no_effect
-	// [Diffuse]
-	EffectAction_DiffuseBlink,	// diffuse_blink
-	EffectAction_DiffuseShift,	// diffuse_shift
-	EffectAction_DiffuseRamp,	// diffuse_ramp
-	EffectAction_Rainbow,		// rainbow
-	// [Glow]
-	EffectAction_GlowBlink,		// glow_blink
-	EffectAction_GlowShift,		// glow_shift
-	EffectAction_GlowRamp,		// glow_ramp
-	// [Translate]
-	EffectAction_Bob,
-	EffectAction_Bounce,
-	EffectAction_Vibrate,
-	// [Rotate]
-	EffectAction_Spin,
-	EffectAction_Wag,
-	// [Zoom]
-	EffectAction_Pulse,
-	NUM_EffectAction,
-	EffectAction_Invalid
+EffectAction_None,			// no_effect
+// [Diffuse]
+EffectAction_DiffuseBlink,	// diffuse_blink
+EffectAction_DiffuseShift,	// diffuse_shift
+EffectAction_DiffuseRamp,	// diffuse_ramp
+EffectAction_Rainbow,		// rainbow
+// [Glow]
+EffectAction_GlowBlink,		// glow_blink
+EffectAction_GlowShift,		// glow_shift
+EffectAction_GlowRamp,		// glow_ramp
+// [Translate]
+EffectAction_Bob,
+EffectAction_Bounce,
+EffectAction_Vibrate,
+// [Rotate]
+EffectAction_Spin,
+EffectAction_Wag,
+// [Zoom]
+EffectAction_Pulse,
+NUM_EffectAction,
+EffectAction_Invalid
 };
 LuaDeclareType( EffectAction );
 */
@@ -101,8 +101,8 @@ public:
 	/** @brief Set up the Actor with its initial settings. */
 	Actor();
 	/**
-	 * @brief Copy a new Actor to the old one.
-	 * @param cpy the new Actor to use in place of this one. */
+	* @brief Copy a new Actor to the old one.
+	* @param cpy the new Actor to use in place of this one. */
 	Actor( const Actor &cpy );
 	virtual ~Actor();
 	virtual Actor *Copy() const;
@@ -114,14 +114,14 @@ public:
 	static void SetBGMLight( int iLightNumber, float fCabinetLights );
 
 	/**
-	 * @brief The list of the different effects.
-	 *
-	 * todo: split out into diffuse effects and translation effects, or
-	 * create an effect stack instead. -aj */
+	* @brief The list of the different effects.
+	*
+	* todo: split out into diffuse effects and translation effects, or
+	* create an effect stack instead. -aj */
 	enum Effect { no_effect,
-			diffuse_blink, diffuse_shift, diffuse_ramp,
-			glow_blink, glow_shift, glow_ramp, rainbow,
-			wag, bounce, bob, pulse, spin, vibrate, xpulse // xMAx - se agrega el efecto xpulse
+		diffuse_blink, diffuse_shift, diffuse_ramp,
+		glow_blink, glow_shift, glow_ramp, rainbow,
+		wag, bounce, bob, pulse, spin, vibrate, xpulse // xMAx - se agreg� el efecto xpulse
 	};
 
 	/** @brief Various values an Actor's effect can be tied to. */
@@ -141,20 +141,20 @@ public:
 	};
 
 	/*
-	 * @brief What type of Effect this is.
-	 *
-	 * This is an internal enum for checking if an effect can be run;
-	 * You can't have more than one of most EffectTypes in the Effect list. (You
-	 * might be able to have mutliple EffectType_Translates; not sure yet.) -aj */
+	* @brief What type of Effect this is.
+	*
+	* This is an internal enum for checking if an effect can be run;
+	* You can't have more than one of most EffectTypes in the Effect list. (You
+	* might be able to have mutliple EffectType_Translates; not sure yet.) -aj */
 	/*
 	enum EffectType {
-		EffectType_Diffuse,
-		EffectType_Glow,
-		EffectType_Translate,
-		EffectType_Rotate,
-		EffectType_Zoom,
-		NUM_EffectType,
-		EffectType_Invalid
+	EffectType_Diffuse,
+	EffectType_Glow,
+	EffectType_Translate,
+	EffectType_Rotate,
+	EffectType_Zoom,
+	NUM_EffectType,
+	EffectType_Invalid
 	};
 	*/
 
@@ -163,34 +163,34 @@ public:
 	// This is similar to Attributes in BitmapText as far as implementation.
 	struct Effect
 	{
-		Effect() : m_Action(EffectAction_None), m_Type(EffectType_Invalid), m_fSecsIntoEffect(0),
-				m_fEffectDelta(0), m_fEffectRampUp(0.5f), m_fEffectHoldAtHalf(0),
-				m_fEffectRampDown(0.5f), m_fEffectHoldAtZero(0), m_fEffectOffset(0),
-				m_EffectClock(CLOCK_TIMER), m_vEffectMagnitude(RageVector3(0,0,10)),
-				m_effectColor1(RageColor(1,1,1,1)), m_effectColor2(RageColor(1,1,1,1))
-		{ }
+	Effect() : m_Action(EffectAction_None), m_Type(EffectType_Invalid), m_fSecsIntoEffect(0),
+	m_fEffectDelta(0), m_fEffectRampUp(0.5f), m_fEffectHoldAtHalf(0),
+	m_fEffectRampDown(0.5f), m_fEffectHoldAtZero(0), m_fEffectOffset(0),
+	m_EffectClock(CLOCK_TIMER), m_vEffectMagnitude(RageVector3(0,0,10)),
+	m_effectColor1(RageColor(1,1,1,1)), m_effectColor2(RageColor(1,1,1,1))
+	{ }
 
-		RString			m_sName; // friendly name
-		EffectAction	m_Action; // replaces the old Effect enum
-		EffectType		m_Type; // determined by EffectAction
-		float			m_fSecsIntoEffect;
-		float			m_fEffectDelta;
-		RageColor		m_EffectColor1;
-		RageColor		m_EffectColor2;
-		RageVector3		m_vEffectMagnitude;
-		EffectClock		m_EffectClock;
-		// units depend on m_EffectClock
-		float			m_fEffectRampUp;
-		float			m_fEffectHoldAtHalf;
-		float			m_fEffectRampDown;
-		float			m_fEffectHoldAtZero;
-		float			m_fEffectOffset;
+	RString			m_sName; // friendly name
+	EffectAction	m_Action; // replaces the old Effect enum
+	EffectType		m_Type; // determined by EffectAction
+	float			m_fSecsIntoEffect;
+	float			m_fEffectDelta;
+	RageColor		m_EffectColor1;
+	RageColor		m_EffectColor2;
+	RageVector3		m_vEffectMagnitude;
+	EffectClock		m_EffectClock;
+	// units depend on m_EffectClock
+	float			m_fEffectRampUp;
+	float			m_fEffectHoldAtHalf;
+	float			m_fEffectRampDown;
+	float			m_fEffectHoldAtZero;
+	float			m_fEffectOffset;
 	};
 	*/
 
 	/**
-	 * @brief The present state for the Tween.
-	 */
+	* @brief The present state for the Tween.
+	*/
 	struct TweenState
 	{
 		void Init();
@@ -205,19 +205,19 @@ public:
 		RageVector3	scale;
 		float		fSkewX, fSkewY;
 		/**
-		 * @brief The amount of cropping involved.
-		 *
-		 * If 0, there is no cropping. If 1, it's fully cropped. */
+		* @brief The amount of cropping involved.
+		*
+		* If 0, there is no cropping. If 1, it's fully cropped. */
 		RectF		crop;
 		/**
-		 * @brief The amount of fading involved.
-		 *
-		 * If 0, there is no fade. If 1, it's fully faded. */
+		* @brief The amount of fading involved.
+		*
+		* If 0, there is no fade. If 1, it's fully faded. */
 		RectF		fade;
 		/**
-		 * @brief Four values making up the diffuse in this TweenState.
-		 *
-		 * 0 = UpperLeft, 1 = UpperRight, 2 = LowerLeft, 3 = LowerRight */
+		* @brief Four values making up the diffuse in this TweenState.
+		*
+		* 0 = UpperLeft, 1 = UpperRight, 2 = LowerLeft, 3 = LowerRight */
 		RageColor	diffuse[4];
 		/** @brief The glow color for this TweenState. */
 		RageColor	glow;
@@ -226,44 +226,44 @@ public:
 	};
 
 	/**
-	 * @brief Calls multiple functions for drawing the Actors.
-	 *
-	 * It calls the following in order:
-	 * -# EarlyAbortDraw
-	 * -# BeginDraw
-	 * -# DrawPrimitives
-	 * -# EndDraw
-	 */
+	* @brief Calls multiple functions for drawing the Actors.
+	*
+	* It calls the following in order:
+	* -# EarlyAbortDraw
+	* -# BeginDraw
+	* -# DrawPrimitives
+	* -# EndDraw
+	*/
 	void Draw();
 	/**
-	 * @brief Allow the Actor to be aborted early.
-	 *
-	 * Subclasses may wish to overwrite this to allow for
-	 * aborted actors.
-	 * @return false, as by default Actors shouldn't be aborted on drawing. */
+	* @brief Allow the Actor to be aborted early.
+	*
+	* Subclasses may wish to overwrite this to allow for
+	* aborted actors.
+	* @return false, as by default Actors shouldn't be aborted on drawing. */
 	virtual bool EarlyAbortDraw() const { return false; }
 	/** @brief Calculate values that may be needed  for drawing. */
 	virtual void PreDraw();
 	/** @brief Start the drawing and push the transform on the world matrix stack. */
 	virtual void BeginDraw();
 	/**
-	 * @brief Set the global rendering states of this Actor.
-	 *
-	 * This should be called at the beginning of an Actor's DrawPrimitives() call. */
+	* @brief Set the global rendering states of this Actor.
+	*
+	* This should be called at the beginning of an Actor's DrawPrimitives() call. */
 	virtual void SetGlobalRenderStates();
 	/**
-	 * @brief Set the texture rendering states of this Actor.
-	 *
-	 * This should be called after setting a texture for the Actor. */
+	* @brief Set the texture rendering states of this Actor.
+	*
+	* This should be called after setting a texture for the Actor. */
 	virtual void SetTextureRenderStates();
 	/**
-	 * @brief Draw the primitives of the Actor.
-	 *
-	 * Derivative classes should override this function. */
+	* @brief Draw the primitives of the Actor.
+	*
+	* Derivative classes should override this function. */
 	virtual void DrawPrimitives() {};
 	/** @brief Pop the transform from the world matrix stack. */
 	virtual void EndDraw();
-	
+
 	// TODO: make Update non virtual and change all classes to override UpdateInternal 
 	// instead.
 	bool IsFirstUpdate() const;
@@ -276,37 +276,37 @@ public:
 	virtual void UpdatePercentThroughTween( float PercentThroughTween ) {}
 
 	/**
-	 * @brief Retrieve the Actor's name.
-	 * @return the Actor's name. */
+	* @brief Retrieve the Actor's name.
+	* @return the Actor's name. */
 	const RString &GetName() const			{ return m_sName; }
 	/**
-	 * @brief Set the Actor's name to a new one.
-	 * @param sName the new name for the Actor. */
+	* @brief Set the Actor's name to a new one.
+	* @param sName the new name for the Actor. */
 	virtual void SetName( const RString &sName )	{ m_sName = sName; }
 	/**
-	 * @brief Give this Actor a new parent.
-	 * @param pParent the new parent Actor. */
+	* @brief Give this Actor a new parent.
+	* @param pParent the new parent Actor. */
 	void SetParent( Actor *pParent );
 	/**
-	 * @brief Retrieve the Actor's parent.
-	 * @return the Actor's parent. */
+	* @brief Retrieve the Actor's parent.
+	* @return the Actor's parent. */
 	Actor *GetParent() { return m_pParent; }
 	/**
-	 * @brief Retrieve the Actor's lineage.
-	 * @return the Actor's lineage. */
+	* @brief Retrieve the Actor's lineage.
+	* @return the Actor's lineage. */
 	RString GetLineage() const;
 
 	/**
-	 * @brief Retrieve the Actor's x position.
-	 * @return the Actor's x position. */
+	* @brief Retrieve the Actor's x position.
+	* @return the Actor's x position. */
 	float GetX() const				{ return m_current.pos.x; };
 	/**
-	 * @brief Retrieve the Actor's y position.
-	 * @return the Actor's y position. */
+	* @brief Retrieve the Actor's y position.
+	* @return the Actor's y position. */
 	float GetY() const				{ return m_current.pos.y; };
 	/**
-	 * @brief Retrieve the Actor's z position.
-	 * @return the Actor's z position. */
+	* @brief Retrieve the Actor's z position.
+	* @return the Actor's z position. */
 	float GetZ() const				{ return m_current.pos.z; };
 	float GetDestX() const				{ return DestTweenState().pos.x; };
 	float GetDestY() const				{ return DestTweenState().pos.y; };
@@ -316,16 +316,16 @@ public:
 	void  SetZ( float z )				{ DestTweenState().pos.z = z; };
 	void  SetXY( float x, float y )			{ DestTweenState().pos.x = x; DestTweenState().pos.y = y; };
 	/**
-	 * @brief Add to the x position of this Actor.
-	 * @param x the amount to add to the Actor's x position. */
+	* @brief Add to the x position of this Actor.
+	* @param x the amount to add to the Actor's x position. */
 	void  AddX( float x )				{ SetX( GetDestX()+x ); }
 	/**
-	 * @brief Add to the y position of this Actor.
-	 * @param y the amount to add to the Actor's y position. */
+	* @brief Add to the y position of this Actor.
+	* @param y the amount to add to the Actor's y position. */
 	void  AddY( float y )				{ SetY( GetDestY()+y ); }
 	/**
-	 * @brief Add to the z position of this Actor.
-	 * @param z the amount to add to the Actor's z position. */
+	* @brief Add to the z position of this Actor.
+	* @param z the amount to add to the Actor's z position. */
 	void  AddZ( float z )				{ SetZ( GetDestZ()+z ); }
 
 	// height and width vary depending on zoom
@@ -353,26 +353,26 @@ public:
 	void  SetInternalGlow( const RageColor &c )	{ m_internalGlow = c; }
 
 	/**
-	 * @brief Retrieve the general zoom factor, using the x coordinate of the Actor.
-	 *
-	 * Note that this is not accurate in some cases.
-	 * @return the zoom factor for the x coordinate of the Actor. */
+	* @brief Retrieve the general zoom factor, using the x coordinate of the Actor.
+	*
+	* Note that this is not accurate in some cases.
+	* @return the zoom factor for the x coordinate of the Actor. */
 	float GetZoom() const				{ return DestTweenState().scale.x; }
 	/**
-	 * @brief Retrieve the zoom factor for the x coordinate of the Actor.
-	 * @return the zoom factor for the x coordinate of the Actor. */
+	* @brief Retrieve the zoom factor for the x coordinate of the Actor.
+	* @return the zoom factor for the x coordinate of the Actor. */
 	float GetZoomX() const				{ return DestTweenState().scale.x; }
 	/**
-	 * @brief Retrieve the zoom factor for the y coordinate of the Actor.
-	 * @return the zoom factor for the y coordinate of the Actor. */
+	* @brief Retrieve the zoom factor for the y coordinate of the Actor.
+	* @return the zoom factor for the y coordinate of the Actor. */
 	float GetZoomY() const				{ return DestTweenState().scale.y; }
 	/**
-	 * @brief Retrieve the zoom factor for the z coordinate of the Actor.
-	 * @return the zoom factor for the z coordinate of the Actor. */
+	* @brief Retrieve the zoom factor for the z coordinate of the Actor.
+	* @return the zoom factor for the z coordinate of the Actor. */
 	float GetZoomZ() const				{ return DestTweenState().scale.z; }
 	/**
-	 * @brief Set the zoom factor for all dimensions of the Actor.
-	 * @param zoom the zoom factor for all dimensions. */
+	* @brief Set the zoom factor for all dimensions of the Actor.
+	* @param zoom the zoom factor for all dimensions. */
 	void  SetZoom( float zoom )
 	{ 
 		DestTweenState().scale.x = zoom; 
@@ -380,16 +380,16 @@ public:
 		DestTweenState().scale.z = zoom;
 	}
 	/**
-	 * @brief Set the zoom factor for the x dimension of the Actor.
-	 * @param zoom the zoom factor for the x dimension. */
+	* @brief Set the zoom factor for the x dimension of the Actor.
+	* @param zoom the zoom factor for the x dimension. */
 	void  SetZoomX( float zoom )			{ DestTweenState().scale.x = zoom; }
 	/**
-	 * @brief Set the zoom factor for the y dimension of the Actor.
-	 * @param zoom the zoom factor for the y dimension. */
+	* @brief Set the zoom factor for the y dimension of the Actor.
+	* @param zoom the zoom factor for the y dimension. */
 	void  SetZoomY( float zoom )			{ DestTweenState().scale.y = zoom; }
 	/**
-	 * @brief Set the zoom factor for the z dimension of the Actor.
-	 * @param zoom the zoom factor for the z dimension. */
+	* @brief Set the zoom factor for the z dimension of the Actor.
+	* @param zoom the zoom factor for the z dimension. */
 	void  SetZoomZ( float zoom )			{ DestTweenState().scale.z = zoom; }
 	void  ZoomTo( float fX, float fY )		{ ZoomToWidth(fX); ZoomToHeight(fY); }
 	void  ZoomToWidth( float zoom )			{ SetZoomX( zoom / GetUnzoomedWidth() ); }
@@ -535,8 +535,8 @@ public:
 
 	// other properties
 	/**
-	 * @brief Determine if the Actor is visible at this time.
-	 * @return true if it's visible, false otherwise. */
+	* @brief Determine if the Actor is visible at this time.
+	* @return true if it's visible, false otherwise. */
 	bool GetVisible() const				{ return m_bVisible; }
 	void SetVisible( bool b )			{ m_bVisible = b; }
 	void SetShadowLength( float fLength )		{ m_fShadowLengthX = fLength; m_fShadowLengthY = fLength; }
@@ -647,12 +647,12 @@ protected:
 
 	// Stuff for alignment
 	/** @brief The particular horizontal alignment.
-	 *
-	 * Use the defined constant values for best effect. */
+	*
+	* Use the defined constant values for best effect. */
 	float	m_fHorizAlign;
 	/** @brief The particular vertical alignment.
-	 *
-	 * Use the defined constant values for best effect. */
+	*
+	* Use the defined constant values for best effect. */
 	float	m_fVertAlign;
 
 	// Stuff for effects
@@ -673,7 +673,7 @@ protected:
 	EffectClock m_EffectClock;
 
 	/* This can be used in lieu of the fDeltaTime parameter to Update() to
-	 * follow the effect clock.  Actor::Update must be called first. */
+	* follow the effect clock.  Actor::Update must be called first. */
 	float GetEffectDeltaTime() const		{ return m_fEffectDelta; }
 
 	// todo: account for SSC_FUTURES by having these be vectors too -aj
@@ -689,8 +689,8 @@ protected:
 	float		m_fShadowLengthY;
 	RageColor	m_ShadowColor;
 	/** @brief The draw order priority.
-	 *
-	 * The lower this number is, the sooner it is drawn. */
+	*
+	* The lower this number is, the sooner it is drawn. */
 	int		m_iDrawOrder;
 
 	// render states
@@ -703,9 +703,9 @@ protected:
 	bool		m_bClearZBuffer;
 	bool		m_bZWrite;
 	/**
-	 * @brief The amount of bias.
-	 *
-	 * If 0, there is no bias. If 1, there is a full bias. */
+	* @brief The amount of bias.
+	*
+	* If 0, there is no bias. If 1, there is a full bias. */
 	float		m_fZBias;
 
 	// global state
@@ -722,28 +722,28 @@ private:
 #endif
 
 /**
- * @file
- * @author Chris Danford (c) 2001-2004
- * @section LICENSE
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* @file
+* @author Chris Danford (c) 2001-2004
+* @section LICENSE
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

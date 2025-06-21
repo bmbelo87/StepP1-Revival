@@ -1,16 +1,16 @@
 /* This stores a single note pattern for a song.
- *
- * We can have too much data to keep everything decompressed as NoteData, so most
- * songs are kept in memory compressed as SMData until requested.  NoteData is normally
- * not requested casually during gameplay; we can move through screens, the music
- * wheel, etc. without touching any NoteData.
- *
- * To save more memory, if data is cached on disk, read it from disk on demand.  Not
- * all Steps will have an associated file for this purpose.  (Profile edits don't do
- * this yet.)
- *
- * Data can be on disk (always compressed), compressed in memory, and uncompressed in
- * memory. */
+*
+* We can have too much data to keep everything decompressed as NoteData, so most
+* songs are kept in memory compressed as SMData until requested.  NoteData is normally
+* not requested casually during gameplay; we can move through screens, the music
+* wheel, etc. without touching any NoteData.
+*
+* To save more memory, if data is cached on disk, read it from disk on demand.  Not
+* all Steps will have an associated file for this purpose.  (Profile edits don't do
+* this yet.)
+*
+* Data can be on disk (always compressed), compressed in memory, and uncompressed in
+* memory. */
 #include "global.h"
 #include "Steps.h"
 #include "StepsUtil.h"
@@ -43,14 +43,16 @@ XToString( DisplayBPM );
 LuaXType( DisplayBPM );
 
 Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
-	parent(NULL), m_pNoteData(new NoteData), m_bNoteDataIsFilled(false), 
-	m_sNoteDataCompressed(""), m_sFilename(""), m_bSavedToDisk(false), 
-	m_LoadedFromProfile(ProfileSlot_Invalid), m_iHash(0),
-	m_sDescription(""), m_sChartStyle(""), 
-	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
-	m_bAreCachedRadarValuesJustLoaded(false),
-	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
-	specifiedBPMMin(0), specifiedBPMMax(0) {}
+parent(NULL), m_pNoteData(new NoteData), m_bNoteDataIsFilled(false), 
+m_sNoteDataCompressed(""), m_sFilename(""), m_bSavedToDisk(false), 
+m_LoadedFromProfile(ProfileSlot_Invalid), m_iHash(0),
+m_sDescription(""), m_sChartStyle(""), 
+m_Difficulty(Difficulty_Invalid), m_iMeter(0),
+m_bAreCachedRadarValuesJustLoaded(false),
+m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
+specifiedBPMMin(0), specifiedBPMMax(0),
+m_sLabel(""),m_sUnderLabel(""),m_bShowInfoBar(false),m_bLoadedFromEditFile(false),m_bIsDoubleAsHalfDouble(false) //xMAx
+{}
 
 Steps::~Steps()
 {
@@ -122,7 +124,7 @@ bool Steps::GetNoteDataFromSimfile()
 			SMLoader backup_loader;
 			RString transformedStepFile = stepFile;
 			transformedStepFile.Replace(".ssc", ".sm");
-			
+
 			return backup_loader.LoadNoteDataFromSimfile(transformedStepFile, *this);
 		}
 		else
@@ -174,7 +176,7 @@ void Steps::SetNoteData( const NoteData& noteDataNew )
 
 	*m_pNoteData = noteDataNew;
 	m_bNoteDataIsFilled = true;
-	
+
 	m_sNoteDataCompressed = RString();
 	m_iHash = 0;
 }
@@ -272,7 +274,8 @@ void Steps::TidyUpData()
 		else				SetDifficulty( Difficulty_Hard );
 	}
 
-	if( GetMeter() < 1) // meter is invalid
+	// Cambio para aceptar meter desde -1 a valores positivos (incluyendo el 0) - xMAx
+	if( GetMeter() < -1) // meter is invalid
 		SetMeter( int(PredictMeter()) );
 }
 
@@ -293,7 +296,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	/*
 	// If we're an edit, leave the RadarValues invalid.
 	if( IsAnEdit() )
-		return;
+	return;
 	*/
 
 	NoteData tempNoteData;
@@ -318,14 +321,14 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		const int tracks = tempNoteData.GetNumTracks() / 2;
 		p1.SetNumTracks(tracks);
 		NoteDataUtil::CalculateRadarValues(p1,
-										   fMusicLengthSeconds,
-										   m_CachedRadarValues[PLAYER_1]);
+						    fMusicLengthSeconds,
+						    m_CachedRadarValues[PLAYER_1]);
 		// at this point, p2 is tempNoteData.
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
 		NoteDataUtil::CalculateRadarValues(tempNoteData,
-										   fMusicLengthSeconds,
-										   m_CachedRadarValues[PLAYER_2]);
+						    fMusicLengthSeconds,
+						    m_CachedRadarValues[PLAYER_2]);
 	}
 	else
 	{
@@ -374,7 +377,7 @@ void Steps::Decompress()
 		if (!this->GetNoteDataFromSimfile())
 		{
 			LOG->Warn("Couldn't load the %s chart's NoteData from \"%s\"",
-					  DifficultyToString(m_Difficulty).c_str(), m_sFilename.c_str());
+				   DifficultyToString(m_Difficulty).c_str(), m_sFilename.c_str());
 			return;
 		}
 
@@ -404,7 +407,7 @@ void Steps::Compress() const
 		m_sNoteDataCompressed = RString();
 		return;
 	}
-	
+
 	// Don't compress data in the editor: it's still in use.
 	if (GAMESTATE->m_bInStepEditor)
 	{
@@ -414,15 +417,15 @@ void Steps::Compress() const
 	if( !m_sFilename.empty() && m_LoadedFromProfile == ProfileSlot_Invalid )
 	{
 		/* We have a file on disk; clear all data in memory.
-		 * Data on profiles can't be accessed normally (need to mount and time-out
-		 * the device), and when we start a game and load edits, we want to be
-		 * sure that it'll be available if the user picks it and pulls the device.
-		 * Also, Decompress() doesn't know how to load .edits. */
+		* Data on profiles can't be accessed normally (need to mount and time-out
+		* the device), and when we start a game and load edits, we want to be
+		* sure that it'll be available if the user picks it and pulls the device.
+		* Also, Decompress() doesn't know how to load .edits. */
 		m_pNoteData->Init();
 		m_bNoteDataIsFilled = false;
 
 		/* Be careful; 'x = ""', m_sNoteDataCompressed.clear() and m_sNoteDataCompressed.reserve(0)
-		 * don't always free the allocated memory. */
+		* don't always free the allocated memory. */
 		m_sNoteDataCompressed = RString();
 		return;
 	}
@@ -440,7 +443,7 @@ void Steps::Compress() const
 }
 
 /* Copy our parent's data. This is done when we're being changed from autogen
- * to normal. (needed?) */
+* to normal. (needed?) */
 void Steps::DeAutogen( bool bCopyNoteData )
 {
 	if( !parent )
@@ -501,6 +504,83 @@ void Steps::SetDifficultyAndDescription( Difficulty dc, RString sDescription )
 	m_sDescription = sDescription;
 	if( GetDifficulty() == Difficulty_Edit )
 		MakeValidEditDescription( m_sDescription );
+
+	/* xMAx - Lugar para revisar la descripci�n de los pasos */
+	RString sTDescription = sDescription;
+	sTDescription.MakeUpper();
+
+	m_sLabel = "";
+	m_bShowInfoBar = false;
+	m_sUnderLabel = "";
+
+	//-----------
+	if( m_StepsType == StepsType_pump_double && (sTDescription.find("HALFDOUBLE") != std::string::npos) || m_StepsType == StepsType_pump_halfdouble )
+	{
+		m_sUnderLabel = "HALFDOUBLE";
+		m_bIsDoubleAsHalfDouble = true;
+	}
+	else if( m_StepsType == StepsType_pump_couple )
+	{
+		m_sUnderLabel = "COUPLE";
+	}
+
+	//-----------
+	if( sTDescription.find("INFOBAR") != std::string::npos )
+	{
+		m_bShowInfoBar = true;
+	}
+
+	//-----------
+	if( sTDescription.find("ANOTHER") != std::string::npos ) 
+	{
+		m_sLabel = "ANOTHER";
+		return;
+	}
+	else if ( sTDescription.find("PRO") != std::string::npos )
+	{
+		m_sLabel = "PRO";
+		return;
+	}
+	else if ( sTDescription.find("TRAIN") != std::string::npos )
+	{
+		m_sLabel = "TRAIN";
+		return;
+	}
+	else if ( sTDescription.find("QUEST") != std::string::npos )
+	{
+		m_sLabel = "QUEST";
+		return;
+	}
+	else if ( sTDescription.find("OUCS") != std::string::npos )
+	{
+		m_sLabel = "OUCS";
+		return;
+	}
+	else if ( sTDescription.find("UCS") != std::string::npos )
+	{
+		m_sLabel = "UCS";
+		return;
+	}
+	else if ( sTDescription.find("HIDDEN") != std::string::npos )
+	{
+		m_sLabel = "HIDDEN";
+		return;
+	}
+	else if ( sTDescription.find("NEW") != std::string::npos )
+	{
+		m_sLabel = "NEW";
+		return;
+	}
+	else if ( sTDescription.find("INFINITY") != std::string::npos )
+	{
+		m_sLabel = "INFINITY";
+		return;
+	}
+	else if ( sTDescription.find("JUMP") != std::string::npos )
+	{
+		m_sLabel = "JUMP";
+		return;
+	}
 }
 
 void Steps::SetCredit( RString sCredit )
@@ -540,7 +620,7 @@ bool Steps::HasSignificantTimingChanges() const
 {
 	const TimingData *timing = GetTimingData();
 	if( timing->HasStops() || timing->HasDelays() || timing->HasWarps() ||
-		timing->HasSpeedChanges() || timing->HasScrollChanges() )
+	    timing->HasSpeedChanges() || timing->HasScrollChanges() )
 		return true;
 
 	if( timing->HasBpmChanges() )
@@ -560,6 +640,27 @@ void Steps::SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] )
 	m_bAreCachedRadarValuesJustLoaded = true;
 }
 
+// xMAx ----------------------------------------------------------------------------
+RString Steps::GetMeterString( void ) const
+{
+	RString sMeter;
+	int iMeter = this->GetMeter();
+	if( iMeter == 99 )
+		sMeter = "??";
+	else if ( iMeter == -1 )
+		sMeter = "!!";
+	else
+		sMeter = ssprintf("%d", this->GetMeter());
+
+	return sMeter;
+}
+
+bool Steps::HasNoteSkinPlayer() const
+{
+	return this->GetNoteData().HasNoteSkinPlayer();
+}
+//----------------------------------------------------------------------------------
+
 // lua start
 #include "LuaBinding.h"
 /** @brief Allow Lua to have access to the Steps. */
@@ -567,17 +668,17 @@ class LunaSteps: public Luna<Steps>
 {
 public:
 	DEFINE_METHOD( GetStepsType,	m_StepsType )
-	DEFINE_METHOD( GetDifficulty,	GetDifficulty() )
-	DEFINE_METHOD( GetDescription,	GetDescription() )
-	DEFINE_METHOD( GetChartStyle,	GetChartStyle() )
-	DEFINE_METHOD( GetAuthorCredit, GetCredit() )
-	DEFINE_METHOD( GetMeter,	GetMeter() )
-	DEFINE_METHOD( GetFilename,	GetFilename() )
-	DEFINE_METHOD( IsAutogen,	IsAutogen() )
-	DEFINE_METHOD( IsAnEdit,	IsAnEdit() )
-	DEFINE_METHOD( IsAPlayerEdit,	IsAPlayerEdit() )
+		DEFINE_METHOD( GetDifficulty,	GetDifficulty() )
+		DEFINE_METHOD( GetDescription,	GetDescription() )
+		DEFINE_METHOD( GetChartStyle,	GetChartStyle() )
+		DEFINE_METHOD( GetAuthorCredit, GetCredit() )
+		DEFINE_METHOD( GetMeter,	GetMeter() )
+		DEFINE_METHOD( GetFilename,	GetFilename() )
+		DEFINE_METHOD( IsAutogen,	IsAutogen() )
+		DEFINE_METHOD( IsAnEdit,	IsAnEdit() )
+		DEFINE_METHOD( IsAPlayerEdit,	IsAPlayerEdit() )
 
-	static int HasSignificantTimingChanges( T* p, lua_State *L )
+		static int HasSignificantTimingChanges( T* p, lua_State *L )
 	{
 		lua_pushboolean(L, p->HasSignificantTimingChanges()); 
 		return 1; 
@@ -593,7 +694,7 @@ public:
 		if (!lua_isnil(L, 1)) {
 			pn = Enum::Check<PlayerNumber>(L, 1);
 		}
-		
+
 		RadarValues &rv = const_cast<RadarValues &>(p->GetRadarValues(pn));
 		rv.PushSelf(L);
 		return 1;
@@ -608,10 +709,10 @@ public:
 	/*
 	static int GetSMNoteData( T* p, lua_State *L )
 	{
-		RString out;
-		p->GetSMNoteData( out );
-		lua_pushstring( L, out );
-		return 1;
+	RString out;
+	p->GetSMNoteData( out );
+	lua_pushstring( L, out );
+	return 1;
 	}
 	*/
 	static int GetChartName(T *p, lua_State *L)
@@ -651,13 +752,22 @@ public:
 		return 1;
 	}
 	DEFINE_METHOD( PredictMeter, PredictMeter() )
-	static int GetDisplayBPMType( T* p, lua_State *L )
+		static int GetDisplayBPMType( T* p, lua_State *L )
 	{
 		LuaHelpers::Push( L, p->GetDisplayBPM() );
 		return 1;
 	}
-
-	LunaSteps()
+	// xMAx ------------------------------------------------
+	static int HasNoteSkinPlayer( T* p, lua_State *L )	
+	{ 
+		lua_pushboolean(L, p->HasNoteSkinPlayer()); 
+		return 1; 
+	}
+	DEFINE_METHOD( GetLabel,		GetLabel() 		)
+		DEFINE_METHOD( GetUnderLabel,	GetUnderLabel() )
+		DEFINE_METHOD( ShowInfoBar,		ShowInfoBar() 	)
+		//------------------------------------------------------
+		LunaSteps()
 	{
 		ADD_METHOD( GetAuthorCredit );
 		ADD_METHOD( GetChartStyle );
@@ -668,8 +778,8 @@ public:
 		ADD_METHOD( GetMeter );
 		ADD_METHOD( HasSignificantTimingChanges );
 		ADD_METHOD( HasAttacks );
-		ADD_METHOD( GetRadarValues );
-		ADD_METHOD( GetTimingData );
+		//ADD_METHOD( GetRadarValues );//xMAx
+		//ADD_METHOD( GetTimingData );//xMAx
 		ADD_METHOD( GetChartName );
 		//ADD_METHOD( GetSMNoteData );
 		ADD_METHOD( GetStepsType );
@@ -682,6 +792,12 @@ public:
 		ADD_METHOD( IsDisplayBpmRandom );
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
+
+		// xMAx --------------------------------------------
+		ADD_METHOD( HasNoteSkinPlayer );
+		ADD_METHOD( GetLabel );
+		ADD_METHOD( GetUnderLabel );
+		ADD_METHOD( ShowInfoBar );
 	}
 };
 
@@ -690,26 +806,26 @@ LUA_REGISTER_CLASS( Steps )
 
 
 /*
- * (c) 2001-2004 Chris Danford, Glenn Maynard, David Wilson
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2004 Chris Danford, Glenn Maynard, David Wilson
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

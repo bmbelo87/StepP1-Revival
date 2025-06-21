@@ -13,7 +13,7 @@
 #define FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE( nd, track, row, start, last ) \
 	for( int row = start-1; (nd).GetNextTapNoteRowForTrack(track,row) && row < (last); )
 /** @brief Act on each non empty row in the specified track within the specified range, 
- going in reverse order. */
+going in reverse order. */
 #define FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE_REVERSE( nd, track, row, start, last ) \
 	for( int row = last; (nd).GetPrevTapNoteRowForTrack(track,row) && row >= (start); )
 /** @brief Act on each non empty row for all of the tracks. */
@@ -32,7 +32,7 @@ public:
 	typedef map<int,TapNote>::const_iterator const_iterator;
 	typedef map<int,TapNote>::reverse_iterator reverse_iterator;
 	typedef map<int,TapNote>::const_reverse_iterator const_reverse_iterator;
-	
+
 	NoteData(): m_TapNotes() {}
 
 	iterator begin( int iTrack )					{ return m_TapNotes[iTrack].begin(); }
@@ -90,46 +90,46 @@ private:
 	// There's no point in inserting empty notes into the map.
 	// Any blank space in the map is defined to be empty.
 	vector<TrackMap>	m_TapNotes;
-	
+
 	/**
-	 * @brief Determine whether this note is for Player 1 or Player 2.
-	 * @param track the track/column the note is in.
-	 * @param tn the note in question. Required for routine mode.
-	 * @return true if it's for player 1, false for player 2. */
+	* @brief Determine whether this note is for Player 1 or Player 2.
+	* @param track the track/column the note is in.
+	* @param tn the note in question. Required for routine mode.
+	* @return true if it's for player 1, false for player 2. */
 	bool IsPlayer1(const int track, const TapNote &tn) const;
-	
+
 	/**
-	 * @brief Determine if the note in question should be counted as a tap.
-	 * @param tn the note in question.
-	 * @param row the row it lives in.
-	 * @return true if it's a tap, false otherwise. */
+	* @brief Determine if the note in question should be counted as a tap.
+	* @param tn the note in question.
+	* @param row the row it lives in.
+	* @return true if it's a tap, false otherwise. */
 	bool IsTap(const TapNote &tn, const int row) const;
-	
+
 	/**
-	 * @brief Determine if the note in question should be counted as a mine.
-	 * @param tn the note in question.
-	 * @param row the row it lives in.
-	 * @return true if it's a mine, false otherwise. */
+	* @brief Determine if the note in question should be counted as a mine.
+	* @param tn the note in question.
+	* @param row the row it lives in.
+	* @return true if it's a mine, false otherwise. */
 	bool IsMine(const TapNote &tn, const int row) const;
-	
+
 	/**
-	 * @brief Determine if the note in question should be counted as a lift.
-	 * @param tn the note in question.
-	 * @param row the row it lives in.
-	 * @return true if it's a lift, false otherwise. */
+	* @brief Determine if the note in question should be counted as a lift.
+	* @param tn the note in question.
+	* @param row the row it lives in.
+	* @return true if it's a lift, false otherwise. */
 	bool IsLift(const TapNote &tn, const int row) const;
-	
+
 	/**
-	 * @brief Determine if the note in question should be counted as a fake.
-	 * @param tn the note in question.
-	 * @param row the row it lives in.
-	 * @return true if it's a fake, false otherwise. */
+	* @brief Determine if the note in question should be counted as a fake.
+	* @param tn the note in question.
+	* @param row the row it lives in.
+	* @return true if it's a fake, false otherwise. */
 	bool IsFake(const TapNote &tn, const int row) const;
 
 	pair<int, int> GetNumRowsWithSimultaneousTapsTwoPlayer(int minTaps = 2,
-														   int startRow = 0,
-														   int endRow = MAX_NOTE_ROW) const;
-	
+								int startRow = 0,
+								int endRow = MAX_NOTE_ROW) const;
+
 public:
 	void Init();
 
@@ -140,7 +140,7 @@ public:
 	bool operator!=( const NoteData &nd ) const			{ return m_TapNotes != nd.m_TapNotes; }
 
 	/* Return the note at the given track and row.  Row may be out of
-	 * range; pretend the song goes on with TAP_EMPTYs indefinitely. */
+	* range; pretend the song goes on with TAP_EMPTYs indefinitely. */
 	inline const TapNote &GetTapNote( unsigned track, int row ) const
 	{
 		const TrackMap &mapTrack = m_TapNotes[track];
@@ -157,27 +157,27 @@ public:
 	void RemoveTapNote( unsigned iTrack, iterator it )		{ m_TapNotes[iTrack].erase( it ); }
 
 	/**
-	 * @brief Return an iterator range for [rowBegin,rowEnd).
-	 *
-	 * This can be used to efficiently iterate trackwise over a range of notes.  
-	 * It's like FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE, except it only requires 
-	 * two map searches (iterating is constant time), but the iterators will
-	 * become invalid if the notes they represent disappear, so you need to 
-	 * pay attention to how you modify the data.
-	 * @param iTrack the column to use.
-	 * @param iStartRow the starting point.
-	 * @param iEndRow the ending point.
-	 * @param begin the eventual beginning point of the range.
-	 * @param end the eventual end point of the range. */
+	* @brief Return an iterator range for [rowBegin,rowEnd).
+	*
+	* This can be used to efficiently iterate trackwise over a range of notes.  
+	* It's like FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE, except it only requires 
+	* two map searches (iterating is constant time), but the iterators will
+	* become invalid if the notes they represent disappear, so you need to 
+	* pay attention to how you modify the data.
+	* @param iTrack the column to use.
+	* @param iStartRow the starting point.
+	* @param iEndRow the ending point.
+	* @param begin the eventual beginning point of the range.
+	* @param end the eventual end point of the range. */
 	void GetTapNoteRange(int iTrack, int iStartRow, int iEndRow,
-						 TrackMap::const_iterator &begin, TrackMap::const_iterator &end ) const;
+			      TrackMap::const_iterator &begin, TrackMap::const_iterator &end ) const;
 	/**
-	 * @brief Return a constant iterator range for [rowBegin,rowEnd).
-	 * @param iTrack the column to use.
-	 * @param iStartRow the starting point.
-	 * @param iEndRow the ending point.
-	 * @param begin the eventual beginning point of the range.
-	 * @param end the eventual end point of the range. */
+	* @brief Return a constant iterator range for [rowBegin,rowEnd).
+	* @param iTrack the column to use.
+	* @param iStartRow the starting point.
+	* @param iEndRow the ending point.
+	* @param begin the eventual beginning point of the range.
+	* @param end the eventual end point of the range. */
 	void GetTapNoteRange( int iTrack, int iStartRow, int iEndRow, TrackMap::iterator &begin, TrackMap::iterator &end );
 	all_tracks_iterator GetTapNoteRangeAllTracks( int iStartRow, int iEndRow, bool bInclusive = false )
 	{
@@ -197,18 +197,18 @@ public:
 	}
 
 	/* Return an iterator range include iStartRow to iEndRow.  Extend the range to include
-	 * hold notes overlapping the boundary. */
+	* hold notes overlapping the boundary. */
 	void GetTapNoteRangeInclusive(int iTrack, int iStartRow, int iEndRow,
-								  TrackMap::const_iterator &begin, TrackMap::const_iterator &end, bool bIncludeAdjacent=false ) const;
+				       TrackMap::const_iterator &begin, TrackMap::const_iterator &end, bool bIncludeAdjacent=false ) const;
 	void GetTapNoteRangeInclusive(int iTrack, int iStartRow, int iEndRow,
-								  TrackMap::iterator &begin, TrackMap::iterator &end, bool bIncludeAdjacent=false );
+				       TrackMap::iterator &begin, TrackMap::iterator &end, bool bIncludeAdjacent=false );
 
 	/* Return an iterator range include iStartRow to iEndRow.  Shrink the range to exclude
-	 * hold notes overlapping the boundary. */
+	* hold notes overlapping the boundary. */
 	void GetTapNoteRangeExclusive(int iTrack, int iStartRow, int iEndRow,
-								  TrackMap::const_iterator &begin, TrackMap::const_iterator &end ) const;
+				       TrackMap::const_iterator &begin, TrackMap::const_iterator &end ) const;
 	void GetTapNoteRangeExclusive(int iTrack, int iStartRow, int iEndRow,
-								  TrackMap::iterator &begin, TrackMap::iterator &end );
+				       TrackMap::iterator &begin, TrackMap::iterator &end );
 
 
 	/* Returns the row of the first TapNote on the track that has a row greater than rowInOut. */
@@ -220,16 +220,16 @@ public:
 	void MoveTapNoteTrack( int dest, int src );
 	void SetTapNote( int track, int row, const TapNote& tn );
 	/**
-	 * @brief Add a hold note, merging other overlapping holds and destroying
-	 * tap notes underneath.
-	 * @param iTrack the column to work with.
-	 * @param iStartRow the starting row.
-	 * @param iEndRow the ending row.
-	 * @param tn the tap note. */
+	* @brief Add a hold note, merging other overlapping holds and destroying
+	* tap notes underneath.
+	* @param iTrack the column to work with.
+	* @param iStartRow the starting row.
+	* @param iEndRow the ending row.
+	* @param tn the tap note. */
 	void AddHoldNote(int iTrack,
-					 int iStartRow,
-					 int iEndRow,
-					 TapNote tn );
+			  int iStartRow,
+			  int iEndRow,
+			  TapNote tn );
 
 	void ClearRangeForTrack( int rowBegin, int rowEnd, int iTrack );
 	void ClearRange( int rowBegin, int rowEnd );
@@ -280,8 +280,8 @@ public:
 	{
 		return GetNumRowsWithSimultaneousTaps( 2, iStartIndex, iEndIndex );
 	}
-	
-	
+
+
 
 	// This row needs at least iMinSimultaneousPresses either tapped or held.
 	bool RowNeedsAtLeastSimultaneousPresses( int iMinSimultaneousPresses, int row ) const;
@@ -304,43 +304,43 @@ public:
 
 	// the couple/routine style variants of the above.
 	pair<int, int> GetNumTapNotesTwoPlayer(int startRow = 0,
-										   int endRow = MAX_NOTE_ROW) const;
-	
+						int endRow = MAX_NOTE_ROW) const;
+
 	pair<int, int> GetNumJumpsTwoPlayer(int startRow = 0,
-										int endRow = MAX_NOTE_ROW) const;
-	
+					     int endRow = MAX_NOTE_ROW) const;
+
 	pair<int, int> GetNumHandsTwoPlayer(int startRow = 0,
-										int endRow = MAX_NOTE_ROW) const;
-	
+					     int endRow = MAX_NOTE_ROW) const;
+
 	pair<int, int> GetNumQuadsTwoPlayer(int startRow = 0,
-										int endRow = MAX_NOTE_ROW) const;
-	
+					     int endRow = MAX_NOTE_ROW) const;
+
 	pair<int, int> GetNumHoldNotesTwoPlayer(int startRow = 0,
-											int endRow = MAX_NOTE_ROW) const;
-	
+						 int endRow = MAX_NOTE_ROW) const;
+
 	pair<int, int> GetNumMinesTwoPlayer(int startRow = 0,
-										int endRow = MAX_NOTE_ROW) const;
-	
+					     int endRow = MAX_NOTE_ROW) const;
+
 	pair<int, int> GetNumRollsTwoPlayer(int startRow = 0,
-										int endRow = MAX_NOTE_ROW) const;
-	
+					     int endRow = MAX_NOTE_ROW) const;
+
 	pair<int, int> GetNumLiftsTwoPlayer(int startRow = 0,
-										int endRow = MAX_NOTE_ROW) const;
-	
+					     int endRow = MAX_NOTE_ROW) const;
+
 	pair<int, int> GetNumFakesTwoPlayer(int startRow = 0,
-										int endRow = MAX_NOTE_ROW) const;
-	
+					     int endRow = MAX_NOTE_ROW) const;
+
 	// Transformations
 	void LoadTransformed(const NoteData& original,
-						 int iNewNumTracks,
-						 const int iOriginalTrackToTakeFrom[] );	// -1 for iOriginalTracksToTakeFrom means no track
+			      int iNewNumTracks,
+			      const int iOriginalTrackToTakeFrom[] );	// -1 for iOriginalTracksToTakeFrom means no track
 
 	// XML
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
 
 	// xMAx
-	bool HasNoteSkinPlayer() const; // return true if has player noteskins
+	bool HasNoteSkinPlayer() const;	 //return true if has player noteskins
 };
 
 /** @brief Allow a quick way to swap notedata. */
@@ -352,26 +352,26 @@ namespace std
 #endif
 
 /*
- * (c) 2001-2004 Chris Danford, Glenn Maynard
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2004 Chris Danford, Glenn Maynard
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

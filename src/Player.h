@@ -21,20 +21,20 @@ class NoteField;
 class PlayerStageStats;
 
 // todo: replace these with a Message and MESSAGEMAN? -aj
-// 
-//AutoScreenMessage( SM_100Combo );
-//AutoScreenMessage( SM_200Combo );
-//AutoScreenMessage( SM_300Combo );
-//AutoScreenMessage( SM_400Combo );
-//AutoScreenMessage( SM_500Combo );
-//AutoScreenMessage( SM_600Combo );
-//AutoScreenMessage( SM_700Combo );
-//AutoScreenMessage( SM_800Combo );
-//AutoScreenMessage( SM_900Combo );
-//AutoScreenMessage( SM_1000Combo );
-//AutoScreenMessage( SM_ComboStopped );
-//AutoScreenMessage( SM_ComboContinuing );
-// xMAx - removed
+/*
+AutoScreenMessage( SM_100Combo );
+AutoScreenMessage( SM_200Combo );
+AutoScreenMessage( SM_300Combo );
+AutoScreenMessage( SM_400Combo );
+AutoScreenMessage( SM_500Combo );
+AutoScreenMessage( SM_600Combo );
+AutoScreenMessage( SM_700Combo );
+AutoScreenMessage( SM_800Combo );
+AutoScreenMessage( SM_900Combo );
+AutoScreenMessage( SM_1000Combo );
+AutoScreenMessage( SM_ComboStopped );
+AutoScreenMessage( SM_ComboContinuing );
+*/ //xMAx - removed
 AutoScreenMessage( SM_Player1HitMine );
 AutoScreenMessage( SM_Player2HitMine );
 
@@ -57,11 +57,11 @@ public:
 
 		bool operator==( const TrackRowTapNote &other ) const
 		{
-		#define	COMPARE(x)	if(x!=other.x)	return false
-			COMPARE ( iTrack );
-			COMPARE ( iRow );
-			COMPARE ( pTN );
-		#undef  COMPARE
+#define COMPARE(x)	if(x!=other.x) return false
+			COMPARE(iTrack);
+			COMPARE(iRow);
+			COMPARE(pTN);
+#undef COMPARE
 			return true;
 		}
 	};
@@ -78,21 +78,21 @@ public:
 		ScoreKeeper* pPrimaryScoreKeeper, 
 		ScoreKeeper* pSecondaryScoreKeeper );
 	void Load();
-	void CrossedRows( int iLastRowCrossed, const RageTimer &now );
-	void CrossedHoldsRows ( int iLastRowCrossed, const RageTimer &now, float fDeltaTime );
+	void CrossedRows( int iLastRowCrossed, const RageTimer &now);
+	void CrossedHoldsRows( int iLastRowCrossed, const RageTimer &now, float fDeltaTime );
 	bool IsOniDead() const;
-	
+
 	/**
-	 * @brief Retrieve the Player's TimingData.
-	 *
-	 * This is primarily for a lua hook.
-	 * @return the TimingData in question. */
+	* @brief Retrieve the Player's TimingData.
+	*
+	* This is primarily for a lua hook.
+	* @return the TimingData in question. */
 	TimingData GetPlayerTimingData() const
 	{
 		return *(this->m_Timing);
 	}
 
-	void UpdateHoldNote ( int iSongRow, float fDeltaTime, TrackRowTapNote &trtn );
+	void UpdateHoldNote( int iSongRow, float fDeltaTime, TrackRowTapNote &trtn );
 	void Step( int col, int row, const RageTimer &tm, bool bRelease );
 
 
@@ -109,11 +109,11 @@ public:
 	void SetActorWithJudgmentPosition( Actor *pActor ) { m_pActorWithJudgmentPosition = pActor; }
 	void SetActorWithComboPosition( Actor *pActor ) { m_pActorWithComboPosition = pActor; }
 	void SetSendJudgmentAndComboMessages( bool b ) { m_bSendJudgmentAndComboMessages = b; }
-	
+
 	PlayerState * GetPlayerState() { return this->m_pPlayerState; }
 
 	// xMAx ------------------------------------------------------
-	/*
+	/*				
 	JUDGE  PERFECT  DELAY  INTERVAL
 	EJ     7        5      5
 	NJ     5        5      5
@@ -129,7 +129,7 @@ public:
 		int iPerfect;
 		int iDelay;
 		int iDelta;
-		JudgeData &operator=(const JudgeData &judgeData );
+		JudgeData &operator=( const JudgeData &judgeData );
 	};
 
 
@@ -150,8 +150,8 @@ protected:
 	void UpdateTapNotesMissedOlderThan( float fMissIfOlderThanThisBeat );
 	//void FlashGhostRow( int iRow ); // xMAx - added iNSP
 	void FlashGhostRow( int iRow, int iNSP );
-	void HandleTapRowScore( unsigned row, TapNoteScore tns );
-	//void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold ); // xMAx
+	void HandleTapRowScore( unsigned row, TapNoteScore tns );	
+	//void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold ); //xMAx
 	void HandleHoldCheckpoint( int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow, const vector<int> &viColsWithHold, bool bHoldsAreBeingPressed );
 	void PlayKeysound( const TapNote &tn, TapNoteScore score );
 	void SetJudgment( TapNoteScore tns );// (int iFirstTrack, float fTapNoteOffset, vector<int> viCols );	// -1 if no track as in TNS_Miss // xMAx - removed
@@ -160,7 +160,7 @@ protected:
 	void ChangeLife( TapNoteScore tns );
 
 	int GetClosestNoteDirectional( int col, int iStartRow, int iMaxRowsAhead, bool bAllowGraded, bool bForward, bool bAllowHoldHead ) const;
-	int GetClosestNote( int col, int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind, bool bAllowGraded, bool bAllowHoldHead = true ) const; //xMAx - added "bool bAllowHoldHead"
+	int GetClosestNote( int col, int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind, bool bAllowGraded, bool bAllowHoldHead = true ) const;	//xMAx - added "bool bAllowHoldHead"
 
 	RString ApplyRandomAttack();
 
@@ -177,7 +177,7 @@ protected:
 	PlayerState		*m_pPlayerState;
 	/** @brief The player's present stage stats. */
 	PlayerStageStats	*m_pPlayerStageStats;
-	TimingData		*m_Timing;
+	TimingData      *m_Timing;
 
 	bool			m_bPaused;
 	bool			m_bDelay;
@@ -189,13 +189,13 @@ protected:
 	Actor			*m_pActorWithComboPosition;
 
 	//AttackDisplay		*m_pAttackDisplay; //xMAx
-	LifeMeter		*m_pLifeMeter;
+	LifeMeter			*m_pLifeMeter;
 	CombinedLifeMeter	*m_pCombinedLifeMeter;
 	ScoreDisplay		*m_pScoreDisplay;
 	ScoreDisplay		*m_pSecondaryScoreDisplay;
-	ScoreKeeper		*m_pPrimaryScoreKeeper;
-	ScoreKeeper		*m_pSecondaryScoreKeeper;
-	Inventory		*m_pInventory;
+	ScoreKeeper			*m_pPrimaryScoreKeeper;
+	ScoreKeeper			*m_pSecondaryScoreKeeper;
+	Inventory			*m_pInventory;
 
 
 	NoteData::all_tracks_iterator *m_pIterNeedsTapJudging;
@@ -206,11 +206,11 @@ protected:
 	RageSound		m_soundMine;
 	float			m_fActiveRandomAttackStart;
 
-	vector<TrackRowTapNote> vHoldNotesToUpdate; 
+	vector<TrackRowTapNote> vHoldNotesToUpdate;
 	vector<RageSound>	m_vKeysounds;
 
-	ThemeMetric<int>	DRAW_DISTANCE_AFTER_TARGET_PIXELS;
-	ThemeMetric<int>	DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
+	ThemeMetric<int>		DRAW_DISTANCE_AFTER_TARGET_PIXELS;
+	ThemeMetric<int>		DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
 
 #define NUM_REVERSE 2
 #define NUM_CENTERED 2
@@ -238,26 +238,26 @@ public:
 #endif
 
 /*
- * (c) 2001-2006 Chris Danford, Steve Checkoway
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2006 Chris Danford, Steve Checkoway
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/
