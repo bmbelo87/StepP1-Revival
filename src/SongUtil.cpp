@@ -401,6 +401,29 @@ static bool CompareSongPointersByTitle( const Song *pSong1, const Song *pSong2 )
 	return pSong1->GetSongFilePath().CompareNoCase(pSong2->GetSongFilePath()) < 0;
 }
 
+// xMAx !!
+static bool CompareSongPointerBySongFolder( const Song *pSong1, const Song *pSong2 )
+{
+	RString s1 = pSong1->GetSongFolder();
+	RString s2 = pSong2->GetSongFolder();
+
+	if( s1 == s2 )
+	{
+		s1 = pSong1->GetDisplayMainTitle();
+		s2 = pSong2->GetDisplayMainTitle();
+	}
+
+	s1 = SongUtil::MakeSortString(s1);
+	s2 = SongUtil::MakeSortString(s2);
+
+	int ret = strcmp(s1, s2);
+	if( ret < 0 ) return true;
+	if( ret > 0 ) return false;
+
+	/* The titles are the same.  Ensure we get a consistent ordering
+	* by comparing the unique SongFilePaths. */
+	return pSong1->GetSongFilePath().CompareNoCase(pSong2->GetSongFilePath()) < 0;
+}
 void SongUtil::SortSongPointerArrayByTitle( vector<Song*> &vpSongsInOut )
 {
 	sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersByTitle );
@@ -509,7 +532,18 @@ void SongUtil::SortSongPointerArrayByDisplayArtist( vector<Song*> &vpSongsInOut 
 		g_mapSongSortVal[vpSongsInOut[i]] = MakeSortString( vpSongsInOut[i]->GetDisplayArtist() );
 	stable_sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersBySortValueAscending );
 }
+/*---------------*/
+/* xMAx */
+static int CompareSongPointersByCategory(const Song *pSong1, const Song *pSong2)
+{
+	return pSong1->m_SongCategory < pSong2->m_SongCategory;
+}
 
+void SongUtil::SortSongPointerArrayByCategory(vector<Song *> &vpSongsInOut)
+{
+	stable_sort(vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersByCategory);
+}
+/*---------------*/
 static int CompareSongPointersByGenre(const Song *pSong1, const Song *pSong2)
 {
 	return pSong1->m_sGenre < pSong2->m_sGenre;
@@ -527,13 +561,15 @@ int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 
 static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *pSong2 )
 {
-	const RString &sGroup1 = pSong1->m_sGroupName;
-	const RString &sGroup2 = pSong2->m_sGroupName;
+	RString s1 = pSong1->m_sGroupName;
+	RString s2 = pSong2->m_sGroupName;
 
-	if( sGroup1 < sGroup2 )
-		return true;
-	if( sGroup1 > sGroup2 )
-		return false;
+	s1 = SongUtil::MakeSortString(s1);
+	s2 = SongUtil::MakeSortString(s2);
+
+	int ret = strcmp(s1, s2);
+	if( ret < 0 ) return false;
+	if( ret > 0 ) return true;
 
 	/* Same group; compare by name. */
 	return CompareSongPointersByTitle( pSong1, pSong2 );
@@ -544,6 +580,42 @@ void SongUtil::SortSongPointerArrayByGroupAndTitle( vector<Song*> &vpSongsInOut 
 	sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersByGroupAndTitle );
 }
 
+/*-------------------------- xMAx -------------------------------------------------------------*/
+static int CompareSongPointersByGroupAndSongFolder(const Song *pSong1, const Song *pSong2)
+{
+	/*
+	const RString &sGroup1 = pSong1->m_sGroupName;
+	const RString &sGroup2 = pSong2->m_sGroupName;
+
+	if( sGroup1 < sGroup2 )
+	return true;
+	if( sGroup1 > sGroup2 )
+	return false;
+	*/
+
+	RString s1 = pSong1->m_sGroupName;
+	RString s2 = pSong2->m_sGroupName;
+
+	s1 = SongUtil::MakeSortString(s1);
+	s2 = SongUtil::MakeSortString(s2);
+
+	int ret = strcmp(s1, s2);
+	if( ret < 0 ) return false;
+	if( ret > 0 ) return true;
+
+	/* Same group; compare by name. */
+
+	return CompareSongPointerBySongFolder(pSong1, pSong2);
+}
+
+
+void SongUtil::SortSongPointerArrayByGroupAndSongFolder(vector<Song *> &vpSongsInOut)
+{
+
+	sort(vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersByGroupAndSongFolder);
+}
+
+/*-------------------------- xMAx -------------------------------------------------------------*/
 void SongUtil::SortSongPointerArrayByNumPlays( vector<Song*> &vpSongsInOut, ProfileSlot slot, bool bDescending )
 {
 	if( !PROFILEMAN->IsPersistentProfile(slot) )
@@ -568,6 +640,17 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 
 	switch( so )
 	{
+	case SORT_REMIX:	// xMAx
+	case SORT_SHORTCUT:	// xMAx
+	case SORT_UCS:		// xMAx
+	case SORT_LEVEL_1:	// xMAx
+	case SORT_QUEST:
+	case SORT_FULLSONG:	// xMAx
+	case SORT_ORIGINAL:
+	case SORT_KPOP:
+	case SORT_WORLDMUSIC:
+	case SORT_ALLTUNES:	// xMAx //case SORT_NEWTUNES:   // Switch ALLTUNES to NEWTUNES in future.
+		return RString();
 	case SORT_PREFERRED:
 		return SONGMAN->SongToPreferredSortSectionName( pSong );
 	case SORT_GROUP:
@@ -914,6 +997,27 @@ void SongUtil::GetAllSongGenres( vector<RString> &vsOut )
 	}
 }
 
+bool SongUtil::HasAtLeastOnePlayableSong( const SongCriteria &sc, const vector<Song*> &in, SortOrder so )
+{
+	FOREACH_CONST( Song*, in, s )
+	{
+		if( !(sc.Matches( *s ) && IsSongPlayable(*s)))
+			continue;
+
+		vector<Steps*>	m_vpSteps;
+		GetPlayableSteps( *s, m_vpSteps, so );
+		if( m_vpSteps.empty() )
+			continue;
+		else
+		{
+			return true;
+			break;
+		}
+	}
+
+	return false;
+}
+
 void SongUtil::FilterSongs( const SongCriteria &sc, const vector<Song*> &in,
 			   vector<Song*> &out, bool doCareAboutGame )
 {
@@ -973,7 +1077,8 @@ void SongUtil::GetPlayableStepsTypes( const Song *pSong, set<StepsType> &vOut )
 		iNumPlayers = max( iNumPlayers, 1 );
 
 		bool bEnoughStages = GAMESTATE->IsAnExtraStage() || 
-			GAMESTATE->GetSmallestNumStagesLeftForAnyHumanPlayer() >= 
+			//GAMESTATE->GetSmallestNumStagesLeftForAnyHumanPlayer() >= //xMAx
+			GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >=
 			GAMESTATE->GetNumStagesMultiplierForSong(pSong);
 
 		if( bShowThisStepsType && bEnoughStages )
@@ -981,17 +1086,128 @@ void SongUtil::GetPlayableStepsTypes( const Song *pSong, set<StepsType> &vOut )
 	}
 }
 
-void SongUtil::GetPlayableSteps( const Song *pSong, vector<Steps*> &vOut )
+// xMAx - Filter the given steps (use this only in select music screen)
+void SongUtil::GetFilteredPlayableSteps(const Song *pSong, vector<Steps*> &vOut, SortOrder so)
+{
+	vector<Steps*> temp;
+	GetPlayableSteps( pSong, temp, so );
+
+	vOut.clear();
+	for( unsigned i = 0; i < temp.size(); i++ ) // for each of the Song's Steps
+	{
+		Steps *pSteps = temp[i];
+
+		// xMAx - Apply steps filter
+		if( !GAMESTATE->m_SongOptions.GetCurrent().m_bShowSingles )
+		{
+			if( pSteps->m_StepsType == StepsType_pump_single || pSteps->m_StepsType == StepsType_pump_couple )
+				continue;
+		}
+
+		if( !GAMESTATE->m_SongOptions.GetCurrent().m_bShowHalfDoubles )
+		{
+			if( pSteps->m_StepsType == StepsType_pump_halfdouble || (pSteps->m_StepsType == StepsType_pump_double && pSteps->IsDoubleAsHalfDouble()) )
+				continue;
+		}
+
+		if( !GAMESTATE->m_SongOptions.GetCurrent().m_bShowDoubles )
+		{
+			if( (pSteps->m_StepsType == StepsType_pump_double && !( pSteps->IsDoubleAsHalfDouble())) || pSteps->m_StepsType == StepsType_pump_routine )
+				continue;
+		}
+
+		vOut.push_back( pSteps );
+	}
+}
+
+void SongUtil::GetPlayableSteps( const Song *pSong, vector<Steps*> &vOut, SortOrder so )
 {
 	set<StepsType> vStepsType;
 	GetPlayableStepsTypes( pSong, vStepsType );
 
-	FOREACHS( StepsType, vStepsType, st )
-		SongUtil::GetSteps( pSong, vOut, *st );
+	const vector<Steps *> &vpSteps = pSong->GetAllSteps();
+	for( unsigned i=0; i<vpSteps.size(); i++ )	// for each of the Song's Steps
+	{
+		Steps* pSteps = vpSteps[i];
 
-	StepsUtil::RemoveLockedSteps( pSong, vOut );
-	StepsUtil::SortNotesArrayByDifficulty( vOut );
-	StepsUtil::SortStepsByTypeAndDifficulty( vOut );
+		FOREACHS( StepsType, vStepsType, st )
+		{
+			if( pSteps->m_StepsType == *st )
+			{
+				// xMAx - Ignore couple steps in battle mode
+				if( pSteps->m_StepsType == StepsType_pump_couple && GAMESTATE->IsBattleMode() )
+					continue;
+
+				// xMAx - Apply automatic channels filter
+				if( so == SORT_UCS )
+				{
+					if( pSteps->GetLabel() != "UCS" )
+						continue;
+				}
+				else if( so == SORT_QUEST )
+				{
+					if( pSteps->GetLabel() != "QUEST" )
+						continue;
+				}
+				else if( so == SORT_COOP )
+				{
+					if( pSteps->m_StepsType != StepsType_pump_routine &&
+					   !( pSteps->m_StepsType == StepsType_pump_double && ( pSteps->GetDescription().find("DP") != std::string::npos ) && pSteps->GetMeter() == 99 ) )
+					{
+						continue;
+					}
+				}
+				else if( SortOrderToString(so).find_last_of("SO_LEVEL_") != std::string::npos )
+				{
+					if( !PREFSMAN->m_bShowUCSCharts && pSteps->GetLabel() == "UCS" )
+						continue;
+
+					if( !PREFSMAN->m_bShowQUESTCharts && pSteps->GetLabel() == "QUEST" )
+						continue;
+
+					RString sSO = SortOrderToString(so);
+
+					int iLevel = -1;
+					if( sscanf(sSO.c_str(), "SO_LEVEL_%i}", &iLevel) == 1 )
+					{
+						if( iLevel >= 1 && iLevel <= 24 )
+						{
+							if( iLevel != 24 && pSteps->GetMeter() != iLevel )
+							{
+								continue;
+							}
+
+							if( iLevel == 24 && ( pSteps->GetMeter() < 24 || pSteps->GetMeter() >= 99 ) )
+							{
+								continue;
+							}
+						}
+					}
+				}
+				else
+				{
+					if( !PREFSMAN->m_bShowUCSCharts && pSteps->GetLabel() == "UCS" )
+						continue;
+
+					if( !PREFSMAN->m_bShowQUESTCharts && pSteps->GetLabel() == "QUEST" )
+						continue;
+				}
+
+				// If we reach this point, then add the steps to the list
+				vOut.push_back( pSteps );
+			}
+		}
+	}
+	/*	
+	set<StepsType> vStepsType;
+	GetPlayableStepsTypes( pSong, vStepsType );
+
+	FOREACHS( StepsType, vStepsType, st )
+	SongUtil::GetSteps( pSong, vOut, *st );
+	*/	
+	//StepsUtil::RemoveLockedSteps( pSong, vOut );	//no se usan Locked Steps - xMAx
+	//StepsUtil::SortNotesArrayByDifficulty( vOut ); //xMAx
+	//StepsUtil::SortStepsByTypeAndDifficulty( vOut );	//Se realiza al principio, en Songs.cpp : 389
 }
 
 bool SongUtil::IsStepsTypePlayable( Song *pSong, StepsType st )
@@ -1010,6 +1226,25 @@ bool SongUtil::IsStepsPlayable( Song *pSong, Steps *pSteps )
 
 bool SongUtil::IsSongPlayable( Song *s )
 {
+//----------------------------------------------------------------
+	vector<RString> vs;
+	RString sDir = s->GetSongDir();
+	GetDirListing(sDir + "*.ssc", vs, false, false);
+	GetDirListing(sDir + "*.sm", vs, false, false);
+	GetDirListing(sDir + "*.sma", vs, false, false);
+	GetDirListing(sDir + "*.dwi", vs, false, false);
+	GetDirListing(sDir + "*.bms", vs, false, false);
+	GetDirListing(sDir + "*.ksf", vs, false, false);
+
+	bool bHasSimFile = !vs.empty();
+
+	if( !bHasSimFile )
+	{
+		LOG->UserLog( "Song", sDir, "has no SSC, SM, SMA, DWI, BMS, or KSF files, ignoring it." );
+		return false;
+	}
+// xMAx -------------------------------------------------
+
 	const vector<Steps*> & steps = s->GetAllSteps();
 	// I'm sure there is a foreach loop, but I don't
 	FOREACH( Steps*, const_cast<vector<Steps*>&>(steps), step )

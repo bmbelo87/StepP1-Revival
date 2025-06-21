@@ -3,6 +3,7 @@
 #include "PrefsManager.h"
 #include "RageUtil.h"
 #include "RageLog.h"
+#include "RageMath.h"	//xMAx
 #include "NoteTypes.h"
 #include "Foreach.h"
 #include <float.h>
@@ -156,7 +157,7 @@ int TimingData::GetSegmentIndexAtRow(TimingSegmentType tst, int iRow ) const
 			r = m - 1;
 		}
 	}
-	
+
 	// iRow is before the first segment of type tst
 	return INVALID_INDEX;
 }
@@ -185,15 +186,15 @@ void TimingData::MultiplyBPMInBeatRange( int iStartIndex, int iEndIndex, float f
 			continue;
 
 		/* If this BPM segment crosses the beginning of the range,
-		 * split it into two. */
+		* split it into two. */
 		if( iStartIndexThisSegment < iStartIndex && iStartIndexNextSegment > iStartIndex )
 		{
 			BPMSegment * b = new BPMSegment(iStartIndexNextSegment,
-											bs->GetBPS());
+							 bs->GetBPS());
 			bpms.insert(bpms.begin()+i+1, b);
 
 			/* Don't apply the BPM change to the first half of the segment we
-			 * just split, since it lies outside the range. */
+			* just split, since it lies outside the range. */
 			continue;
 		}
 
@@ -201,7 +202,7 @@ void TimingData::MultiplyBPMInBeatRange( int iStartIndex, int iEndIndex, float f
 		if( iStartIndexThisSegment < iEndIndex && iStartIndexNextSegment > iEndIndex )
 		{
 			BPMSegment * b = new BPMSegment(iEndIndex,
-											bs->GetBPS());
+							 bs->GetBPS());
 			bpms.insert(bpms.begin()+i+1, b);
 		}
 		else if( iStartIndexNextSegment > iEndIndex )
@@ -261,14 +262,14 @@ bool TimingData::IsFakeAtRow( int iNoteRow ) const
 }
 
 /* DummySegments: since our model relies on being able to get a segment at will,
- * whether one exists or not, we have a bunch of dummies to return if there is
- * no segment. It's kind of kludgy, but when we have functions making
- * indiscriminate calls to get segments at arbitrary rows, I think it's the
- * best solution we've got for now.
- *
- * Note that types whose SegmentEffectAreas are "Indefinite" are NULL here,
- * because they should never need to be used; we always have at least one such
- * segment in the TimingData, and if not, we'll crash anyway. -- vyhd */
+* whether one exists or not, we have a bunch of dummies to return if there is
+* no segment. It's kind of kludgy, but when we have functions making
+* indiscriminate calls to get segments at arbitrary rows, I think it's the
+* best solution we've got for now.
+*
+* Note that types whose SegmentEffectAreas are "Indefinite" are NULL here,
+* because they should never need to be used; we always have at least one such
+* segment in the TimingData, and if not, we'll crash anyway. -- vyhd */
 static const TimingSegment* DummySegments[NUM_TimingSegmentType] =
 {
 	NULL, // BPMSegment
@@ -485,26 +486,26 @@ void TimingData::GetBeatAndBPSFromElapsedTimeNoOffset( float fElapsedTime, float
 			iEventType = FOUND_WARP_DESTINATION;
 		}
 		if (itBPMS != segs[SEGMENT_BPM].end() && 
-			(*itBPMS)->GetRow() < iEventRow )
+		     (*itBPMS)->GetRow() < iEventRow )
 		{
 			iEventRow = (*itBPMS)->GetRow();
 			iEventType = FOUND_BPM_CHANGE;
 		}
 		if (itDS != segs[SEGMENT_DELAY].end() &&
-			(*itDS)->GetRow() < iEventRow)
+		     (*itDS)->GetRow() < iEventRow)
 		{
 			iEventRow = (*itDS)->GetRow();
 			iEventType = FOUND_DELAY;
 		}
 		if (itSS != segs[SEGMENT_STOP].end() &&
-			(*itSS)->GetRow() < iEventRow ) // && iEventType != FOUND_DELAY )
+		     (*itSS)->GetRow() < iEventRow ) // && iEventType != FOUND_DELAY )
 		{
 			int tmpRow = iEventRow;
 			iEventRow = (*itSS)->GetRow();
 			iEventType = (tmpRow == iEventRow) ? FOUND_STOP_DELAY : FOUND_STOP;
 		}
 		if (itWS != segs[SEGMENT_WARP].end() &&
-			(*itWS)->GetRow() < iEventRow )
+		     (*itWS)->GetRow() < iEventRow )
 		{
 			iEventRow = (*itWS)->GetRow();
 			iEventType = FOUND_WARP;
@@ -582,10 +583,10 @@ void TimingData::GetBeatAndBPSFromElapsedTimeNoOffset( float fElapsedTime, float
 		}
 		iLastRow = iEventRow;
 	}
-	
+
 	fBeatOut = NoteRowToBeat( iLastRow ) + (fElapsedTime - fLastTime) * fBPS;
 	fBPSOut = fBPS;
-	
+
 }
 
 float TimingData::GetElapsedTimeFromBeat( float fBeat ) const
@@ -600,14 +601,14 @@ float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const
 	vector<TimingSegment *>::const_iterator itWS   = segs[SEGMENT_WARP].begin();
 	vector<TimingSegment *>::const_iterator itSS   = segs[SEGMENT_STOP].begin();
 	vector<TimingSegment *>::const_iterator itDS   = segs[SEGMENT_DELAY].begin();
-	
+
 	int iLastRow = 0;
 	float fLastTime = -m_fBeat0OffsetInSeconds;
 	float fBPS = GetBPMAtRow(0) / 60.0f;
-	
+
 	float bIsWarping = false;
 	float fWarpDestination = 0;
-	
+
 	for( ;; )
 	{
 		int iEventRow = INT_MAX;
@@ -618,13 +619,13 @@ float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const
 			iEventType = FOUND_WARP_DESTINATION;
 		}
 		if (itBPMS != segs[SEGMENT_BPM].end() &&
-			(*itBPMS)->GetRow() < iEventRow )
+		     (*itBPMS)->GetRow() < iEventRow )
 		{
 			iEventRow = (*itBPMS)->GetRow();
 			iEventType = FOUND_BPM_CHANGE;
 		}
 		if (itDS != segs[SEGMENT_DELAY].end() &&
-			(*itDS)->GetRow() < iEventRow ) // delays (come before marker)
+		     (*itDS)->GetRow() < iEventRow ) // delays (come before marker)
 		{
 			iEventRow = (*itDS)->GetRow();
 			iEventType = FOUND_DELAY;
@@ -635,13 +636,13 @@ float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const
 			iEventType = FOUND_MARKER;
 		}
 		if (itSS != segs[SEGMENT_STOP].end() &&
-			(*itSS)->GetRow() < iEventRow ) // stops (come after marker)
+		     (*itSS)->GetRow() < iEventRow ) // stops (come after marker)
 		{
 			iEventRow = (*itSS)->GetRow();
 			iEventType = FOUND_STOP;
 		}
 		if (itWS != segs[SEGMENT_WARP].end() &&
-			(*itWS)->GetRow() < iEventRow )
+		     (*itWS)->GetRow() < iEventRow )
 		{
 			iEventRow = (*itWS)->GetRow();
 			iEventType = FOUND_WARP;
@@ -651,28 +652,28 @@ float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const
 		fLastTime = fNextEventTime;
 		switch( iEventType )
 		{
-		case FOUND_WARP_DESTINATION:
-			bIsWarping = false;
-			break;
-		case FOUND_BPM_CHANGE:
-			fBPS = ToBPM(*itBPMS)->GetBPS();
-			itBPMS ++;
-			break;
-		case FOUND_STOP:
-			fTimeToNextEvent = ToStop(*itSS)->GetPause();
-			fNextEventTime   = fLastTime + fTimeToNextEvent;
-			fLastTime = fNextEventTime;
-			itSS ++;
-			break;
-		case FOUND_DELAY:
-			fTimeToNextEvent = ToDelay(*itDS)->GetPause();
-			fNextEventTime   = fLastTime + fTimeToNextEvent;
-			fLastTime = fNextEventTime;
-			itDS ++;
-			break;
-		case FOUND_MARKER:
-			return fLastTime;	
-		case FOUND_WARP:
+			case FOUND_WARP_DESTINATION:
+				bIsWarping = false;
+				break;
+			case FOUND_BPM_CHANGE:
+				fBPS = ToBPM(*itBPMS)->GetBPS();
+				itBPMS ++;
+				break;
+			case FOUND_STOP:
+				fTimeToNextEvent = ToStop(*itSS)->GetPause();
+				fNextEventTime   = fLastTime + fTimeToNextEvent;
+				fLastTime = fNextEventTime;
+				itSS ++;
+				break;
+			case FOUND_DELAY:
+				fTimeToNextEvent = ToDelay(*itDS)->GetPause();
+				fNextEventTime   = fLastTime + fTimeToNextEvent;
+				fLastTime = fNextEventTime;
+				itDS ++;
+				break;
+			case FOUND_MARKER:
+				return fLastTime;	
+			case FOUND_WARP:
 			{
 				bIsWarping = true;
 				WarpSegment *ws = ToWarp(*itWS);
@@ -687,9 +688,9 @@ float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const
 		}
 		iLastRow = iEventRow;
 	}
-	
+
 	// won't reach here, unless BeatToNoteRow(fBeat == INT_MAX) (impossible)
-	
+
 }
 
 float TimingData::GetDisplayedBeat( float fBeat ) const
@@ -764,7 +765,7 @@ void TimingData::InsertRows( int iStartRow, int iRowsToAdd )
 	if( iStartRow == 0 )
 	{
 		/* If we're shifting up at the beginning, we just shifted up the first
-		 * BPMSegment. That segment must always begin at 0. */
+		* BPMSegment. That segment must always begin at 0. */
 		vector<TimingSegment *> &bpms = m_avpTimingSegments[SEGMENT_BPM];
 		ASSERT_M( bpms.size() > 0, "There must be at least one BPM Segment in the chart!" );
 		bpms[0]->SetRow(0);
@@ -780,8 +781,8 @@ void TimingData::DeleteRows( int iStartRow, int iRowsToDelete )
 		// at the end row; rather, shift them so they start there.
 		TimingSegment *tsEnd = GetSegmentAtRow(iStartRow + iRowsToDelete, tst);
 		if (tsEnd != NULL && tsEnd->GetEffectType() == SegmentEffectType_Indefinite &&
-				iStartRow <= tsEnd->GetRow() &&
-				tsEnd->GetRow() < iStartRow + iRowsToDelete)
+		     iStartRow <= tsEnd->GetRow() &&
+		     tsEnd->GetRow() < iStartRow + iRowsToDelete)
 		{
 			// The iRowsToDelete will eventually be subtracted out
 			LOG->Trace("Segment at row %d shifted to %d", tsEnd->GetRow(), iStartRow + iRowsToDelete);
@@ -813,11 +814,11 @@ void TimingData::DeleteRows( int iStartRow, int iRowsToDelete )
 float TimingData::GetDisplayedSpeedPercent( float fSongBeat, float fMusicSeconds ) const
 {
 	/* HACK: Somehow we get called into this function when there is no
-	 * TimingData to work with. This seems to happen the most upon
-	 * leaving the editor. Still, cover our butts in case this instance
-	 * isn't existing. */
+	* TimingData to work with. This seems to happen the most upon
+	* leaving the editor. Still, cover our butts in case this instance
+	* isn't existing. */
 	/* ...but force a crash, so debuggers will catch it and stop here.
-	 * That'll make us keep this bug in mind. -- vyhd */
+	* That'll make us keep this bug in mind. -- vyhd */
 	if( !this )
 	{
 		DEBUG_ASSERT( this );
@@ -861,7 +862,7 @@ float TimingData::GetDisplayedSpeedPercent( float fSongBeat, float fMusicSeconds
 	{
 		const float fPriorSpeed = (index == 0) ? 1 :
 			ToSpeed(speeds[index-1])->GetRatio();
-
+		/*
 		float fTimeUsed = fCurTime - fStartTime;
 		float fDuration = fEndTime - fStartTime;
 		float fRatioUsed = fDuration == 0.0 ? 1 : fTimeUsed / fDuration;
@@ -869,6 +870,32 @@ float TimingData::GetDisplayedSpeedPercent( float fSongBeat, float fMusicSeconds
 		float fDistance = fPriorSpeed - seg->GetRatio();
 		float fRatioNeed = fRatioUsed * -fDistance;
 		return (fPriorSpeed + fRatioNeed);
+		*/	//xMAx
+
+		float fDuration = fEndTime - fStartTime;
+
+		if( fDuration <= 150.f ) // 0.15 seconds - linear effect
+		{
+
+			float fTimeUsed = fCurTime - fStartTime;
+			//float fDuration = fEndTime - fStartTime;
+			float fRatioUsed = fDuration == 0.0 ? 1 : fTimeUsed / fDuration;
+
+			float fDistance = fPriorSpeed - seg->GetRatio();
+			float fRatioNeed = fRatioUsed * -fDistance;
+			return (fPriorSpeed + fRatioNeed);
+		}
+		else
+		{
+			float fTimeUsed = fCurTime - fStartTime;
+			//float fDuration = fEndTime - fStartTime;
+			float fRatioUsed = fDuration == 0.0 ? 1 : fTimeUsed / fDuration;
+
+			float fDistance = seg->GetRatio() - fPriorSpeed;
+
+			return (fPriorSpeed + fDistance*RageFastSin((PI/2)*fRatioUsed));
+		};
+
 	}
 	else
 	{
@@ -1119,26 +1146,26 @@ LUA_REGISTER_CLASS( TimingData )
 // lua end
 
 /*
- * (c) 2001-2004 Chris Danford, Glenn Maynard
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2004 Chris Danford, Glenn Maynard
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

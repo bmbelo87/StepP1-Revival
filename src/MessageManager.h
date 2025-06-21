@@ -83,6 +83,7 @@ enum MessageID
 	Message_MiddleClick,
 	Message_MouseWheelUp,
 	Message_MouseWheelDown,
+	Message_PlayerStartedSelectProfile,
 	NUM_MessageID,	// leave this at the end
 	MessageID_Invalid
 };

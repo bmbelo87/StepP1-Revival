@@ -136,6 +136,16 @@ XToString( DefaultFailType );
 StringToX( DefaultFailType );
 LuaXType( DefaultFailType ); */
 
+static const char *RandomExcludeNames [] = {
+	"None",
+	"Pro",
+	"Fan",
+	"ProAndFan"
+};
+XToString(RandomExclude);
+StringToX(RandomExclude);
+LuaXType(RandomExclude);
+
 bool g_bAutoRestart = false;
 #ifdef DEBUG
 # define TRUE_IF_DEBUG true
@@ -194,6 +204,17 @@ PrefsManager::PrefsManager() :
 
 	m_bOnlyDedicatedMenuButtons	( "OnlyDedicatedMenuButtons",	false ),
 	m_bMenuTimer			( "MenuTimer",			false ),
+
+	// StepP1 Revival - bSilver --------------
+	m_bShowUCSCharts		( "ShowUCSCharts",		false ),
+	m_bShowQUESTCharts		( "ShowQUESTCharts",		false ),
+	m_RandomExclude			( "RandomExclude",		RN_EXCLUDE_NONE ),
+	m_bShowSpecialSongsInLevelChannels( "ShowSpecialSongsInLevelChannels", false ),
+	m_bShowLevelChannels		( "ShowLevelChannels", false ),
+	m_bShowCategoryChannels		( "ShowCategoryChannels", true ),
+	m_bShowSpecialSongsInCategoryChannels( "ShowSpecialSongsInCategoryChannels", false ),
+
+	// ---------------------------------------
 
 	m_fLifeDifficultyScale		( "LifeDifficultyScale",	1.0f ),
 

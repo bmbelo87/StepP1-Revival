@@ -56,7 +56,7 @@ InstrumentTrack StringToInstrumentTrack( const RString& s );
 
 /**------------------------------------------------------------------------------------------------------------------*/
 /**------------------------------------------------------------------------------------------------------------------*/
-/** @brief Indica que tipo de cancion es, para poder diferenciar cuantos corazones tomar */
+/** @brief Indica que tipo de canci�n es, para poder diferenciar cuantos corazones tomar */
 /** xMAx */
 enum SongType
 {
@@ -69,26 +69,26 @@ enum SongType
 	NUM_SongType,
 	SongType_Invalid
 };
-const RString &SongTypeToString( SongType st );
-const RString &SongTypeToLozalizedString( SongType st );
-SongType StringToSongType( const RString &s );
+const RString& SongTypeToString( SongType st );
+const RString& SongTypeToLocalizedString( SongType st );
+SongType StringToSongType( const RString& s );
 LuaDeclareType( SongType );
 // TODO: Faltan las funciones de Get y Set - utiles para MusicWHeel.cpp
-/** @brief Indica la categoria de la cancion */
+/** @brief Indica la categoria de la canci�n */
 enum SongCategory
 {
-	SONGCATEGORY_NEWTUNES, // CHANGE TO ALL TUNES IN FUTURE? (Phyrebird Theme)
+	SONGCATEGORY_NEWTUNES,
 	SONGCATEGORY_ORIGINAL,
 	SONGCATEGORY_KPOP,
-	SONGCATEGORY_WORLDMUSIC,
-	SONGCATEGORY_JMUSIC,
+	SONGCATEGORY_WORLDMUSIC,			
+	SONGCATEGORY_JMUSIC,			
 	SONGCATEGORY_USE_GENRE,
 	NUM_SongCategory,
 	SongCategory_Invalid
 };
-const RString &SongCategoryToString( SongCategory st );
-const RString &SongCategoryToLocalizedString( SongCategory st );
-SongCategory StringToSongCategory( const RString &s );
+const RString& SongCategoryToString( SongCategory st );
+const RString& SongCategoryToLocalizedString( SongCategory st );
+SongCategory StringToSongCategory( const RString& s );
 LuaDeclareType( SongCategory );
 // TODO: Faltan las funciones de Get y Set - utiles para MusicWHeel.cpp
 /**------------------------------------------------------------------------------------------------------------------*/
@@ -122,54 +122,54 @@ public:
 	void DetachSteps();
 
 	/**
-	 * @brief Load a song from the chosen directory.
-	 *
-	 * This assumes that there is no song present right now.
-	 * @param sDir the song directory from which to load. */
+	* @brief Load a song from the chosen directory.
+	*
+	* This assumes that there is no song present right now.
+	* @param sDir the song directory from which to load. */
 	bool LoadFromSongDir( RString sDir, bool bForceNoCache = false );	// xMAx - added bForceNoCache
 	// This one takes the effort to reuse Steps pointers as best as it can
 	bool ReloadFromSongDir( RString sDir );
 
 	/**
-	 * @brief Call this after loading a song to clean up invalid data.
-	 * @param fromCache was this data loaded from the cache file?
-	 * @param duringCache was this data loaded during the cache process? */
+	* @brief Call this after loading a song to clean up invalid data.
+	* @param fromCache was this data loaded from the cache file?
+	* @param duringCache was this data loaded during the cache process? */
 	void TidyUpData( bool fromCache = false, bool duringCache = false );
 
 	/**
-	 * @brief Get the new radar values, and determine the last second at the same time.
-	 * This is called by TidyUpData, after saving the Song.
-	 * @param fromCache was this data loaded from the cache file?
-	 * @param duringCache was this data loaded during the cache process? */
+	* @brief Get the new radar values, and determine the last second at the same time.
+	* This is called by TidyUpData, after saving the Song.
+	* @param fromCache was this data loaded from the cache file?
+	* @param duringCache was this data loaded during the cache process? */
 	void ReCalculateRadarValuesAndLastSecond(bool fromCache = false, bool duringCache = false);
 	/**
-	 * @brief Translate any titles that aren't in english.
-	 * This is called by TidyUpData. */
+	* @brief Translate any titles that aren't in english.
+	* This is called by TidyUpData. */
 	void TranslateTitles();
 
 	/**
-	 * @brief Save to the new SSC file format.
-	 * @param sPath the path where we're saving the file.
-	 * @param bSavingCache a flag to determine if we're saving cache data.
-	 */
+	* @brief Save to the new SSC file format.
+	* @param sPath the path where we're saving the file.
+	* @param bSavingCache a flag to determine if we're saving cache data.
+	*/
 	bool SaveToSSCFile( RString sPath, bool bSavingCache );
 	/** @brief Save to the SSC and SM files no matter what. */
 	void Save();
 	/** 
-	  * @brief Save the current Song to a JSON file.
-	  * @return its success or failure. */
+	* @brief Save the current Song to a JSON file.
+	* @return its success or failure. */
 	bool SaveToJsonFile( RString sPath );
 	/** 
-	  * @brief Save the current Song to a cache file using the preferred format.
-	  * @return its success or failure. */
+	* @brief Save the current Song to a cache file using the preferred format.
+	* @return its success or failure. */
 	bool SaveToCacheFile();
 	/**
-	 * @brief Save the current Song to a SM file.
-	 * @return its success or failure. */
+	* @brief Save the current Song to a SM file.
+	* @return its success or failure. */
 	bool SaveToSMFile();
 	/** 
-	 * @brief Save the current Song to a DWI file if possible.
-	 * @return its success or failure. */
+	* @brief Save the current Song to a DWI file if possible.
+	* @return its success or failure. */
 	bool SaveToDWIFile();
 
 	const RString &GetSongFilePath() const;
@@ -177,10 +177,10 @@ public:
 
 	void AddAutoGenNotes();
 	/**
-	 * @brief Automatically generate steps from one type to another.
-	 * @param ntTo the StepsType we're making.
-	 * @param ntFrom the StepsType we're generating from.
-	 */
+	* @brief Automatically generate steps from one type to another.
+	* @param ntTo the StepsType we're making.
+	* @param ntFrom the StepsType we're generating from.
+	*/
 	void AutoGen( StepsType ntTo, StepsType ntFrom );
 	void RemoveAutoGenNotes();
 
@@ -188,18 +188,18 @@ public:
 	const RString &GetSongDir() const { return m_sSongDir; }
 
 	/**
-	 * @brief Filename associated with this file.
-	 * This will always have a .SSC extension. If we loaded a .SSC, this will
-	 * point to it, but if we loaded any other type, this will point to
-	 * a generated .SSC filename. */
+	* @brief Filename associated with this file.
+	* This will always have a .SSC extension. If we loaded a .SSC, this will
+	* point to it, but if we loaded any other type, this will point to
+	* a generated .SSC filename. */
 	RString m_sSongFileName;
 
 	/** @brief The group this Song is in. */
 	RString m_sGroupName;
 
 	/**
-	 * @brief the Profile this came from.
-	 * This is ProfileSlot_Invalid if it wasn't loaded from a profile. */
+	* @brief the Profile this came from.
+	* This is ProfileSlot_Invalid if it wasn't loaded from a profile. */
 	ProfileSlot	m_LoadedFromProfile;
 	/** @brief Is the song file itself a symlink to another file? */
 	bool	m_bIsSymLink;
@@ -219,28 +219,28 @@ public:
 	RString m_sArtistTranslit;
 
 	/* If PREFSMAN->m_bShowNative is off, these are the same as GetTranslit*
-	 * below. Otherwise, they return the main titles. */
+	* below. Otherwise, they return the main titles. */
 	RString GetDisplayMainTitle() const;
 	RString GetDisplaySubTitle() const;
 	RString GetDisplayArtist() const;
 
 	/**
-	 * @brief Retrieve the transliterated title, or the main title if there is no translit.
-	 * @return the proper title. */
+	* @brief Retrieve the transliterated title, or the main title if there is no translit.
+	* @return the proper title. */
 	RString GetTranslitMainTitle() const
 	{ 
 		return m_sMainTitleTranslit.size()? m_sMainTitleTranslit: m_sMainTitle; 
 	}
 	/**
-	 * @brief Retrieve the transliterated subtitle, or the main subtitle if there is no translit.
-	 * @return the proper subtitle. */
+	* @brief Retrieve the transliterated subtitle, or the main subtitle if there is no translit.
+	* @return the proper subtitle. */
 	RString GetTranslitSubTitle() const 
 	{ 
 		return m_sSubTitleTranslit.size()? m_sSubTitleTranslit: m_sSubTitle;
 	}
 	/**
-	 * @brief Retrieve the transliterated artist, or the main artist if there is no translit.
-	 * @return the proper artist. */
+	* @brief Retrieve the transliterated artist, or the main artist if there is no translit.
+	* @return the proper artist. */
 	RString GetTranslitArtist() const 
 	{ 
 		return m_sArtistTranslit.size()? m_sArtistTranslit:m_sArtist; 
@@ -256,8 +256,8 @@ public:
 	RString m_sGenre;
 
 	/**
-	 * @brief The person who worked with the song file who should be credited.
-	 * This is read and saved, but never actually used. */
+	* @brief The person who worked with the song file who should be credited.
+	* This is read and saved, but never actually used. */
 	RString	m_sCredit;
 
 	RString m_sOrigin; // song origin (for .ssc format)
@@ -303,12 +303,12 @@ public:
 	bool HasMusic() const;
 	bool HasInstrumentTrack( InstrumentTrack it ) const;
 	/**
-	 * @brief Does this song have a banner?
-	 * @return true if it does, false otherwise. */
+	* @brief Does this song have a banner?
+	* @return true if it does, false otherwise. */
 	bool HasBanner() const;
 	/**
-	 * @brief Does this song have a background image?
-	 * @return true if it does, false otherwise. */
+	* @brief Does this song have a background image?
+	* @return true if it does, false otherwise. */
 	bool HasBackground() const;
 	bool HasJacket() const;
 	bool HasCDImage() const;
@@ -341,11 +341,11 @@ public:
 	typedef vector<BackgroundChange> 	VBackgroundChange;
 
 	// xMAx -----------------------------------------------------------------------------------
-	SongType	m_SongType;
-	SongCategory	m_SongCategory;
-	int		m_iVolume;
+	SongType 	 	m_SongType;
+	SongCategory 	m_SongCategory;
+	int				m_iVolume;
 
-	/** @brief El nombre de la carpeta que contiene a esta cancion */ 
+	/** @brief El nombre de la carpeta que contiene a esta canci�n */ 
 	RString m_sSongFolder;
 	RString GetSongFolder() const;
 	bool	m_bCanBeEdit;
@@ -358,16 +358,16 @@ private:
 	/** @brief The last second of the song for playing purposes. */
 	float specifiedLastSecond;
 	/**
-	 * @brief The background changes (sorted by layer) that are for this Song.
-	 * This uses an AutoPtr instead of a raw pointer so that the
-	 * auto gen'd copy constructor works correctly.
-	 * This must be sorted before gameplay. */
+	* @brief The background changes (sorted by layer) that are for this Song.
+	* This uses an AutoPtr instead of a raw pointer so that the
+	* auto gen'd copy constructor works correctly.
+	* This must be sorted before gameplay. */
 	AutoPtrCopyOnWrite<VBackgroundChange>	m_BackgroundChanges[NUM_BackgroundLayer];
 	/**
-	 * @brief The foreground changes that are for this Song.
-	 * This uses an AutoPtr instead of a raw pointer so that the
-	 * auto gen'd copy constructor works correctly.
-	 * This must be sorted before gameplay. */
+	* @brief The foreground changes that are for this Song.
+	* This uses an AutoPtr instead of a raw pointer so that the
+	* auto gen'd copy constructor works correctly.
+	* This must be sorted before gameplay. */
 	AutoPtrCopyOnWrite<VBackgroundChange>	m_ForegroundChanges;
 
 	vector<RString> GetChangesToVectorString(const vector<BackgroundChange> & changes) const;
@@ -384,15 +384,15 @@ public:
 	vector<RString> GetInstrumentTracksToVectorString() const;
 
 	/**
-	 * @brief The list of LyricSegments.
-	 * This must be sorted before gameplay. */
+	* @brief The list of LyricSegments.
+	* This must be sorted before gameplay. */
 	vector<LyricSegment>			m_LyricSegments;
 
-/* [splittiming]
+	/* [splittiming]
 	void AddBPMSegment( const BPMSegment &seg ) { m_Timing.AddBPMSegment( seg ); }
 	void AddStopSegment( const StopSegment &seg ) { m_Timing.AddStopSegment( seg ); }
 	void AddWarpSegment( const WarpSegment &seg ) { m_Timing.AddWarpSegment( seg ); }
-*/
+	*/
 	void AddBackgroundChange( BackgroundLayer blLayer, BackgroundChange seg );
 	void AddForegroundChange( BackgroundChange seg );
 	void AddLyricSegment( LyricSegment seg );
@@ -400,11 +400,11 @@ public:
 	void GetDisplayBpms( DisplayBpms &AddTo ) const;
 	const BackgroundChange &GetBackgroundAtBeat( BackgroundLayer iLayer, float fBeat ) const;
 
-/* [splittiming]
+	/* [splittiming]
 	float GetBPMAtBeat( float fBeat ) const { return m_Timing.GetBPMAtBeat( fBeat ); }
 	void SetBPMAtBeat( float fBeat, float fBPM ) { m_Timing.SetBPMAtBeat( fBeat, fBPM ); }
 	BPMSegment& GetBPMSegmentAtBeat( float fBeat ) { return m_Timing.GetBPMSegmentAtBeat( fBeat ); }
-*/
+	*/
 
 	Steps *CreateSteps();
 	void InitSteps(Steps *pSteps);
@@ -412,27 +412,27 @@ public:
 	/* [splittiming]
 	float SongGetBeatFromElapsedTime( float fElapsedTime ) const 
 	{
-		return m_SongTiming.GetBeatFromElapsedTime( fElapsedTime );
+	return m_SongTiming.GetBeatFromElapsedTime( fElapsedTime );
 	}
 	float StepsGetBeatFromElapsedTime( float fElapsedTime, const Steps &steps ) const 
 	{
-		return steps.m_Timing.GetBeatFromElapsedTime( fElapsedTime );
+	return steps.m_Timing.GetBeatFromElapsedTime( fElapsedTime );
 	}
 
 	float SongGetElapsedTimeFromBeat( float fBeat ) const
 	{
-		return m_SongTiming.GetElapsedTimeFromBeat( fBeat );
+	return m_SongTiming.GetElapsedTimeFromBeat( fBeat );
 	}
 	float StepsGetElapsedTimeFromBeat( float fBeat, const Steps &steps ) const
 	{
-		return steps.m_Timing.GetElapsedTimeFromBeat( fBeat );
+	return steps.m_Timing.GetElapsedTimeFromBeat( fBeat );
 	}
 	*/
 
 	/* [splittiming]
 	float GetBeatFromElapsedTime( float fElapsedTime ) const 
 	{ 
-		return m_Timing.GetBeatFromElapsedTime( fElapsedTime );
+	return m_Timing.GetBeatFromElapsedTime( fElapsedTime );
 	}
 	float GetElapsedTimeFromBeat( float fBeat ) const { return m_Timing.GetElapsedTimeFromBeat( fBeat ); }
 	*/
@@ -454,17 +454,17 @@ public:
 	void SetEnabled( bool b ) { m_bEnabled = b; }
 	bool GetEnabled() const { return m_bEnabled; }
 	/**
-	 * @brief Determine if the song should be shown on the MusicWheel normally.
-	 * Songs that are not displayed normally may still be available during
-	 * random selection, extra stages, or other special conditions.
-	 * @return true if displayed normally, false otherwise. */
+	* @brief Determine if the song should be shown on the MusicWheel normally.
+	* Songs that are not displayed normally may still be available during
+	* random selection, extra stages, or other special conditions.
+	* @return true if displayed normally, false otherwise. */
 	bool NormallyDisplayed() const;
 	bool ShowInDemonstrationAndRanking() const;
 
 	/**
-	 * @brief Add the chosen Steps to the Song.
-	 * We are responsible for deleting the memory pointed to by pSteps!
-	 * @param pSteps the new steps. */
+	* @brief Add the chosen Steps to the Song.
+	* We are responsible for deleting the memory pointed to by pSteps!
+	* @param pSteps the new steps. */
 	void AddSteps( Steps* pSteps );
 	void DeleteSteps( const Steps* pSteps, bool bReAutoGen = true );
 
@@ -477,11 +477,11 @@ public:
 	bool IsStepsUsingDifferentTiming(Steps *pSteps ) const;
 
 	/**
-	 * @brief An array of keysound file names (e.g. "beep.wav").
-	 * The index in this array corresponds to the index in TapNote.
-	 * If you  change the index in here, you must change all NoteData too.
-	 * Any note that doesn't have a value in the range of this array
-	 * means "this note doesn't have a keysound". */
+	* @brief An array of keysound file names (e.g. "beep.wav").
+	* The index in this array corresponds to the index in TapNote.
+	* If you  change the index in here, you must change all NoteData too.
+	* Any note that doesn't have a value in the range of this array
+	* means "this note doesn't have a keysound". */
 	vector<RString> m_vsKeysoundFile;
 
 	CachedObject<Song> m_CachedObject;
@@ -494,10 +494,10 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 
-	// xMAx ---------------------------------------------------------------------
-	// Para separar BPMChanges de Los Stops
+	// xMAx -------------------------------------------------------------------------
+	// Para separar BPMChanges de los Stops
 	bool HasSignificantBpmChanges() const;
-	DisplayBPM GetDisplayBPM () const { return this->m_DisplayBPMType; };
+	DisplayBPM GetDisplayBPM() const { return this->m_DisplayBPMType; };
 
 private:
 	/** @brief the Steps that belong to this Song. */
@@ -509,28 +509,28 @@ private:
 #endif
 
 /**
- * @file
- * @author Chris Danford, Glenn Maynard (c) 2001-2004
- * @section LICENSE
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* @file
+* @author Chris Danford, Glenn Maynard (c) 2001-2004
+* @section LICENSE
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

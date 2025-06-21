@@ -87,6 +87,7 @@ static const char *MessageIDNames[] = {
 	"MiddleClick",
 	"MouseWheelUp",
 	"MouseWheelDown",
+	"PlayerStartedSelectProfile",
 };
 XToString( MessageID );
 

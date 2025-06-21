@@ -155,6 +155,20 @@ LuaXType( Premium );
 
 
 static const char *SortOrderNames[] = {
+	// ------- Pump it Up Sorts - StepP1 Revival - bsilver --------
+	"Remix",
+	"ShortCut",
+	"UCS",
+	"Level_1",
+	"Quest",
+	"FullSong",
+	"Original",
+	"KPop",
+	"WorldMusic",
+	"AllTunes", // "NewTunes",
+	"Coop",
+	"JMusic",
+	// -------------------------------------------------------------- 
 	"Preferred",
 	"Group",
 	"Title",
