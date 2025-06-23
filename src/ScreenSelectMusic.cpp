@@ -30,6 +30,7 @@
 #include "InputEventPlus.h"
 #include "RageInput.h"
 #include "OptionsList.h"
+#include "WheelBase.h"
 
 static const char *SelectionStateNames[] = {
 	"SelectingSong",
@@ -223,6 +224,7 @@ void ScreenSelectMusic::Init()
 	m_soundLocked.Load( THEME->GetPathS(m_sName,"locked") );
 
 	this->SortByDrawOrder();
+	LOG->Trace("ScreenSelectMusic Init concluido");
 }
 
 void ScreenSelectMusic::BeginScreen()
@@ -274,6 +276,13 @@ void ScreenSelectMusic::BeginScreen()
 	SOUND->PlayOnceFromAnnouncer( "select music intro" );
 
 	ScreenWithMenuElements::BeginScreen();
+
+	// StepP1 Revival - bSilver ---
+	FOREACH_PlayerNumber(pn)
+	{
+		b_PlayerIsReady[pn] = false; // Player's not ready. This is for "READY" in selectmusic
+	};
+	//-------------------------------
 }
 
 ScreenSelectMusic::~ScreenSelectMusic()
@@ -379,6 +388,7 @@ void ScreenSelectMusic::CheckBackgroundRequests( bool bForce )
 
 void ScreenSelectMusic::Update( float fDeltaTime )
 {
+	//LOG->Trace("ScreenSelectMusic::Update");
 	if( !IsTransitioning() )
 	{
 		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.PeekDeltaTime() >= IDLE_COMMENT_SECONDS )
@@ -405,7 +415,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 	{
 		return ScreenWithMenuElements::Input(input);
 	}
-//	LOG->Trace( "ScreenSelectMusic::Input()" );
+	LOG->Trace( "ScreenSelectMusic::Input()" );
 
 	// reset announcer timer
 	m_timerIdleComment.GetDeltaTime();
@@ -505,6 +515,8 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 	if( m_SelectionState == SelectionState_SelectingSteps && m_bStepsChosen[input.pn]
 		&& input.MenuI == GAME_BUTTON_SELECT && input.type == IET_FIRST_PRESS )
 	{
+	LOG->Trace("StepsUnchosen, start SelectingMusicReturn?");
+	MESSAGEMAN->Broadcast("StartSelectingSong");
 		Message msg("StepsUnchosen");
 		msg.SetParam( "Player", input.pn );
 		MESSAGEMAN->Broadcast( msg );
@@ -542,7 +554,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 		}
 	}
 
-	/*if( input.MenuI == GAME_BUTTON_SELECT && input.type != IET_REPEAT )
+	if( input.MenuI == GAME_BUTTON_SELECT && input.type != IET_REPEAT )
 		m_bAcceptSelectRelease[input.pn] = (input.type == IET_FIRST_PRESS);
 
 	if( SELECT_MENU_AVAILABLE && input.MenuI == GAME_BUTTON_SELECT && input.type != IET_REPEAT )
@@ -567,6 +579,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 					if( MODE_MENU_AVAILABLE )
 						m_MusicWheel.NextSort();
 					else
+						
 						m_soundLocked.Play();
 					break;
 				default: break;
@@ -585,7 +598,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 		if( g_CanOpenOptionsList.Ago() > OPTIONS_LIST_TIMEOUT )
 			m_bAcceptSelectRelease[input.pn] = false;
 		return true;
-	}*/
+	}
 
 	if( m_SelectionState == SelectionState_SelectingSong  &&
 		(input.MenuI == m_GameButtonNextSong || input.MenuI == m_GameButtonPreviousSong || input.MenuI == GAME_BUTTON_SELECT) )
@@ -672,16 +685,10 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 		{
 			if (input.MenuI == m_GameButtonPreviousDifficulty )
 			{
-				if( GAMESTATE->IsAnExtraStageAndSelectionLocked() )
-					m_soundLocked.Play();
-				else
 					ChangeSteps( input.pn, -1 );
 			}
 			else if( input.MenuI == m_GameButtonNextDifficulty )
 			{
-				if( GAMESTATE->IsAnExtraStageAndSelectionLocked() )
-					m_soundLocked.Play();
-				else
 					ChangeSteps( input.pn, +1 );
 			}
 		}
@@ -1815,6 +1822,8 @@ void ScreenSelectMusic::AfterMusicChange()
 
 		SongUtil::GetPlayableSteps( pSong, m_vpSteps );
 
+		MESSAGEMAN->Broadcast("PlayableStepsChanged");  // StepP1 Revival - bSilver
+
 		if ( PREFSMAN->m_bShowBanners )
 			g_sBannerPath = pSong->GetBannerPath();
 
@@ -1828,8 +1837,8 @@ void ScreenSelectMusic::AfterMusicChange()
 	{
 		const Course *lCourse = m_MusicWheel.GetSelectedCourse();
 		const Style *pStyle = NULL;
-		if( CommonMetrics::AUTO_SET_STYLE )
-			pStyle = pCourse->GetCourseStyle( GAMESTATE->m_pCurGame, GAMESTATE->GetNumSidesJoined() );
+		//if( CommonMetrics::AUTO_SET_STYLE )
+		//	pStyle = pCourse->GetCourseStyle( GAMESTATE->m_pCurGame, GAMESTATE->GetNumSidesJoined() );
 		if( pStyle == NULL )
 			pStyle = GAMESTATE->GetCurrentStyle();
 		lCourse->GetTrails( m_vpTrails, pStyle->m_StepsType );
@@ -1924,11 +1933,145 @@ public:
 	}
 	static int OpenOptionsList( T* p, lua_State *L ) { PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);  p->OpenOptionsList(pn); return 0; }
 
+	// StepP1 Revival - bSilver (With GPT Help) -----------------------------------------------
+	static int GetWheelCurrentIndex( T* p, lua_State *L )
+	{
+		lua_pushnumber(L, static_cast<double>(p->GetMusicWheel()->GetCurrentIndex()));
+		return 1;
+	}
+	static int GetWheelNumItems(T *p, lua_State *L)
+	{
+		lua_pushnumber(L, static_cast<double>(p->GetMusicWheel()->GetNumItems()));
+		return 1;
+	}
+	static int GetSongGroupNamesAvailables(T *p, lua_State *L)
+	{
+		lua_newtable(L);
+		vector<RString> groups;
+		SONGMAN->GetSongGroupNames(groups);
+
+		for( size_t i = 0; i < groups.size(); ++i )
+		{
+			lua_pushnumber(L, i + 1);
+			lua_pushstring(L, groups[i]);
+			lua_settable(L, -3);
+		}
+
+		return 1;
+	}
+
+	static int IsPlayerReady(T *p, lua_State *L)
+	{
+		PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);	// Receive lua PLAYER_1 or PLAYER_2
+
+		bool ready = p->b_PlayerIsReady[pn] && GAMESTATE->IsPlayerEnabled(pn);	// Checks if active player and veriry if is Ready
+
+		lua_pushboolean(L, ready);	// Return true or false to lua
+		return 1;
+	}
+
+	static int GetCurrentGroup(T *p, lua_State *L)
+	{
+		RString group = p->GetMusicWheel()->GetSelectedSection();
+		lua_pushstring(L, group);
+		return 1;
+	}
+
+	static int GetPlayableSteps(T *p, lua_State *L)
+	{
+		Song* pSong = p->GetMusicWheel()->GetSelectedSong();
+		if( pSong == nullptr )
+		{
+			LOG->Trace("GetPlayableSteps: Nenhuma música selecionada.");
+
+			lua_newtable(L);
+			return 1;
+		}
+
+		vector<Steps*> vSteps;
+		SongUtil::GetPlayableSteps(pSong, vSteps, GAMESTATE->m_SortOrder);
+
+		lua_newtable(L);
+		for( size_t i = 0; i < vSteps.size(); ++i )
+		{
+			lua_pushnumber(L, i + 1);
+			LuaHelpers::Push(L, vSteps[i]);
+			lua_settable(L, -3);
+		}
+
+		return 1;
+	}
+
+	static int GetPlayableTrails(T *p, lua_State *L)
+	{
+		Course* pCourse = GAMESTATE->m_pCurCourse;
+		if( pCourse == nullptr )
+		{
+			lua_newtable(L);
+			return 1;
+		}
+
+		vector<Trail*> vTrails;
+		pCourse->GetAllTrails(vTrails);
+
+		lua_newtable(L);
+		for( size_t i = 0; i < vTrails.size(); ++i )
+		{
+			lua_pushnumber(L, i + 1);
+			LuaHelpers::Push(L, vTrails[i]);
+			lua_settable(L, -3);
+		}
+
+		return 1;
+	}
+
+	static int GetSelection(T *p, lua_State *L)
+	{
+		PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
+
+		int selection = p->m_iSelection[pn];
+
+		lua_pushnumber(L, selection);
+		return 1;
+	}
+
+	static int GetCurrentGroupIndex(T *p, lua_State *L)
+	{
+		RString currentGroup = p->GetMusicWheel()->GetSelectedSection();
+
+		vector<RString> groups;
+		SONGMAN->GetSongGroupNames(groups);
+
+		int index = -1;
+		for( size_t i = 0; i < groups.size(); i++ )
+		{
+			index = static_cast<int>(i);
+			break;
+		}
+
+		lua_pushnumber(L, static_cast<double>(index + 1));
+		return 1;
+	}
+
+	//---------------------------------------------------------------------------------------------
+
+
 	LunaScreenSelectMusic()
 	{
   		ADD_METHOD( GetGoToOptions );
 		ADD_METHOD( GetMusicWheel );
 		ADD_METHOD( OpenOptionsList );
+		// StepP1 Revival - bSilver ---------------------------------------------------
+		ADD_METHOD( GetWheelCurrentIndex );		// LAB_00423b33
+		ADD_METHOD( GetWheelNumItems );			// FUN_00423b52
+		ADD_METHOD( GetSongGroupNamesAvailables );	// LAB_004247b1
+		ADD_METHOD( IsPlayerReady );			// LAB_0042417e
+		ADD_METHOD( GetCurrentGroup );			// FUN_004241aa
+		ADD_METHOD( GetPlayableSteps );			// LAB_004247ca
+		ADD_METHOD( GetPlayableTrails );		// LAB_004247e3
+		ADD_METHOD( GetSelection );			// LAB_004241dd
+		ADD_METHOD( GetCurrentGroupIndex );		// FUN_00424b0b
+		// ----------------------------------------------------------------------------
 	}
 };
 

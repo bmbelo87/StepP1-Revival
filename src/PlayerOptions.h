@@ -38,7 +38,9 @@ public:
 		m_bMuteOnError(false), m_FailType(FailType_Immediate),
 		m_bNX(false), m_bJudgmentReverse(false),
 		m_bRandomSkin(false), m_bEW(false),
-		m_bAutoNoteskin(false), m_bRouletteNoteskin(false)
+		m_bAutoNoteskin(false), m_bRouletteNoteskin(false),
+		m_bFreePerformance(false), m_bJudgeByNote(false),
+		m_iJudgment(NORMAL_JUDGMENT)
 	{
 		m_sNoteSkin = "";
 		ZERO( m_fAccels );	ONE( m_SpeedfAccels );

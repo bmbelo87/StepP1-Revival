@@ -45,12 +45,20 @@ public:
 	virtual void StartPlayingMusic() { }
 
 	bool GetGoToOptions() const { return m_bGoToOptions; }
-	MusicWheel *GetMusicWheel() { return &m_MusicWheel; }
+	MusicWheel *GetMusicWheel() { return &m_MusicWheel; } 
 
 	void OpenOptionsList( PlayerNumber pn );
 
 	// Lua
 	virtual void PushSelf( lua_State *L );
+
+	// StepP1 Revival - bSilver
+	bool	b_PlayerIsReady[NUM_PLAYERS];
+	//const	MusicWheel* GetMusicWheel() const { return &m_MusicWheel; }
+	int	m_iSelection[NUM_PLAYERS];
+
+	// --------------------------
+
 
 protected:
 	virtual bool GenericTweenOn() const { return true; }
@@ -67,7 +75,7 @@ protected:
 
 	vector<Steps*>		m_vpSteps;
 	vector<Trail*>		m_vpTrails;
-	int					m_iSelection[NUM_PLAYERS];
+	//int			m_iSelection[NUM_PLAYERS]; // Moved to public: 
 
 	RageTimer		m_timerIdleComment;
 	ThemeMetric<float> IDLE_COMMENT_SECONDS;
@@ -128,14 +136,14 @@ protected:
 	RString m_sLoopMusicPath;
 	RString m_sFallbackCDTitlePath;
 
-	FadingBanner	m_Banner;
+	FadingBanner		m_Banner;
 	Sprite			m_sprCDTitleFront, m_sprCDTitleBack;
 	AutoActor		m_sprHighScoreFrame[NUM_PLAYERS];
 	BitmapText		m_textHighScore[NUM_PLAYERS];
 	MusicWheel		m_MusicWheel;
 	OptionsList		m_OptionsList[NUM_PLAYERS];
 
-	SelectionState	m_SelectionState;
+	SelectionState		m_SelectionState;
 	bool			m_bStepsChosen[NUM_PLAYERS];	// only used in SelectionState_SelectingSteps
 	bool			m_bGoToOptions;
 	RString			m_sSampleMusicToPlay;

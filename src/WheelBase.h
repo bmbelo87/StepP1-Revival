@@ -33,6 +33,7 @@ LuaDeclareType( WheelState );
 class WheelBase : public ActorFrame
 {
 public:
+	
 	virtual ~WheelBase();
 	virtual void Load( RString sType );
 	void BeginScreen();
@@ -70,6 +71,22 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 
+	// xMAx -------------------------------------------------------
+	void StopWheel( void );
+	inline void StopMusicChangeSound() { m_soundChangeMusic.Stop(); };
+	int m_iTimesBeforeStartSpin;
+	float temp;
+	vector<Actor::TweenState> wheel_positions;
+	vector<Actor::TweenState> wheel_init_positions;
+	void OpenUpWheel( bool bOpenCenter = true );
+	void CloseUpWheel( bool bCloseCenter = true );
+
+	WheelItemBase* m_pLastCenterItem = nullptr; 	// StepP1 Revival - bSilver (For PhoenixWheel)
+
+	// Messages
+	virtual void HandleMessageOver( const Message &msg );
+	virtual void HandleMessage( const Message &msg ); // StepP1 Revival - bSilver
+
 protected:
 	void TweenOnScreenForSort();
 	void TweenOffScreenForSort();
@@ -77,25 +94,26 @@ protected:
 	virtual WheelItemBase *MakeItem() = 0;
 	virtual void UpdateSwitch();
 	virtual bool MoveSpecific(int n);
-	void SetPositions();
+	//void SetPositions();
+	void SetPositions(int dir=0);
 
 	int FirstVisibleIndex();
 
-	ScrollBar	m_ScrollBar;
-	AutoActor	m_sprHighlight;
+	//ScrollBar	m_ScrollBar;
+	//AutoActor	m_sprHighlight;
 
 	vector<WheelItemBaseData *> m_CurWheelItemData;
 	vector<WheelItemBase *> m_WheelBaseItems;
 	WheelItemBaseData* m_LastSelection;
-	
+
 	bool		m_bEmpty;
-	int		m_iSelection;		// index into m_CurWheelItemBaseData
+	int			m_iSelection;		// index into m_CurWheelItemBaseData
 	RString		m_sExpandedSectionName;
 
 	int			m_iSwitchesLeftInSpinDown;
 	float		m_fLockedWheelVelocity;
 	// 0 = none; -1 or 1 = up/down
-	int		m_Moving;
+	int			m_Moving;
 	RageTimer	m_MovingSoundTimer;
 	float		m_TimeBeforeMovingBegins;
 	float		m_SpinSpeed;
@@ -109,8 +127,8 @@ protected:
 	RageSound m_soundCollapse;
 	RageSound m_soundLocked;
 
-//	bool WheelItemIsVisible(int n);
-	void UpdateScrollbar();
+	//	bool WheelItemIsVisible(int n);
+	//void UpdateScrollbar();
 
 	ThemeMetric<float>	SWITCH_SECONDS;
 	ThemeMetric<float>	LOCKED_INITIAL_VELOCITY;
@@ -123,26 +141,26 @@ protected:
 #endif
 
 /*
- * (c) 2001-2004 Chris Danford, Chris Gomez, Glenn Maynard, Josh Allen
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2004 Chris Danford, Chris Gomez, Glenn Maynard, Josh Allen
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

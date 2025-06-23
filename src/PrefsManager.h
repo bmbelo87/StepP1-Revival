@@ -208,6 +208,7 @@ public:
 	Preference<bool>	m_bShowLevelChannels;
 	Preference<bool>	m_bShowCategoryChannels;
 	Preference<bool>	m_bShowSpecialSongsInCategoryChannels;
+	Preference<bool>	m_bLockWheelAfterRoulette;
 	// --------------------------
 
 	Preference<float>	m_fLifeDifficultyScale;

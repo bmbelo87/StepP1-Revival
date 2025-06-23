@@ -1,10 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\src",
-    "\\src\\archutils",
-    "\\src\\archutils\\Win32"
+    ""
   ],
-  "SelectedNode": "\\src\\archutils\\Win32\\verinc.sln",
+  "SelectedNode": "\\sm5-net2013.sln",
   "PreviewInSolutionExplorer": false
 }

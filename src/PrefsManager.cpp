@@ -210,10 +210,10 @@ PrefsManager::PrefsManager() :
 	m_bShowQUESTCharts		( "ShowQUESTCharts",		false ),
 	m_RandomExclude			( "RandomExclude",		RN_EXCLUDE_NONE ),
 	m_bShowSpecialSongsInLevelChannels( "ShowSpecialSongsInLevelChannels", false ),
-	m_bShowLevelChannels		( "ShowLevelChannels", false ),
-	m_bShowCategoryChannels		( "ShowCategoryChannels", true ),
+	m_bShowLevelChannels		( "ShowLevelChannels",		false ),
+	m_bShowCategoryChannels		( "ShowCategoryChannels",	true ),
 	m_bShowSpecialSongsInCategoryChannels( "ShowSpecialSongsInCategoryChannels", false ),
-
+	m_bLockWheelAfterRoulette	( "LockWheelAfterRoulette",	false ),
 	// ---------------------------------------
 
 	m_fLifeDifficultyScale		( "LifeDifficultyScale",	1.0f ),
