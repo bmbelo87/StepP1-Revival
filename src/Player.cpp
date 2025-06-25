@@ -243,8 +243,8 @@ void Player::Init(
 	if( (GAMESTATE->m_pCurSong->GetDisplayBPM() == DISPLAY_BPM_SPECIFIED) && !bpms.IsSecret() )
 	{
 		fMaxBPM = (M_MOD_HIGH_CAP > 0 ? 
-			    bpms.GetMaxWithin(M_MOD_HIGH_CAP) : 
-			    bpms.GetMax());
+			   bpms.GetMaxWithin(M_MOD_HIGH_CAP) : 
+			   bpms.GetMax());
 		fMaxBPM = max( 0, fMaxBPM );
 	}		
 
@@ -277,8 +277,8 @@ void Player::Init(
 				if( !stepsbpms.IsSecret() )
 				{
 					fStepsMaxBPM = (M_MOD_HIGH_CAP > 0 ? 
-							 stepsbpms.GetMaxWithin(M_MOD_HIGH_CAP) : 
-							 stepsbpms.GetMax());
+							stepsbpms.GetMaxWithin(M_MOD_HIGH_CAP) : 
+							stepsbpms.GetMax());
 					fStepsMaxBPM = max( 0, fStepsMaxBPM );
 				}
 			}
@@ -802,6 +802,7 @@ void Player::Update( float fDeltaTime )
 	ApplyWaitingTransforms();
 }
 
+
 void Player::UpdateHoldNote( int iSongRow, float fDeltaTime, TrackRowTapNote &trtn )
 {
 	// Get the tap note in "tn" to work more comfortable
@@ -1086,6 +1087,8 @@ void Player::DrawPrimitives()
 		{
 			float 	fTilt = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fPerspectiveTilt;
 			float 	fSkew = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fSkew;
+
+
 
 			//xMAx
 			float 	fMini = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fEffects[PlayerOptions::EFFECT_MINI];
@@ -1748,6 +1751,7 @@ void Player::UpdateTapNotesMissedOlderThan( float fMissIfOlderThanSeconds )
 	}
 }
 
+
 void Player::FlashGhostRow( int iRow, int iNSP )
 {
 	// Get the result of the taps in the row iRow
@@ -1832,8 +1836,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 						m_pPlayerStageStats->m_bDisqualified = true;
 					};
 				};
-			}; 
-			break;
+			}; break;
 		}
 	}
 }
@@ -2021,8 +2024,7 @@ void Player::CrossedHoldsRows( int iLastRowCrossed, const RageTimer &now, float 
 											tn.HoldResult.iCheckpointsMissed++;
 										}
 									}
-								}; 
-								break;
+								}; break;
 								case TapNote::hold_head_roll:
 									//TODO: Make rolls miss under checkpoints
 									break;
@@ -2140,10 +2142,11 @@ void Player::HandleTapRowScore( unsigned row, TapNoteScore tns )
 	ChangeLife( tns );
 }
 
+
 void Player::HandleHoldCheckpoint(int iRow, 
-				   int iNumHoldsHeldThisRow, 
-				   int iNumHoldsMissedThisRow, 
-				   const vector<int> &viColsWithHold, bool bHoldsAreBeingPressed )
+				  int iNumHoldsHeldThisRow, 
+				  int iNumHoldsMissedThisRow, 
+				  const vector<int> &viColsWithHold, bool bHoldsAreBeingPressed )
 {
 	bool bNoCheating = true;
 #ifdef DEBUG
@@ -2192,6 +2195,7 @@ void Player::HandleHoldCheckpoint(int iRow,
 	if( bHoldsAreBeingPressed || iNumHoldsMissedThisRow )
 		SetJudgment( HoldNoteScore );
 }
+
 
 float Player::GetMaxStepDistanceSeconds()
 {

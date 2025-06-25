@@ -33,7 +33,6 @@ LuaDeclareType( WheelState );
 class WheelBase : public ActorFrame
 {
 public:
-	
 	virtual ~WheelBase();
 	virtual void Load( RString sType );
 	void BeginScreen();
@@ -85,7 +84,7 @@ public:
 
 	// Messages
 	virtual void HandleMessageOver( const Message &msg );
-	virtual void HandleMessage( const Message &msg ); // StepP1 Revival - bSilver
+	
 
 protected:
 	void TweenOnScreenForSort();

@@ -5,227 +5,300 @@
 #include "GameState.h"
 #include "MemoryCardManager.h"
 #include "InputEventPlus.h"
+#include "Profile.h"
 
-REGISTER_SCREEN_CLASS( ScreenSelectProfile );
+REGISTER_SCREEN_CLASS(ScreenSelectProfile);
 
 void ScreenSelectProfile::Init()
 {
-	FOREACH_PlayerNumber( p )
+	FOREACH_PlayerNumber(p)
 	{
-		// no selection initially
-		m_iSelectedProfiles[p]=-1;
+		m_iSelectedProfiles[p] = -1;
+		m_bPlayerIsSelecting[p] = false;
+
+		if (GAMESTATE->IsHumanPlayer(p))
+		{
+			m_bPlayerIsSelecting[p] = true;
+		}
 	}
+
 	m_TrackingRepeatingInput = GameButton_Invalid;
 	ScreenWithMenuElements::Init();
 }
 
-bool ScreenSelectProfile::Input( const InputEventPlus &input )
+bool ScreenSelectProfile::Input(const InputEventPlus& input)
 {
-	if( IsTransitioning() )
-		return false;
+	if (input.MenuI == GameButton::GAME_BUTTON_START)
+		return MenuStart(input);
 
-	return ScreenWithMenuElements::Input( input );
+	if (input.MenuI == GameButton::GAME_BUTTON_LEFT)
+		return MenuLeft(input);
+
+	if (input.MenuI == GameButton::GAME_BUTTON_RIGHT)
+		return MenuRight(input);
+
+	return ScreenWithMenuElements::Input(input);
 }
 
-bool ScreenSelectProfile::MenuLeft( const InputEventPlus &input )
+bool ScreenSelectProfile::MenuLeft(const InputEventPlus& input)
 {
 	PlayerNumber pn = input.pn;
-	if( m_fLockInputSecs > 0 )
+	if (m_fLockInputSecs > 0 || input.type == IET_RELEASE)
 		return false;
-	if( input.type == IET_RELEASE )
-		return false;
-	if( input.type != IET_FIRST_PRESS )
+
+	if (input.type != IET_FIRST_PRESS)
 	{
-		/*
-		if( !ALLOW_REPEATING_INPUT )
-			return false;
-		*/
-		if( m_TrackingRepeatingInput != input.MenuI )
+		if (m_TrackingRepeatingInput != input.MenuI)
 			return false;
 	}
-	m_TrackingRepeatingInput = input.MenuI;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+pn) );
-	return true;
-}
 
-bool ScreenSelectProfile::MenuRight( const InputEventPlus &input )
-{
-	PlayerNumber pn = input.pn;
-	if( m_fLockInputSecs > 0 )
-		return false;
-	if( input.type == IET_RELEASE )
-		return false;
-	if( input.type != IET_FIRST_PRESS )
-	{
-		/*
-		if( !ALLOW_REPEATING_INPUT )
-			return false;
-		*/
-		if( m_TrackingRepeatingInput != input.MenuI )
-			return false;
-	}
 	m_TrackingRepeatingInput = input.MenuI;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+pn) );
-	return true;
-}
 
-bool ScreenSelectProfile::MenuUp( const InputEventPlus &input )
-{
-	PlayerNumber pn = input.pn;
-	if( m_fLockInputSecs > 0 )
-		return false;
-	if( input.type == IET_RELEASE )
-		return false;
-	if( input.type != IET_FIRST_PRESS )
-	{
-		/*
-		if( !ALLOW_REPEATING_INPUT )
-			return false;
-		*/
-		if( m_TrackingRepeatingInput != input.MenuI )
-			return false;
-	}
-	m_TrackingRepeatingInput = input.MenuI;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+pn) );
-	return true;
-}
+	int currentIndex = m_iSelectedProfiles[pn];
+	int numProfiles = PROFILEMAN->GetNumLocalProfiles();
 
-bool ScreenSelectProfile::MenuDown( const InputEventPlus &input )
-{
-	PlayerNumber pn = input.pn;
-	if( m_fLockInputSecs > 0 )
-		return false;
-	if( input.type == IET_RELEASE )
-		return false;
-	if( input.type != IET_FIRST_PRESS )
-	{
-		/*
-		if( !ALLOW_REPEATING_INPUT )
-			return false;
-		*/
-		if( m_TrackingRepeatingInput != input.MenuI )
-			return false;
-	}
-	m_TrackingRepeatingInput = input.MenuI;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+pn) );
-	return true;
-}
+	currentIndex--;
+	if (currentIndex < 0)
+		currentIndex = numProfiles;
 
-bool ScreenSelectProfile::SetProfileIndex( PlayerNumber pn, int iProfileIndex )
-{
-	if( !GAMESTATE->IsHumanPlayer( pn ) )
+	SetProfileIndex(pn, currentIndex);
+
+	MESSAGEMAN->Broadcast((MessageID)(Message_MenuLeftP1 + pn));
+
+	RString sPlayer = "PlayerNumber_";
+	sPlayer += ( pn == PLAYER_1 ) ? "P1" : "P2";
+
+	if( m_iSelectedProfiles[pn] > 0 && m_iSelectedProfiles[pn] <= numProfiles )
 	{
-		if( iProfileIndex == -1 )
+
+		RString ProfileID = PROFILEMAN->GetLocalProfileIDFromIndex(m_iSelectedProfiles[pn] - 1);
+		const Profile* pProfile = PROFILEMAN->GetLocalProfile(ProfileID);
+		if( pProfile )
 		{
-			GAMESTATE->JoinPlayer( pn );
+			Message msg("LocalProfileChange");
+			msg.SetParam("pn", "PlayerNumber_" + RString(pn == PLAYER_1 ? "P1" : "P2"));
+			msg.SetParam("name", pProfile->GetDisplayNameOrHighScoreName());
+			MESSAGEMAN->Broadcast(msg);
+
+		}
+	}
+	else
+	{
+		Message msg("HideProfileChanges");
+		msg.SetParam("pn", "PlayerNumber_" + RString(pn == PLAYER_1 ? "P1" : "P2"));
+		MESSAGEMAN->Broadcast(msg);
+	}
+
+
+	return true;
+}
+
+bool ScreenSelectProfile::MenuRight(const InputEventPlus& input)
+{
+	PlayerNumber pn = input.pn;
+
+	if (m_fLockInputSecs > 0 || input.type == IET_RELEASE)
+		return false;
+
+	if (input.type != IET_FIRST_PRESS)
+	{
+		if (m_TrackingRepeatingInput != input.MenuI)
+			return false;
+	}
+
+	m_TrackingRepeatingInput = input.MenuI;
+
+	int currentIndex = m_iSelectedProfiles[pn];
+	int numProfiles = PROFILEMAN->GetNumLocalProfiles();
+
+	currentIndex++;
+	if (currentIndex > numProfiles)
+		currentIndex = 0;
+
+	SetProfileIndex(pn, currentIndex);
+
+	MESSAGEMAN->Broadcast((MessageID)(Message_MenuRightP1 + pn));
+
+	RString sPlayer = "PlayerNumber_";
+	sPlayer += ( pn == PLAYER_1 ) ? "P1" : "P2";
+
+	if( m_iSelectedProfiles[pn] > 0 && m_iSelectedProfiles[pn] <= numProfiles )
+	{
+
+		RString ProfileID = PROFILEMAN->GetLocalProfileIDFromIndex(m_iSelectedProfiles[pn] - 1);
+		const Profile* pProfile = PROFILEMAN->GetLocalProfile(ProfileID);
+		if( pProfile )
+		{
+			Message msg("LocalProfileChange");
+			msg.SetParam("pn", "PlayerNumber_" + RString(pn == PLAYER_1 ? "P1" : "P2"));
+			msg.SetParam("name", pProfile->GetDisplayNameOrHighScoreName());
+			MESSAGEMAN->Broadcast(msg);
+
+		}
+	}
+	else
+	{
+		Message msg("HideProfileChanges");
+		msg.SetParam("pn", "PlayerNumber_" + RString(pn == PLAYER_1 ? "P1" : "P2"));
+		MESSAGEMAN->Broadcast(msg);
+	}
+
+	return true;
+}
+
+bool ScreenSelectProfile::MenuStart(const InputEventPlus& input) // StepP1 Revival - bSilver
+{
+	PlayerNumber pn = input.pn;
+
+
+
+	if (input.type != IET_FIRST_PRESS)
+	{
+		if (m_TrackingRepeatingInput != input.MenuI)
+			return false;
+	}
+
+	m_TrackingRepeatingInput = input.MenuI;
+
+	if (!m_bPlayerIsSelecting[pn])
+	{
+		GAMESTATE->JoinPlayer(pn);
+		SCREENMAN->PlayStartSound();
+
+		SetProfileIndex(pn, 0); // Começa com GUEST
+
+		m_bPlayerIsSelecting[pn] = true;
+
+		Message msg("PlayerStartedSelectProfile");
+		msg.SetParam("Player", pn);
+		MESSAGEMAN->Broadcast(msg);
+
+		return true;
+	}
+	else
+	{
+
+		bool bFinished = Finish();
+
+		return bFinished;
+	}
+}
+
+
+bool ScreenSelectProfile::SetProfileIndex(PlayerNumber pn, int iProfileIndex)
+{
+	if (!GAMESTATE->IsHumanPlayer(pn))
+	{
+		if (iProfileIndex == -1)
+		{
+			GAMESTATE->JoinPlayer(pn);
 			SCREENMAN->PlayStartSound();
 			return true;
 		}
 		return false;
 	}
 
-	if( iProfileIndex > PROFILEMAN->GetNumLocalProfiles() )
+	if (iProfileIndex > PROFILEMAN->GetNumLocalProfiles())
 		return false;
 
-	// wrong selection
-	if( iProfileIndex < -2 )
+	if (iProfileIndex < -2)
 		return false;
 
-	// unload player
-	if( iProfileIndex == -2 )
+	if (iProfileIndex == -2) // Unload player
 	{
-		PROFILEMAN->UnloadProfile( pn );
-		GAMESTATE->UnjoinPlayer( pn );
-		MEMCARDMAN->UnlockCard( pn );
-		MEMCARDMAN->UnmountCard( pn );
-		m_iSelectedProfiles[pn]=-1;
+		PROFILEMAN->UnloadProfile(pn);
+		GAMESTATE->UnjoinPlayer(pn);
+		MEMCARDMAN->UnlockCard(pn);
+		MEMCARDMAN->UnmountCard(pn);
+		m_iSelectedProfiles[pn] = -1;
+
+		MESSAGEMAN->Broadcast("PlayerUnjoined");
 		return true;
 	}
 
-	m_iSelectedProfiles[pn]=iProfileIndex;
+	m_iSelectedProfiles[pn] = iProfileIndex;
 
 	return true;
 }
 
-bool ScreenSelectProfile::Finish(){
-	if( GAMESTATE->GetNumPlayersEnabled() == 0 )
+bool ScreenSelectProfile::Finish()
+{
+	if (GAMESTATE->GetNumPlayersEnabled() == 0)
 		return false;
 
-	// if profile indexes are the same for both players
-	if( GAMESTATE->GetNumPlayersEnabled() == 2 && m_iSelectedProfiles[0] == m_iSelectedProfiles[1] && m_iSelectedProfiles[0] > 0 )
+	if (GAMESTATE->GetNumPlayersEnabled() == 2 &&
+	    m_iSelectedProfiles[0] == m_iSelectedProfiles[1] &&
+	    m_iSelectedProfiles[0] > 0)
 		return false;
 
 	int iUsedLocalProfiles = 0;
 	int iUnselectedProfiles = 0;
 
-	FOREACH_PlayerNumber( p )
+	FOREACH_PlayerNumber(p)
 	{
-		// not all players has made their choices
-		if( GAMESTATE->IsHumanPlayer( p ) && ( m_iSelectedProfiles[p] == -1 ) )
+		if (GAMESTATE->IsHumanPlayer(p) && (m_iSelectedProfiles[p] == -1))
 			iUnselectedProfiles++;
 
-		// card not ready
-		if( m_iSelectedProfiles[p] == 0 && MEMCARDMAN->GetCardState( p ) != MemoryCardState_Ready )
+		if (m_iSelectedProfiles[p] == 0 &&
+		    MEMCARDMAN->GetCardState(p) != MemoryCardState_Ready)
 			return false;
 
-		// profile index too big
-		if( m_iSelectedProfiles[p] > PROFILEMAN->GetNumLocalProfiles() )
+		if (m_iSelectedProfiles[p] > PROFILEMAN->GetNumLocalProfiles())
 			return false;
 
-		// inc used profile count
-		if( m_iSelectedProfiles[p] > 0 )
+		if (m_iSelectedProfiles[p] > 0)
 			iUsedLocalProfiles++;
 	}
 
-	// this allows to continue if there is less local profiles than number of human players
-	if( iUnselectedProfiles && iUsedLocalProfiles < PROFILEMAN->GetNumLocalProfiles() )
+	if (iUnselectedProfiles && iUsedLocalProfiles < PROFILEMAN->GetNumLocalProfiles())
 		return false;
 
-	// all ok - load profiles and go to next screen
-	FOREACH_PlayerNumber( p )
-	{
-		MEMCARDMAN->UnlockCard( p );
-		MEMCARDMAN->UnmountCard( p );
-		PROFILEMAN->UnloadProfile( p );
+	// Esconde overlay antes de trocar de tela
+	MESSAGEMAN->Broadcast("HideProfileChanges");
 
-		if( m_iSelectedProfiles[p] > 0 )
+	FOREACH_PlayerNumber(p)
+	{
+		MEMCARDMAN->UnlockCard(p);
+		MEMCARDMAN->UnmountCard(p);
+		PROFILEMAN->UnloadProfile(p);
+
+		if (m_iSelectedProfiles[p] > 0)
 		{
-			PROFILEMAN->m_sDefaultLocalProfileID[p].Set( PROFILEMAN->GetLocalProfileIDFromIndex( m_iSelectedProfiles[p] - 1 ) );
-			PROFILEMAN->LoadLocalProfileFromMachine( p );
+			PROFILEMAN->m_sDefaultLocalProfileID[p].Set(
+				PROFILEMAN->GetLocalProfileIDFromIndex(m_iSelectedProfiles[p] - 1));
+			PROFILEMAN->LoadLocalProfileFromMachine(p);
 			GAMESTATE->LoadCurrentSettingsFromProfile(p);
 		}
-		if( m_iSelectedProfiles[p] == 0 )
+
+		if (m_iSelectedProfiles[p] == 0)
 		{
 			MEMCARDMAN->WaitForCheckingToComplete();
+			MEMCARDMAN->MountCard(p);
+			bool bSuccess = PROFILEMAN->LoadProfileFromMemoryCard(p, true);
+			MEMCARDMAN->UnmountCard(p);
 
-			MEMCARDMAN->MountCard( p );
-			bool bSuccess = PROFILEMAN->LoadProfileFromMemoryCard( p, true );	// load full profile
-			MEMCARDMAN->UnmountCard( p );
-
-			// Lock the card on successful load, so we won't allow it to be changed.
-			if( bSuccess )
+			if (bSuccess)
 			{
 				GAMESTATE->LoadCurrentSettingsFromProfile(p);
-				MEMCARDMAN->LockCard( p );
+				MEMCARDMAN->LockCard(p);
 			}
 		}
 	}
-	StartTransitioningScreen( SM_GoToNextScreen );
+
+	StartTransitioningScreen(SM_GoToNextScreen);
 	return true;
 }
 
-void ScreenSelectProfile::HandleScreenMessage( const ScreenMessage SM )
+void ScreenSelectProfile::HandleScreenMessage(const ScreenMessage SM)
 {
-	if( SM == SM_MenuTimer )
+	if (SM == SM_MenuTimer)
 	{
 		bool bFinished = Finish();
-		if( !bFinished )
-		{
-			// TODO: we need to decide how to handle unfinished business.
-		}
+		if (!bFinished)
+			SCREENMAN->PlayInvalidSound();
 	}
 
-	ScreenWithMenuElements::HandleScreenMessage( SM );
+	ScreenWithMenuElements::HandleScreenMessage(SM);
 }
 
 // lua start
@@ -264,6 +337,7 @@ public:
 		return 1;
 	}
 
+
 	LunaScreenSelectProfile()
 	{
 		ADD_METHOD( SetProfileIndex );
@@ -276,26 +350,26 @@ public:
 LUA_REGISTER_DERIVED_CLASS( ScreenSelectProfile, ScreenWithMenuElements )
 
 /*
- * Copyright (c) 2007 vdl
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* Copyright (c) 2007 vdl
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

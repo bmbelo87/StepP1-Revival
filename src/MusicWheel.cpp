@@ -307,6 +307,7 @@ bool MusicWheel::SelectSong( const Song *p )
 		return false;
 
 	unsigned i;
+
 	vector<MusicWheelItemData *> &from = getWheelItemsData(GAMESTATE->m_SortOrder);
 	for( i=0; i<from.size(); i++ )
 	{
@@ -393,15 +394,15 @@ bool MusicWheel::SelectModeMenuItem()
 void MusicWheel::GetSongList( vector<Song*> &arraySongs, SortOrder so, RString SongGroup )
 {
 	vector<Song*> apAllSongs;
-	
+
 	switch( so )
 	{
 		/*case SORT_PREFERRED:
-			SONGMAN->GetPreferredSortSongs( apAllSongs );
-			break;
+		SONGMAN->GetPreferredSortSongs( apAllSongs );
+		break;
 		case SORT_POPULARITY:
-			apAllSongs = SONGMAN->GetPopularSongs();
-			break;*/
+		apAllSongs = SONGMAN->GetPopularSongs();
+		break;*/
 		case SORT_FULLSONG:	
 			apAllSongs = SONGMAN->GetFullSongs();
 			break;
@@ -462,25 +463,25 @@ void MusicWheel::GetSongList( vector<Song*> &arraySongs, SortOrder so, RString S
 		case SORT_LEVEL_22:{ vector<LevelSongList*> m_CurList = SONGMAN->GetLevelSections(); apAllSongs = (*m_CurList[21]).m_pAllStyles; }; break;
 		case SORT_LEVEL_23:{ vector<LevelSongList*> m_CurList = SONGMAN->GetLevelSections(); apAllSongs = (*m_CurList[22]).m_pAllStyles; }; break;
 		case SORT_LEVEL_24_OVER:{ vector<LevelSongList*> m_CurList = SONGMAN->GetLevelSections(); apAllSongs = (*m_CurList[23]).m_pAllStyles; }; break;
-		//----------------------------------------------------------------------------------
+			//----------------------------------------------------------------------------------
 		case SORT_GROUP:
+		{
+			// xMAxGetRandomSongs
+			if( SongGroup != "" )
 			{
-				// xMAxGetRandomSongs
-				if( SongGroup != "" )
-				{
-					apAllSongs = SONGMAN->GetSongs( SongGroup );
-					break;
-				}
-				// if we're not using sections with a preferred song group, and there
-				// is a group to load, only load those songs. -aj
-				//if(GAMESTATE->m_sPreferredSongGroup != GROUP_ALL && !USE_SECTIONS_WITH_PREFERRED_GROUP )
-				if( GAMESTATE->sExpandedSectionName != "" )
-				{
-					//apAllSongs = SONGMAN->GetSongs(GAMESTATE->m_sPreferredSongGroup);
-					apAllSongs = SONGMAN->GetSongs(GAMESTATE->sExpandedSectionName);
-					break;
-				}
-			} // otherwise fall through
+				apAllSongs = SONGMAN->GetSongs( SongGroup );
+				break;
+			}
+			// if we're not using sections with a preferred song group, and there
+			// is a group to load, only load those songs. -aj
+			//if(GAMESTATE->m_sPreferredSongGroup != GROUP_ALL && !USE_SECTIONS_WITH_PREFERRED_GROUP )
+			if( GAMESTATE->sExpandedSectionName != "" )
+			{
+				//apAllSongs = SONGMAN->GetSongs(GAMESTATE->m_sPreferredSongGroup);
+				apAllSongs = SONGMAN->GetSongs(GAMESTATE->sExpandedSectionName);
+				break;
+			}
+		} // otherwise fall through
 		default:
 			apAllSongs = SONGMAN->GetAllSongs();
 			break;
@@ -488,7 +489,7 @@ void MusicWheel::GetSongList( vector<Song*> &arraySongs, SortOrder so, RString S
 
 	if( apAllSongs.empty() )
 		return;
-		
+
 	// filter songs that we don't have enough stages to play
 	vector<Song*> vFilteredSongs;
 	SongCriteria sc;
@@ -508,7 +509,7 @@ void MusicWheel::GetSongList( vector<Song*> &arraySongs, SortOrder so, RString S
 		{
 			continue;
 		}
-		
+
 		arraySongs.push_back( pSong );
 	}
 }

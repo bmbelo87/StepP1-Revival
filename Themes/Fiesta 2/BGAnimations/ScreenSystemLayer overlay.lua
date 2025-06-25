@@ -156,11 +156,11 @@ local P1CurrentLevelTimeD=0;
 -- Player 1 Name
 t[#t+1] = PlayerName( PLAYER_1 )..{
 	InitCommand=function(self)
-		if IsHD() then
+--		if IsHD() then
 			self:x(SCREEN_CENTER_X-270);
-		else
-			self:x(SCREEN_CENTER_X-170);
-		end;
+--		else
+--			self:x(SCREEN_CENTER_X-170);
+--		end;
 	(cmd(y,SCREEN_HEIGHT+120;basezoom,.66))(self);
 	end;
 	PlayerStartedSelectProfileMessageCommand=function( self, params )

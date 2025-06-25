@@ -6,121 +6,6 @@ top = "VertAlign_Top"
 middle = "VertAlign_Middle"
 bottom = "VertAlign_Bottom"
 
-function Actor:ease(t, fEase)
-	-- Optimizations:
-	-- fEase = -100 is equivalent to TweenType_Accelerate.
-	if fEase == -100 then
-		self:accelerate(t)
-		return
-	end
-
-	-- fEase = 0 is equivalent to TweenType_Linear.
-	if fEase == 0 then
-		self:linear(t)
-		return
-	end
-
-	-- fEase = +100 is equivalent to TweenType_Decelerate.
-	if fEase == 100 then
-		self:decelerate(t)
-		return
-	end
-
-	self:tween( t, "TweenType_Bezier",
-		{
-			0,
-			scale(fEase, -100, 100, 0/3, 2/3),
-			scale(fEase, -100, 100, 1/3, 3/3),
-			1
-		}
-	)
-end
--- Notes On Beziers --
--- They can be 1D ( Quadratic ) or 2D ( Bezier )
--- 1D:
---	XA XB YC YD
--- 2D:
---  XA XB XC XD YA YB YC YD
--- In 1D Quads, XA XB are beginning time and size, YC YD are ending time and size
--- In 2D Quads, X
-local BounceBeginBezier =
-{
-	0, 0,
-	0.42, -0.42,
-	2/3, 0.3,
-	1, 1
-}
-function Actor:bouncebegin(t)
-	self:tween( t, "TweenType_Bezier", BounceBeginBezier )
-end
-
-local BounceEndBezier =
-{
-	0,0,
-	1/3, 0.7,
-	0.58, 1.42,
-	1, 1
-}
-function Actor:bounceend(t)
-	self:tween( t, "TweenType_Bezier", BounceEndBezier )
-end
-
-local SmoothBezier =
-{
-	0, 0, 1, 1
-}
-function Actor:smooth(t)
-	self:tween( t, "TweenType_Bezier", SmoothBezier )
-end
--- SSC Additions
-local DropBezier =
-{
-	0	,	0,
-	1/3	,	1,
-	2/3	,	0.5,
-	1	,	1,
-}
-function Actor:drop(t)
-	self:tween( t, "TweenType_Bezier", DropBezier )
-end
-
--- compound tweens "combine multiple interpolators to allow generating more
--- complex tweens." length is how long to span the animation for, while
--- ... is either a string (e.g. "linear,0.25,accelerate,0.75") or a table
--- with the tween information.
-function Actor:compound(length,...)
-	local tweens = ...
-
-	if type(tweens) == "string" then
-		local parsed = split(";",tweens)
-		tweens = {} -- convert to table
-		for i,s in pairs(parsed) do
-			local res = split(",",s)
-
-			tweens[i] = {
-				Type = res[1],
-				Percent = res[2],
-				Bezier = res[3] or nil
-			}
-		end
-	end
-
-	for i,t in pairs(tweens) do
-		if t.Type == "linear" then self:linear(t.Percent*length)
-		elseif t.Type == "accelerate" then self:accelerate(t.Percent*length)
-		elseif t.Type == "decelerate" then self:decelerate(t.Percent*length)
-		elseif t.Type == "spring" then self:spring(t.Percent*length)
-		elseif t.Type == "bouncebegin" then self:bouncebegin(t.Percent*length)
-		elseif t.Type == "bounceend" then self:bounceend(t.Percent*length)
-		elseif t.Type == "smooth" then self:smooth(t.Percent*length)
-		elseif t.Type == "drop" then self:smooth(t.Percent*length)
-		--elseif t.Type == "ease" then self:ease(t.Percent*length)
-		elseif t.Type == "bezier" then
-			-- todo: handle using tween and 'TweenType_Bezier'
-		end
-	end
-end
-
 -- Hide if b is true, but don't unhide if b is false.
 function Actor:hide_if(b)
 	if b then
@@ -130,12 +15,6 @@ end
 
 function Actor:player(p)
 	self:visible( GAMESTATE:IsHumanPlayer(p) )
-end
-
-function ActorFrame:propagatecommand(...)
-	self:propagate(1)
-	self:playcommand(...)
-	self:propagate(0)
 end
 
 -- Shortcut for alignment.
@@ -159,31 +38,6 @@ function Actor:CenterX() self:x(SCREEN_CENTER_X) end
 function Actor:CenterY() self:y(SCREEN_CENTER_Y) end
 function Actor:Center() self:xy(SCREEN_CENTER_X,SCREEN_CENTER_Y) end
 
-function Actor:bezier(...)
-	local a = {...}
-	local b = {}
-	local c = 0
-	assert((a == 9 or a == 5), "bad number of arguments for Actor:bezier()")
-	for i=3,c do
-		b[#b+1] = a[i]
-	end
-	self:tween(a[2], "TweenMode_Bezier", b)
-end
-
-function Actor:Real()
-	-- scale back down to real pixels.
-	self:basezoom(GetReal())
-	-- don't make this ugly
-	self:SetTextureFiltering(false)
-end
-
--- Scale things back up after they have already been scaled down.
-function Actor:RealInverse()
-	-- scale back up to theme resolution
-	self:basezoom(GetRealInverse())
-	self:SetTextureFiltering(true)
-end
-
 -- MaskSource([clearzbuffer])
 -- Sets an actor up as the source for a mask. Clears zBuffer by default.
 function Actor:MaskSource(noclear)
@@ -198,42 +52,6 @@ end
 -- Sets an actor up to be masked by anything with MaskSource().
 function Actor:MaskDest()
 	self:ztest(true)
-end
-
--- Thump()
--- A customized version of pulse that is more appealing for on-beat
--- effects;
-function Actor:thump(fEffectPeriod)
-	self:pulse()
-	if fEffectPeriod ~= nil then
-		self:effecttiming(0,0,0.75*fEffectPeriod,0.25*fEffectPeriod)
-	else
-		self:effecttiming(0,0,0.75,0.25)
-	end
-	-- The default effectmagnitude will make this effect look very bad.
-	self:effectmagnitude(1,1.125,1)
-end
-
--- Heartbeat()
--- A customized version of pulse that is more appealing for on-beat
--- effects;
-function Actor:heartbeat(fEffectPeriod)
-	self:pulse()
-	if fEffectPeriod ~= nil then
-		self:effecttiming(0,0.125*fEffectPeriod,0.125*fEffectPeriod,0.75*fEffectPeriod);
-	else
-		self:effecttiming(0,0.125,0.125,0.75);
-	end
-	self:effecmagnitude(1,1.125,1)
-end
-
---[[ BitmapText commands ]]
-
--- PixelFont()
--- An alias that turns off texture filtering.
--- Named because it works best with pixel fonts.
-function BitmapText:PixelFont()
-	self:SetTextureFiltering(false)
 end
 
 -- Stroke(color)
@@ -262,71 +80,6 @@ function BitmapText:DiffuseAndStroke(diffuseC,strokeC)
 end;
 --[[ end BitmapText commands ]]
 
-function Actor:LyricCommand(side)
-	self:settext( Var "LyricText" )
-	self:draworder(102)
-
-	self:stoptweening()
-	self:shadowlengthx(0)
-	self:shadowlengthy(5)
-	self:strokecolor(color("#000000"))
-
-	local Zoom = SCREEN_WIDTH / (self:GetZoomedWidth()+1)
-	if( Zoom > 1 ) then
-		Zoom = 1
-	end
-	self:zoomx( Zoom )
-
-	local lyricColor = Var "LyricColor"
-	local Factor = 1
-	if side == "Back" then
-		Factor = 0.5
-	elseif side == "Front" then
-		Factor = 0.9
-	end
-	self:diffuse( {
-		lyricColor[1] * Factor,
-		lyricColor[2] * Factor,
-		lyricColor[3] * Factor,
-		lyricColor[4] * Factor } )
-
-	if side == "Front" then
-		self:cropright(1)
-	else
-		self:cropleft(0)
-	end
-
-	self:diffusealpha(0)
-	self:linear(0.2)
-	self:diffusealpha(0.75)
-	self:linear( Var "LyricDuration" * 0.75)
-	if side == "Front" then
-		self:cropright(0)
-	else
-		self:cropleft(1)
-	end
-	self:sleep( Var "LyricDuration" * 0.25 )
-	self:linear(0.2)
-	self:diffusealpha(0)
-end
-
--- formerly in 02 HelpDisplay.lua, although nothing uses it:
-function HelpDisplay:setfromsongorcourse()
-	local Artists = {}
-	local AltArtists = {}
-
-	local Song = GAMESTATE:GetCurrentSong()
-	local Trail = GAMESTATE:GetCurrentTrail( GAMESTATE:GetMasterPlayerNumber() )
-	if Song then
-		table.insert( Artists, Song:GetDisplayArtist() )
-		table.insert( AltArtists, Song:GetTranslitArtist() )
-	elseif Trail then
-		Artists, AltArtists = Trail:GetArtists()
-	end
-
-	self:settips( Artists, AltArtists )
-end
-
 -- Play the sound on the given player's side. Must set SupportPan = true
 -- on load.
 function ActorSound:playforplayer(pn)
@@ -337,21 +90,6 @@ end
 
 function PositionPerPlayer(player, p1X, p2X)
 	return player == PLAYER_1 and p1X or p2X
-end
-
--- Make graphics their true size at any resolution.
---[[ Note: for screens taller than wide (i.e. phones, sideways displays),
-you'll need to get width rather than height (I just don't feel like
-uglyfying my code just to handle rare cases). -shake ]]
-function GetReal()
-	local theme = THEME:GetMetric("Common","ScreenHeight")
-	local res = PREFSMAN:GetPreference("DisplayHeight")
-	return theme/res
-end
-function GetRealInverse()
-	local theme = THEME:GetMetric("Common","ScreenHeight")
-	local res = PREFSMAN:GetPreference("DisplayHeight")
-	return res/theme
 end
 
 -- command aliases:

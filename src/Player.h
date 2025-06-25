@@ -177,7 +177,7 @@ protected:
 	PlayerState		*m_pPlayerState;
 	/** @brief The player's present stage stats. */
 	PlayerStageStats	*m_pPlayerStageStats;
-	TimingData      *m_Timing;
+	TimingData		*m_Timing;
 
 	bool			m_bPaused;
 	bool			m_bDelay;

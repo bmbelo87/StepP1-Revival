@@ -12,11 +12,16 @@ public:
 	virtual bool Input( const InputEventPlus &input );
 	virtual bool MenuLeft( const InputEventPlus &input );
 	virtual bool MenuRight( const InputEventPlus &input );
-	virtual bool MenuUp( const InputEventPlus &input );
-	virtual bool MenuDown( const InputEventPlus &input );
+	//virtual bool MenuUp( const InputEventPlus &input );
+	//virtual bool MenuDown( const InputEventPlus &input );
+	virtual bool MenuStart(const InputEventPlus &input);
+
 	virtual void HandleScreenMessage( const ScreenMessage SM );
 
 	GameButton m_TrackingRepeatingInput;
+
+	int m_iSelectedProfiles[NUM_PLAYERS];
+	bool m_bPlayerIsSelecting[NUM_PLAYERS];
 
 	// Lua
 	void PushSelf( lua_State *L );
@@ -25,7 +30,8 @@ public:
 	bool Finish();
 
 protected:
-	int m_iSelectedProfiles[NUM_PLAYERS];
+
+
 };
 
 #endif

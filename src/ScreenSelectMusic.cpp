@@ -63,6 +63,9 @@ RageTimer g_CanOpenOptionsList(RageZeroTimer);
 REGISTER_SCREEN_CLASS( ScreenSelectMusic );
 void ScreenSelectMusic::Init()
 {
+	MESSAGEMAN->Broadcast("StartSelectingSong");
+
+
 	g_ScreenStartedLoadingAt.Touch();
 	if( PREFSMAN->m_sTestInitialScreen.Get() == m_sName )
 	{
@@ -151,13 +154,13 @@ void ScreenSelectMusic::Init()
 	/*
 	if( PREFSMAN->m_BackgroundCache != BGCACHE_OFF )
 	{
-		m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","AllMusic")) );
-		m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("Common","fallback banner")) );
-		m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","roulette")) );
-		m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","random")) );
-		m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","Mode")) );
-		m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","group fallback")) );
-		m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","course fallback")) );
+	m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","AllMusic")) );
+	m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("Common","fallback banner")) );
+	m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","roulette")) );
+	m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","random")) );
+	m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","Mode")) );
+	m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","group fallback")) );
+	m_TexturePreload.Load( Sprite::SongBGTexture(THEME->GetPathG("SongBackgroundItem","course fallback")) );
 	}
 	*/
 
@@ -269,7 +272,7 @@ void ScreenSelectMusic::BeginScreen()
 
 	if( USE_OPTIONS_LIST )
 		FOREACH_PlayerNumber( pn )
-			m_OptionsList[pn].Reset();
+		m_OptionsList[pn].Reset();
 
 	AfterMusicChange();
 
@@ -321,10 +324,10 @@ void ScreenSelectMusic::CheckBackgroundRequests( bool bForce )
 	}
 
 	/* Loading the rest can cause small skips, so don't do it until the wheel settles.
-	 * Do load if we're transitioning out, though, so we don't miss starting the music
-	 * for the options screen if a song is selected quickly.  Also, don't do this
-	 * if the wheel is locked, since we're just bouncing around after selecting
-	 * TYPE_RANDOM, and it'll take a while before the wheel will settle. */
+	* Do load if we're transitioning out, though, so we don't miss starting the music
+	* for the options screen if a song is selected quickly.  Also, don't do this
+	* if the wheel is locked, since we're just bouncing around after selecting
+	* TYPE_RANDOM, and it'll take a while before the wheel will settle. */
 	if( !m_MusicWheel.IsSettled() && !m_MusicWheel.WheelIsLocked() && !bForce )
 		return;
 
@@ -338,7 +341,7 @@ void ScreenSelectMusic::CheckBackgroundRequests( bool bForce )
 		if( TEXTUREMAN->IsTextureRegistered( Sprite::SongBannerTexture(g_sBannerPath) ) )
 		{
 			/* If the file is already loaded into a texture, it's finished,
-			 * and we only do this to honor the HighQualTime value. */
+			* and we only do this to honor the HighQualTime value. */
 			sPath = g_sBannerPath;
 		}
 		else
@@ -435,8 +438,8 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 	if( !IsTransitioning() && m_SelectionState != SelectionState_Finalized )
 	{
 		bool bHoldingCtrl = 
-		INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) ||
-		INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL));
+			INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) ||
+			INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL));
 
 		wchar_t c = INPUTMAN->DeviceInputToChar(input.DeviceI,false);
 		MakeUpper( &c, 1 );
@@ -480,9 +483,9 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 
 	// Check for "Press START again for options" button press
 	if( m_SelectionState == SelectionState_Finalized  &&
-	    input.MenuI == GAME_BUTTON_START  &&
-	    input.type != IET_RELEASE  &&
-	    OPTIONS_MENU_AVAILABLE.GetValue() )
+	   input.MenuI == GAME_BUTTON_START  &&
+	   input.type != IET_RELEASE  &&
+	   OPTIONS_MENU_AVAILABLE.GetValue() )
 	{
 		if( m_bGoToOptions )
 			return false; // got it already
@@ -513,10 +516,10 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 	// Handle unselect steps
 	// xxx: select button could conflict with OptionsList here -aj
 	if( m_SelectionState == SelectionState_SelectingSteps && m_bStepsChosen[input.pn]
-		&& input.MenuI == GAME_BUTTON_SELECT && input.type == IET_FIRST_PRESS )
+	   && input.MenuI == GAME_BUTTON_SELECT && input.type == IET_FIRST_PRESS )
 	{
-	LOG->Trace("StepsUnchosen, start SelectingMusicReturn?");
-	MESSAGEMAN->Broadcast("StartSelectingSong");
+		LOG->Trace("StepsUnchosen, start SelectingMusicReturn?");
+		MESSAGEMAN->Broadcast("StartSelectingSong");
 		Message msg("StepsUnchosen");
 		msg.SetParam( "Player", input.pn );
 		MESSAGEMAN->Broadcast( msg );
@@ -525,7 +528,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 	}
 
 	if( m_SelectionState == SelectionState_Finalized  ||
-		m_bStepsChosen[input.pn] )
+	   m_bStepsChosen[input.pn] )
 		return false; // ignore
 
 	if( USE_PLAYER_SELECT_MENU )
@@ -579,7 +582,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 					if( MODE_MENU_AVAILABLE )
 						m_MusicWheel.NextSort();
 					else
-						
+
 						m_soundLocked.Play();
 					break;
 				default: break;
@@ -601,7 +604,7 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 	}
 
 	if( m_SelectionState == SelectionState_SelectingSong  &&
-		(input.MenuI == m_GameButtonNextSong || input.MenuI == m_GameButtonPreviousSong || input.MenuI == GAME_BUTTON_SELECT) )
+	   (input.MenuI == m_GameButtonNextSong || input.MenuI == m_GameButtonPreviousSong || input.MenuI == GAME_BUTTON_SELECT) )
 	{
 		{
 			// If we're rouletting, hands off.
@@ -685,11 +688,11 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 		{
 			if (input.MenuI == m_GameButtonPreviousDifficulty )
 			{
-					ChangeSteps( input.pn, -1 );
+				ChangeSteps( input.pn, -1 );
 			}
 			else if( input.MenuI == m_GameButtonNextDifficulty )
 			{
-					ChangeSteps( input.pn, +1 );
+				ChangeSteps( input.pn, +1 );
 			}
 		}
 	}
@@ -844,16 +847,16 @@ bool ScreenSelectMusic::Input( const InputEventPlus &input )
 				else
 				{
 					// XXX: should this be called "TwoPartCancelled"?
-                    float fSeconds = m_MenuTimer->GetSeconds();
-                    if( fSeconds > 10 ) {
-                        Message msg("SongUnchosen");
-                        msg.SetParam( "Player", input.pn );
-                        MESSAGEMAN->Broadcast( msg );
-                        // unset all steps
-                        FOREACH_ENUM( PlayerNumber , p )
-                            m_bStepsChosen[p] = false;
-                        m_SelectionState = SelectionState_SelectingSong;
-                    }
+					float fSeconds = m_MenuTimer->GetSeconds();
+					if( fSeconds > 10 ) {
+						Message msg("SongUnchosen");
+						msg.SetParam( "Player", input.pn );
+						MESSAGEMAN->Broadcast( msg );
+						// unset all steps
+						FOREACH_ENUM( PlayerNumber , p )
+							m_bStepsChosen[p] = false;
+						m_SelectionState = SelectionState_SelectingSong;
+					}
 				}
 			}
 		}
@@ -1063,7 +1066,7 @@ void ScreenSelectMusic::HandleMessage( const Message &msg )
 			GAMESTATE->m_pCurSteps[p].SetWithoutBroadcast( NULL );
 
 		/* If a course is selected, it may no longer be playable.
-		 * Let MusicWheel know about the late join. */
+		* Let MusicWheel know about the late join. */
 		m_MusicWheel.PlayerJoined();
 
 		AfterMusicChange();
@@ -1136,8 +1139,8 @@ void ScreenSelectMusic::HandleScreenMessage( const ScreenMessage SM )
 	else if( SM == SM_GoToPrevScreen )
 	{
 		/* We may have stray SM_SongChanged messages from the music wheel.
-		 * We can't handle them anymore, since the title menu (and attract
-		 * screens) reset the game state, so just discard them. */
+		* We can't handle them anymore, since the title menu (and attract
+		* screens) reset the game state, so just discard them. */
 		ClearMessageQueue();
 	}
 	else if( SM == SM_BeginFadingOut )
@@ -1179,9 +1182,9 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 		return false;
 
 	/* If select is being pressed at the same time, this is probably an attempt
-	 * to change the sort, not to pick a song or difficulty. If it gets here,
-	 * the actual select press was probably hit during a tween and ignored.
-	 * Ignore it. */
+	* to change the sort, not to pick a song or difficulty. If it gets here,
+	* the actual select press was probably hit during a tween and ignored.
+	* Ignore it. */
 	if( input.pn != PLAYER_INVALID && INPUTMAPPER->IsBeingPressed(GAME_BUTTON_SELECT, input.pn) )
 		return false;
 
@@ -1191,86 +1194,86 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 
 	switch( m_SelectionState )
 	{
-	DEFAULT_FAIL( m_SelectionState );
-	case SelectionState_SelectingSong:
-		// If false, we don't have a selection just yet.
-		if( !m_MusicWheel.Select() )
-			return false;
+		DEFAULT_FAIL( m_SelectionState );
+		case SelectionState_SelectingSong:
+			// If false, we don't have a selection just yet.
+			if( !m_MusicWheel.Select() )
+				return false;
 
-		// a song was selected
-		if( m_MusicWheel.GetSelectedSong() != NULL )
-		{
-			if(TWO_PART_CONFIRMS_ONLY && SAMPLE_MUSIC_PREVIEW_MODE == SampleMusicPreviewMode_StartToPreview)
+			// a song was selected
+			if( m_MusicWheel.GetSelectedSong() != NULL )
 			{
-				// start playing the preview music.
-				g_bSampleMusicWaiting = true;
-				CheckBackgroundRequests( true );
-			}
+				if(TWO_PART_CONFIRMS_ONLY && SAMPLE_MUSIC_PREVIEW_MODE == SampleMusicPreviewMode_StartToPreview)
+				{
+					// start playing the preview music.
+					g_bSampleMusicWaiting = true;
+					CheckBackgroundRequests( true );
+				}
 
-			const bool bIsNew = PROFILEMAN->IsSongNew( m_MusicWheel.GetSelectedSong() );
-			bool bIsHard = false;
-			FOREACH_HumanPlayer( p )
+				const bool bIsNew = PROFILEMAN->IsSongNew( m_MusicWheel.GetSelectedSong() );
+				bool bIsHard = false;
+				FOREACH_HumanPlayer( p )
+				{
+					if( GAMESTATE->m_pCurSteps[p]  &&  GAMESTATE->m_pCurSteps[p]->GetMeter() >= 10 )
+						bIsHard = true;
+				}
+
+				// See if this song is a repeat.
+				// If we're in event mode, only check the last five songs.
+				bool bIsRepeat = false;
+				int i = 0;
+				if( GAMESTATE->IsEventMode() )
+					i = max( 0, int(STATSMAN->m_vPlayedStageStats.size())-5 );
+				for( ; i < (int)STATSMAN->m_vPlayedStageStats.size(); ++i )
+					if( STATSMAN->m_vPlayedStageStats[i].m_vpPlayedSongs.back() == m_MusicWheel.GetSelectedSong() )
+						bIsRepeat = true;
+
+				// Don't complain about repeats if the user didn't get to pick.
+				if( GAMESTATE->IsAnExtraStageAndSelectionLocked() )
+					bIsRepeat = false;
+
+				if( bIsRepeat )
+					SOUND->PlayOnceFromAnnouncer( "select music comment repeat" );
+				else if( bIsNew )
+					SOUND->PlayOnceFromAnnouncer( "select music comment new" );
+				else if( bIsHard )
+					SOUND->PlayOnceFromAnnouncer( "select music comment hard" );
+				else
+					SOUND->PlayOnceFromAnnouncer( "select music comment general" );
+
+				/* If we're in event mode, we may have just played a course (putting 
+				* us in course mode). Make sure we're in a single song mode. */
+				if( GAMESTATE->IsCourseMode() )
+					GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
+			}
+			else if( m_MusicWheel.GetSelectedCourse() != NULL )
 			{
-				if( GAMESTATE->m_pCurSteps[p]  &&  GAMESTATE->m_pCurSteps[p]->GetMeter() >= 10 )
-					bIsHard = true;
+				SOUND->PlayOnceFromAnnouncer( "select course comment general" );
+
+				Course *pCourse = m_MusicWheel.GetSelectedCourse();
+				ASSERT( pCourse != NULL );
+				GAMESTATE->m_PlayMode.Set( pCourse->GetPlayMode() );
+
+				// apply #LIVES
+				if( pCourse->m_iLives != -1 )
+				{
+					SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_LifeType, LifeType_Battery );
+					SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_BatteryLives, pCourse->m_iLives );
+				}
+				if( pCourse->GetCourseType() == COURSE_TYPE_SURVIVAL)
+					SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_LifeType, LifeType_Time );
 			}
-
-			// See if this song is a repeat.
-			// If we're in event mode, only check the last five songs.
-			bool bIsRepeat = false;
-			int i = 0;
-			if( GAMESTATE->IsEventMode() )
-				i = max( 0, int(STATSMAN->m_vPlayedStageStats.size())-5 );
-			for( ; i < (int)STATSMAN->m_vPlayedStageStats.size(); ++i )
-				if( STATSMAN->m_vPlayedStageStats[i].m_vpPlayedSongs.back() == m_MusicWheel.GetSelectedSong() )
-					bIsRepeat = true;
-
-			// Don't complain about repeats if the user didn't get to pick.
-			if( GAMESTATE->IsAnExtraStageAndSelectionLocked() )
-				bIsRepeat = false;
-
-			if( bIsRepeat )
-				SOUND->PlayOnceFromAnnouncer( "select music comment repeat" );
-			else if( bIsNew )
-				SOUND->PlayOnceFromAnnouncer( "select music comment new" );
-			else if( bIsHard )
-				SOUND->PlayOnceFromAnnouncer( "select music comment hard" );
 			else
-				SOUND->PlayOnceFromAnnouncer( "select music comment general" );
-
-			/* If we're in event mode, we may have just played a course (putting 
-			 * us in course mode). Make sure we're in a single song mode. */
-			if( GAMESTATE->IsCourseMode() )
-				GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
-		}
-		else if( m_MusicWheel.GetSelectedCourse() != NULL )
-		{
-			SOUND->PlayOnceFromAnnouncer( "select course comment general" );
-
-			Course *pCourse = m_MusicWheel.GetSelectedCourse();
-			ASSERT( pCourse != NULL );
-			GAMESTATE->m_PlayMode.Set( pCourse->GetPlayMode() );
-
-			// apply #LIVES
-			if( pCourse->m_iLives != -1 )
 			{
-				SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_LifeType, LifeType_Battery );
-				SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_BatteryLives, pCourse->m_iLives );
+				// We haven't made a selection yet.
+				return false;
 			}
-			if( pCourse->GetCourseType() == COURSE_TYPE_SURVIVAL)
-				SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_LifeType, LifeType_Time );
-		}
-		else
-		{
-			// We haven't made a selection yet.
-			return false;
-		}
-		// I believe this is for those who like pump pro. -aj
-		MESSAGEMAN->Broadcast("SongChosen");
+			// I believe this is for those who like pump pro. -aj
+			MESSAGEMAN->Broadcast("SongChosen");
 
-		break;
+			break;
 
-	case SelectionState_SelectingSteps:
+		case SelectionState_SelectingSteps:
 		{
 			PlayerNumber pn = input.pn;
 			bool bInitiatedByMenuTimer = pn == PLAYER_INVALID;
@@ -1287,18 +1290,18 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 				bAllPlayersDoneSelectingSteps = true;
 
 			/* TRICKY: if we have a Routine chart selected, we need to ensure
-			 * the following:
-			 * 1. Both players must select the same Routine steps.
-			 * 2. If the other player picks non-Routine steps, this player
-			 *    cannot pick Routine.
-			 * 3. If the other player picked Routine steps, and we pick
-			 *    non-Routine steps, the other player's steps must be unselected.
-			 * 4. If time runs out, and both players don't have the same Routine
-			 *    chart selected, we need to bump the player with a Routine
-			 *    chart selection to a playable chart.
-			 *    (Right now, we bump them to Beginner... Can we come up with
-			 *    something better?)
-			 */
+			* the following:
+			* 1. Both players must select the same Routine steps.
+			* 2. If the other player picks non-Routine steps, this player
+			*    cannot pick Routine.
+			* 3. If the other player picked Routine steps, and we pick
+			*    non-Routine steps, the other player's steps must be unselected.
+			* 4. If time runs out, and both players don't have the same Routine
+			*    chart selected, we need to bump the player with a Routine
+			*    chart selection to a playable chart.
+			*    (Right now, we bump them to Beginner... Can we come up with
+			*    something better?)
+			*/
 
 			if( !GAMESTATE->IsCourseMode() && GAMESTATE->GetNumSidesJoined() == 2 )
 			{
@@ -1317,12 +1320,12 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 				if( bAnySelectedRoutine )
 				{
 					/* Timer ran out. If we haven't agreed on steps, move players with
-					 * Routine steps down to Beginner. I'll admit that's annoying,
-					 * but at least they won't lose more stages. */
+					* Routine steps down to Beginner. I'll admit that's annoying,
+					* but at least they won't lose more stages. */
 					if( bInitiatedByMenuTimer && !bSelectedSameSteps )
 					{
 						/* Since m_vpSteps is sorted by Difficulty, the first
-						 * entry should be the easiest. */
+						* entry should be the easiest. */
 						ASSERT( m_vpSteps.size() != 0 );
 						Steps *pSteps = m_vpSteps[0];
 
@@ -1343,7 +1346,7 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 						if( m_bStepsChosen[other] )
 						{
 							/* Unready the other player if they selected Routine
-							 * steps, but we didn't. */
+							* steps, but we didn't. */
 							if( bSelectedRoutineSteps[other] )
 							{
 								m_bStepsChosen[other] = false;
@@ -1359,7 +1362,7 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 							else if( bSelectedRoutineSteps[pn] )
 							{
 								/* They selected non-Routine steps, so we can't
-								 * select Routine steps. */
+								* select Routine steps. */
 								return false;
 							}
 						}
@@ -1453,8 +1456,8 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 		}
 
 		/* If we're currently waiting on song assets, abort all except the music
-		 * and start the music, so if we make a choice quickly before background
-		 * requests come through, the music will still start. */
+		* and start the music, so if we make a choice quickly before background
+		* requests come through, the music will still start. */
 		g_bCDTitleWaiting = g_bBannerWaiting = false;
 		m_BackgroundLoader.Abort();
 		CheckBackgroundRequests( true );
@@ -1467,9 +1470,9 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 			m_bAllowOptionsMenu = true;
 
 			/* Don't accept a held START for a little while, so it's not
-			 * hit accidentally.  Accept an initial START right away, though,
-			 * so we don't ignore deliberate fast presses (which would be
-			 * annoying). */
+			* hit accidentally.  Accept an initial START right away, though,
+			* so we don't ignore deliberate fast presses (which would be
+			* annoying). */
 			this->PostScreenMessage( SM_AllowOptionsMenuRepeat, 0.5f );
 
 			StartTransitioningScreen( SM_None );
@@ -1500,19 +1503,19 @@ bool ScreenSelectMusic::MenuBack( const InputEventPlus & /* input */ )
 	// todo: this isn't right at all. -aj
 	/*
 	if( m_SelectionState == SelectionState_SelectingSteps &&
-		!m_bStepsChosen[input.pn] && input.MenuI == GAME_BUTTON_BACK &&
-		input.type == IET_FIRST_PRESS )
+	!m_bStepsChosen[input.pn] && input.MenuI == GAME_BUTTON_BACK &&
+	input.type == IET_FIRST_PRESS )
 	{
-		// if a player has chosen their steps already, don't unchoose song.
-		FOREACH_HumanPlayer( p )
-			if( m_bStepsChosen[p] ) return;
+	// if a player has chosen their steps already, don't unchoose song.
+	FOREACH_HumanPlayer( p )
+	if( m_bStepsChosen[p] ) return;
 
-		// and if we get here...
-		Message msg("SongUnchosen");
-		msg.SetParam( "Player", input.pn );
-		MESSAGEMAN->Broadcast( msg );
-		m_SelectionState = SelectionState_SelectingSong;
-		return true;
+	// and if we get here...
+	Message msg("SongUnchosen");
+	msg.SetParam( "Player", input.pn );
+	MESSAGEMAN->Broadcast( msg );
+	m_SelectionState = SelectionState_SelectingSong;
+	return true;
 	}
 	*/
 
@@ -1707,35 +1710,35 @@ void ScreenSelectMusic::AfterMusicChange()
 	SampleMusicPreviewMode pmode;
 	switch( wtype )
 	{
-	case WheelItemDataType_Section:
-	case WheelItemDataType_Sort:
-	case WheelItemDataType_Roulette:
-	case WheelItemDataType_Random:
-	case WheelItemDataType_Custom:
-		FOREACH_PlayerNumber( p )
-			m_iSelection[p] = -1;
+		case WheelItemDataType_Section:
+		case WheelItemDataType_Sort:
+		case WheelItemDataType_Roulette:
+		case WheelItemDataType_Random:
+		case WheelItemDataType_Custom:
+			FOREACH_PlayerNumber( p )
+				m_iSelection[p] = -1;
 
-		g_sCDTitlePath = ""; // none
+			g_sCDTitlePath = ""; // none
 
-		if( SAMPLE_MUSIC_PREVIEW_MODE == SampleMusicPreviewMode_LastSong )
-		{
-			// HACK: Make random music work in LastSong mode. -aj
-			if( m_sSampleMusicToPlay == m_sRandomMusicPath )
+			if( SAMPLE_MUSIC_PREVIEW_MODE == SampleMusicPreviewMode_LastSong )
+			{
+				// HACK: Make random music work in LastSong mode. -aj
+				if( m_sSampleMusicToPlay == m_sRandomMusicPath )
+				{
+					m_fSampleStartSeconds = 0;
+					m_fSampleLengthSeconds = -1;
+				}
+			}
+			else
 			{
 				m_fSampleStartSeconds = 0;
 				m_fSampleLengthSeconds = -1;
 			}
-		}
-		else
-		{
-			m_fSampleStartSeconds = 0;
-			m_fSampleLengthSeconds = -1;
-		}
 
-		switch( wtype )
-		{
-			case WheelItemDataType_Section:
-				// reduce scope
+			switch( wtype )
+			{
+				case WheelItemDataType_Section:
+					// reduce scope
 				{
 					SortOrder curSort = GAMESTATE->m_SortOrder;
 					if( curSort == SORT_GROUP)
@@ -1752,25 +1755,25 @@ void ScreenSelectMusic::AfterMusicChange()
 						m_sSampleMusicToPlay = m_sSectionMusicPath;
 				}
 				break;
-			case WheelItemDataType_Sort:
-				bWantBanner = false; // we load it ourself
-				m_Banner.LoadMode();
-				if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
-					m_sSampleMusicToPlay = m_sSortMusicPath;
-				break;
-			case WheelItemDataType_Roulette:
-				bWantBanner = false; // we load it ourself
-				m_Banner.LoadRoulette();
-				if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
-					m_sSampleMusicToPlay = m_sRouletteMusicPath;
-				break;
-			case WheelItemDataType_Random:
-				bWantBanner = false; // we load it ourself
-				m_Banner.LoadRandom();
-				//if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
-				m_sSampleMusicToPlay = m_sRandomMusicPath;
-				break;
-			case WheelItemDataType_Custom:
+				case WheelItemDataType_Sort:
+					bWantBanner = false; // we load it ourself
+					m_Banner.LoadMode();
+					if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
+						m_sSampleMusicToPlay = m_sSortMusicPath;
+					break;
+				case WheelItemDataType_Roulette:
+					bWantBanner = false; // we load it ourself
+					m_Banner.LoadRoulette();
+					if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
+						m_sSampleMusicToPlay = m_sRouletteMusicPath;
+					break;
+				case WheelItemDataType_Random:
+					bWantBanner = false; // we load it ourself
+					m_Banner.LoadRandom();
+					//if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
+					m_sSampleMusicToPlay = m_sRandomMusicPath;
+					break;
+				case WheelItemDataType_Custom:
 				{
 					bWantBanner = false; // we load it ourself
 					RString sBannerName = GetMusicWheel()->GetCurWheelItemData( GetMusicWheel()->GetCurrentIndex() )->m_pAction->m_sName.c_str();
@@ -1779,83 +1782,83 @@ void ScreenSelectMusic::AfterMusicChange()
 						m_sSampleMusicToPlay = m_sSectionMusicPath;
 				}
 				break;
-			default:
-				FAIL_M(ssprintf("Invalid WheelItemDataType: %i", wtype));
-		}
-		// override this if the sample music mode wants to.
-		/*
-		if(SAMPLE_MUSIC_PREVIEW_MODE == SampleMusicPreviewMode_LastSong)
-		{
+				default:
+					FAIL_M(ssprintf("Invalid WheelItemDataType: %i", wtype));
+			}
+			// override this if the sample music mode wants to.
+			/*
+			if(SAMPLE_MUSIC_PREVIEW_MODE == SampleMusicPreviewMode_LastSong)
+			{
 			m_sSampleMusicToPlay = pSong->GetMusicPath();
 			m_pSampleMusicTimingData = &pSong->m_SongTiming;
 			m_fSampleStartSeconds = pSong->m_fMusicSampleStartSeconds;
 			m_fSampleLengthSeconds = pSong->m_fMusicSampleLengthSeconds;
-		}
-		*/
-		break;
-	case WheelItemDataType_Song:
-	case WheelItemDataType_Portal:
-		// check SampleMusicPreviewMode here.
-		pmode = SAMPLE_MUSIC_PREVIEW_MODE;
-		switch( pmode )
+			}
+			*/
+			break;
+		case WheelItemDataType_Song:
+		case WheelItemDataType_Portal:
+			// check SampleMusicPreviewMode here.
+			pmode = SAMPLE_MUSIC_PREVIEW_MODE;
+			switch( pmode )
+			{
+				case SampleMusicPreviewMode_ScreenMusic:
+					// play the screen music
+					m_sSampleMusicToPlay = m_sLoopMusicPath;
+					m_fSampleStartSeconds = 0;
+					m_fSampleLengthSeconds = -1;
+					break;
+				case SampleMusicPreviewMode_StartToPreview:
+					// we want to load the sample music, but we don't want to
+					// actually play it. fall through. -aj
+				case SampleMusicPreviewMode_Normal:
+				case SampleMusicPreviewMode_LastSong: // fall through
+					// play the sample music
+					m_sSampleMusicToPlay = pSong->GetMusicPath();
+					m_pSampleMusicTimingData = &pSong->m_SongTiming;
+					m_fSampleStartSeconds = pSong->m_fMusicSampleStartSeconds;
+					m_fSampleLengthSeconds = pSong->m_fMusicSampleLengthSeconds;
+					break;
+				default:
+					FAIL_M(ssprintf("Invalid preview mode: %i", pmode));
+			}
+
+			SongUtil::GetPlayableSteps( pSong, m_vpSteps );
+
+			MESSAGEMAN->Broadcast("PlayableStepsChanged");  // StepP1 Revival - bSilver
+
+			if ( PREFSMAN->m_bShowBanners )
+				g_sBannerPath = pSong->GetBannerPath();
+
+			g_sCDTitlePath = pSong->GetCDTitlePath();
+			g_bWantFallbackCdTitle = true;
+
+			SwitchToPreferredDifficulty();
+			break;
+
+		case WheelItemDataType_Course:
 		{
-			case SampleMusicPreviewMode_ScreenMusic:
-				// play the screen music
-				m_sSampleMusicToPlay = m_sLoopMusicPath;
-				m_fSampleStartSeconds = 0;
-				m_fSampleLengthSeconds = -1;
-				break;
-			case SampleMusicPreviewMode_StartToPreview:
-				// we want to load the sample music, but we don't want to
-				// actually play it. fall through. -aj
-			case SampleMusicPreviewMode_Normal:
-			case SampleMusicPreviewMode_LastSong: // fall through
-				// play the sample music
-				m_sSampleMusicToPlay = pSong->GetMusicPath();
-				m_pSampleMusicTimingData = &pSong->m_SongTiming;
-				m_fSampleStartSeconds = pSong->m_fMusicSampleStartSeconds;
-				m_fSampleLengthSeconds = pSong->m_fMusicSampleLengthSeconds;
-				break;
-			default:
-				FAIL_M(ssprintf("Invalid preview mode: %i", pmode));
+			const Course *lCourse = m_MusicWheel.GetSelectedCourse();
+			const Style *pStyle = NULL;
+			//if( CommonMetrics::AUTO_SET_STYLE )
+			//	pStyle = pCourse->GetCourseStyle( GAMESTATE->m_pCurGame, GAMESTATE->GetNumSidesJoined() );
+			if( pStyle == NULL )
+				pStyle = GAMESTATE->GetCurrentStyle();
+			lCourse->GetTrails( m_vpTrails, pStyle->m_StepsType );
+
+			m_sSampleMusicToPlay = m_sCourseMusicPath;
+			m_fSampleStartSeconds = 0;
+			m_fSampleLengthSeconds = -1;
+
+			g_sBannerPath = lCourse->GetBannerPath();
+			if( g_sBannerPath.empty() )
+				m_Banner.LoadFallback();
+
+			SwitchToPreferredDifficulty();
+			break;
 		}
-
-		SongUtil::GetPlayableSteps( pSong, m_vpSteps );
-
-		MESSAGEMAN->Broadcast("PlayableStepsChanged");  // StepP1 Revival - bSilver
-
-		if ( PREFSMAN->m_bShowBanners )
-			g_sBannerPath = pSong->GetBannerPath();
-
-		g_sCDTitlePath = pSong->GetCDTitlePath();
-		g_bWantFallbackCdTitle = true;
-
-		SwitchToPreferredDifficulty();
-		break;
-
-	case WheelItemDataType_Course:
-	{
-		const Course *lCourse = m_MusicWheel.GetSelectedCourse();
-		const Style *pStyle = NULL;
-		//if( CommonMetrics::AUTO_SET_STYLE )
-		//	pStyle = pCourse->GetCourseStyle( GAMESTATE->m_pCurGame, GAMESTATE->GetNumSidesJoined() );
-		if( pStyle == NULL )
-			pStyle = GAMESTATE->GetCurrentStyle();
-		lCourse->GetTrails( m_vpTrails, pStyle->m_StepsType );
-
-		m_sSampleMusicToPlay = m_sCourseMusicPath;
-		m_fSampleStartSeconds = 0;
-		m_fSampleLengthSeconds = -1;
-
-		g_sBannerPath = lCourse->GetBannerPath();
-		if( g_sBannerPath.empty() )
-			m_Banner.LoadFallback();
-
-		SwitchToPreferredDifficulty();
-		break;
-	}
-	default:
-		FAIL_M(ssprintf("Invalid WheelItemDataType: %i", wtype));
+		default:
+			FAIL_M(ssprintf("Invalid WheelItemDataType: %i", wtype));
 	}
 
 	m_sprCDTitleFront.UnloadTexture();
@@ -1880,7 +1883,7 @@ void ScreenSelectMusic::AfterMusicChange()
 		if( m_Banner.LoadFromCachedBanner( g_sBannerPath ) )
 		{
 			/* If the high-res banner is already loaded, just delay before
-			 * loading it, so the low-res one has time to fade in. */
+			* loading it, so the low-res one has time to fade in. */
 			if( !TEXTUREMAN->IsTextureRegistered( Sprite::SongBannerTexture(g_sBannerPath) ) )
 				m_BackgroundLoader.CacheFile( g_sBannerPath );
 
@@ -1914,7 +1917,7 @@ void ScreenSelectMusic::OpenOptionsList(PlayerNumber pn)
 {
 	if( pn != PLAYER_INVALID )
 	{
-        m_MusicWheel.Move( 0 );
+		m_MusicWheel.Move( 0 );
 		m_OptionsList[pn].Open();
 	}
 }
@@ -2058,7 +2061,7 @@ public:
 
 	LunaScreenSelectMusic()
 	{
-  		ADD_METHOD( GetGoToOptions );
+		ADD_METHOD( GetGoToOptions );
 		ADD_METHOD( GetMusicWheel );
 		ADD_METHOD( OpenOptionsList );
 		// StepP1 Revival - bSilver ---------------------------------------------------
@@ -2079,26 +2082,26 @@ LUA_REGISTER_DERIVED_CLASS( ScreenSelectMusic, ScreenWithMenuElements )
 // lua end
 
 /*
- * (c) 2001-2004 Chris Danford
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2004 Chris Danford
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

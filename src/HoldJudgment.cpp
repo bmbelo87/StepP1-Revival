@@ -58,8 +58,12 @@ void HoldJudgment::SetHoldJudgment( HoldNoteScore hns )
 		m_sprJudgment->SetState( 0 );
 		m_sprJudgment->PlayCommand( "Held" );
 		break;
-	case HNS_Missed:
+	case HNS_LetGo:
 		m_sprJudgment->SetState( 1 );
+		m_sprJudgment->PlayCommand( "LetGo" );
+		break;
+	case HNS_Missed:
+		m_sprJudgment->SetState( 2 );
 		m_sprJudgment->PlayCommand( "Missed" );
 		break;
 	case HNS_None:

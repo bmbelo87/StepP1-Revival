@@ -189,7 +189,7 @@ struct TapNote
 		subType = SubType_Invalid; 
 		source = original; 
 		pn = PLAYER_INVALID, 
-			nsp = def_nsp;	//xMAx
+		nsp = def_nsp;	//xMAx
 		fAttackDurationSeconds = 0.f; 
 		iKeysoundIndex = -1;
 		iDuration = 0;
