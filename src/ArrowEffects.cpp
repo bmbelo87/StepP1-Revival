@@ -22,11 +22,11 @@ static ThemeMetric<bool>	QUANTIZE_ARROW_Y( "ArrowEffects", "QuantizeArrowYPositi
 //static ThemeMetric<bool>	HIDDEN_SUDDEN_PAST_RECEPTOR( "ArrowEffects", "DrawHiddenNotesAfterReceptor"); //xMAx
 
 /* For better or for worse, allow the themes to modify the various mod
-* effects for the different mods. In general, it is recommended to not
-* edit the default values and instead use percentage mods when changes
-* are wanted. Still, the option is available for those that want it.
-*
-* Is this a good idea? We'll find out. -aj & Wolfman2000 */
+ * effects for the different mods. In general, it is recommended to not
+ * edit the default values and instead use percentage mods when changes
+ * are wanted. Still, the option is available for those that want it.
+ *
+ * Is this a good idea? We'll find out. -aj & Wolfman2000 */
 static ThemeMetric<float>	BLINK_MOD_FREQUENCY( "ArrowEffects", "BlinkModFrequency" );
 static ThemeMetric<float>	BOOST_MOD_MIN_CLAMP( "ArrowEffects", "BoostModMinClamp" );
 static ThemeMetric<float>	BOOST_MOD_MAX_CLAMP( "ArrowEffects", "BoostModMaxClamp" );
@@ -92,21 +92,21 @@ void ArrowEffects::Update()
 
 	static float fLastTime = 0;
 	float fTime = RageTimer::GetTimeSinceStartFast();
-
+	
 	FOREACH_EnabledPlayer( pn )
 	{
 		const Style::ColumnInfo* pCols = pStyle->m_ColumnInfo[pn];
 		const SongPosition &position = GAMESTATE->m_bIsUsingStepTiming
-			? GAMESTATE->m_pPlayerState[pn]->m_Position : GAMESTATE->m_Position;
+		? GAMESTATE->m_pPlayerState[pn]->m_Position : GAMESTATE->m_Position;
 
 		PerPlayerData &data = g_EffectData[pn];
-
+		
 		if( !position.m_bFreeze || !position.m_bDelay )
 		{
 			data.m_fExpandSeconds += fTime - fLastTime;
 			data.m_fExpandSeconds = fmodf( data.m_fExpandSeconds, PI*2 );
 		}
-
+		
 		// Update Tornado
 		for( int iColNum = 0; iColNum < MAX_COLS_PER_PLAYER; ++iColNum )
 		{
@@ -114,12 +114,12 @@ void ArrowEffects::Update()
 			// tornado width if there are many columns
 
 			/* the below makes an assumption for dance mode.
-			* perhaps check if we are actually playing on singles without,
-			* say more than 6 columns. That would exclude IIDX, pop'n, and
-			* techno-8, all of which would be very hectic.
-			* certain non-singles modes (like halfdoubles 6cols)
-			* could possibly have tornado enabled.
-			* let's also take default resolution (640x480) into mind. -aj */
+			 * perhaps check if we are actually playing on singles without,
+			 * say more than 6 columns. That would exclude IIDX, pop'n, and
+			 * techno-8, all of which would be very hectic.
+			 * certain non-singles modes (like halfdoubles 6cols)
+			 * could possibly have tornado enabled.
+			 * let's also take default resolution (640x480) into mind. -aj */
 			bool bWideField = pStyle->m_iColsPerPlayer > 4;
 			int iTornadoWidth = bWideField ? 2 : 3;
 
@@ -143,7 +143,7 @@ void ArrowEffects::Update()
 		{
 			const int iNumCols = pStyle->m_iColsPerPlayer;
 			const int iNumSides = (pStyle->m_StyleType==StyleType_OnePlayerTwoSides ||
-						pStyle->m_StyleType==StyleType_TwoPlayersSharedSides) ? 2 : 1;
+					       pStyle->m_StyleType==StyleType_TwoPlayersSharedSides) ? 2 : 1;
 			const int iNumColsPerSide = iNumCols / iNumSides;
 			const int iSideIndex = iColNum / iNumColsPerSide;
 			const int iColOnSide = iColNum % iNumColsPerSide;
@@ -222,7 +222,6 @@ void ArrowEffects::SetCurrentOptions(const PlayerOptions* options)
 {
 	curr_options= options;
 }
-
 static float GetDisplayedBeat( const PlayerState* pPlayerState, float beat )
 {
 	// do a binary search here
@@ -249,7 +248,7 @@ static float GetDisplayedBeat( const PlayerState* pPlayerState, float beat )
 }
 
 /* For visibility testing: if bAbsolute is false, random modifiers must return
-* the minimum possible scroll speed. */
+ * the minimum possible scroll speed. */
 float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float fNoteBeat, float &fPeakYOffsetOut, bool &bIsPastPeakOut, bool bAbsolute )
 {
 	// Default values that are returned if boomerang is off.
@@ -258,26 +257,23 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 
 	float fYOffset = 0;
 	const SongPosition &position = pPlayerState->GetDisplayedPosition();
-
+	
 	float fSongBeat = position.m_fSongBeatVisible;
-
+	
 	Steps *pCurSteps = GAMESTATE->m_pCurSteps[pPlayerState->m_PlayerNumber];
 
 	/* Usually, fTimeSpacing is 0 or 1, in which case we use entirely beat spacing or
-	* entirely time spacing (respectively). Occasionally, we tween between them. */
+	 * entirely time spacing (respectively). Occasionally, we tween between them. */
 	if( curr_options->m_fTimeSpacing != 1.0f )
 	{
-		if( GAMESTATE->m_bInStepEditor ) 
-		{
+		if( GAMESTATE->m_bInStepEditor ) {
 			// Use constant spacing in step editor
 			fYOffset = fNoteBeat - fSongBeat;
-		} 
-		else 
-		{
+		} else {
 			fYOffset = GetDisplayedBeat(pPlayerState, fNoteBeat) - GetDisplayedBeat(pPlayerState, fSongBeat);
 			fYOffset *= pCurSteps->GetTimingData()->GetDisplayedSpeedPercent(
-				position.m_fSongBeatVisible,
-				position.m_fMusicSecondsVisible );
+								     position.m_fSongBeatVisible,
+								     position.m_fMusicSecondsVisible );
 		}
 		fYOffset *= 1 - curr_options->m_fTimeSpacing;
 	}
@@ -297,9 +293,9 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 	// (per issue 24), edit this to reflect that. -aj
 	//fYOffset *= ARROW_SPACING; //original code - xMAx
 	/*if( PREFSMAN->m_fDisplayAspectRatio > 1.5f )
-	fYOffset *= 64;
+		fYOffset *= 64;
 	else*/ // xMAx - 2020/06/13
-	fYOffset *= 60;
+		fYOffset *= 60;
 
 	// Factor in scroll speed
 	float fScrollSpeed = curr_options->m_fScrollSpeed;
@@ -308,7 +304,7 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 		fScrollSpeed= curr_options->m_fMaxScrollBPM /
 			(pPlayerState->m_fReadBPM * GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate);
 	}
-
+	
 	// don't mess with the arrows after they've crossed 0
 	if( fYOffset < 0 )
 	{
@@ -353,47 +349,47 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 
 		fYOffset = (-1*fYOffset*fYOffset/SCREEN_HEIGHT) + 1.5f*fYOffset;
 	}
-	/*
+/*
 	if( curr_options->m_fRandomSpeed > 0 && !bAbsolute )
 	{
-	// Generate a deterministically "random" speed for each arrow.
-	unsigned seed = GAMESTATE->m_iStageSeed + ( BeatToNoteRow( fNoteBeat ) << 8 ) + (iCol * 100);
+		// Generate a deterministically "random" speed for each arrow.
+		unsigned seed = GAMESTATE->m_iStageSeed + ( BeatToNoteRow( fNoteBeat ) << 8 ) + (iCol * 100);
 
-	for( int i = 0; i < 3; ++i )
-	seed = ((seed * 1664525u) + 1013904223u) & 0xFFFFFFFF;
-	float fRandom = seed / 4294967296.0f;
+		for( int i = 0; i < 3; ++i )
+			seed = ((seed * 1664525u) + 1013904223u) & 0xFFFFFFFF;
+		float fRandom = seed / 4294967296.0f;
 
-	// Random speed always increases speed: a random speed of 10 indicates
-	// [1,11]. This keeps it consistent with other mods: 0 means no effect.
-	fScrollSpeed *=
-	SCALE( fRandom,
-	0.0f, 1.0f,
-	1.0f, curr_options->m_fRandomSpeed + 1.0f );
+		// Random speed always increases speed: a random speed of 10 indicates
+		// [1,11]. This keeps it consistent with other mods: 0 means no effect.
+		fScrollSpeed *=
+				SCALE( fRandom,
+						0.0f, 1.0f,
+						1.0f, curr_options->m_fRandomSpeed + 1.0f );
 	}
-	*/
-	/*
+*/
+/*
 	if( fAccels[PlayerOptions::ACCEL_EXPAND] != 0 )
 	{
-	// TODO: Don't index by PlayerNumber.
-	PerPlayerData &data = g_EffectData[pPlayerState->m_PlayerNumber];
+		// TODO: Don't index by PlayerNumber.
+		PerPlayerData &data = g_EffectData[pPlayerState->m_PlayerNumber];
 
-	float fExpandMultiplier = SCALE( RageFastCos(data.m_fExpandSeconds*EXPAND_MULTIPLIER_FREQUENCY+PI/2.0f), //xMAx - added PI/2.0f to sync with BLINK frecuency
-	EXPAND_MULTIPLIER_SCALE_FROM_LOW, EXPAND_MULTIPLIER_SCALE_FROM_HIGH,
-	EXPAND_MULTIPLIER_SCALE_TO_LOW, EXPAND_MULTIPLIER_SCALE_TO_HIGH );
-	fScrollSpeed *=	SCALE( fAccels[PlayerOptions::ACCEL_EXPAND], 
-	EXPAND_SPEED_SCALE_FROM_LOW, EXPAND_SPEED_SCALE_FROM_HIGH,
-	EXPAND_SPEED_SCALE_TO_LOW, fExpandMultiplier );
+		float fExpandMultiplier = SCALE( RageFastCos(data.m_fExpandSeconds*EXPAND_MULTIPLIER_FREQUENCY+PI/2.0f), //xMAx - added PI/2.0f to sync with BLINK frecuency
+						EXPAND_MULTIPLIER_SCALE_FROM_LOW, EXPAND_MULTIPLIER_SCALE_FROM_HIGH,
+						EXPAND_MULTIPLIER_SCALE_TO_LOW, EXPAND_MULTIPLIER_SCALE_TO_HIGH );
+		fScrollSpeed *=	SCALE( fAccels[PlayerOptions::ACCEL_EXPAND], 
+				      EXPAND_SPEED_SCALE_FROM_LOW, EXPAND_SPEED_SCALE_FROM_HIGH,
+				      EXPAND_SPEED_SCALE_TO_LOW, fExpandMultiplier );
 
-	//		fScrollSpeed =  (int(GAMESTATE->m_Position.m_fMusicSeconds*1000) % 360) > 180 ? 1.f : 2.f;
+//		fScrollSpeed =  (int(GAMESTATE->m_Position.m_fMusicSeconds*1000) % 360) > 180 ? 1.f : 2.f;
 	}
-	*/ // Used in old EW mod - xMAx
+*/ // Used in old EW mod - xMAx
 
 	if( curr_options->m_bEW )
 	{	
 		PlayerNumber pn = pPlayerState->m_PlayerNumber;
-
+		
 		float ew_speed = (int(GAMESTATE->m_Position.m_fMusicSeconds*500) % 360) > 180 ? 2: 3;
-
+		
 		if( ew_speed != pPlayerState->m_SpeedFlags.m_NewSpeed )
 			GAMESTATE->m_pPlayerState[pn]->SetSpeed( ew_speed );
 
@@ -402,20 +398,20 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 			float cur_time = GAMESTATE->m_Position.m_fMusicSeconds;
 			float start = pPlayerState->m_SpeedFlags.m_StartTime;
 			float end = pPlayerState->m_SpeedFlags.m_EndTime;
-
+			
 			float per = float(cur_time - start) / float(end - start);
 			if ( per < 0.f ) 
 				per = 0.f;
 			else if ( per > 1.f )
 				per = 1.f;
-
+			
 			float new_speed = pPlayerState->m_SpeedFlags.m_OldSpeed + ( pPlayerState->m_SpeedFlags.m_NewSpeed - pPlayerState->m_SpeedFlags.m_OldSpeed )*per;
 			GAMESTATE->m_pPlayerState[pn]->m_SpeedFlags.m_CurSpeed = new_speed;
-
+			
 			//LOG->Trace("xMAx::Song Position Change: music %f, start %f, end %f, per %f",GAMESTATE->m_Position.m_fMusicSeconds,new_speed,per);
 			if( per == 1.f )
 				GAMESTATE->m_pPlayerState[pn]->m_SpeedFlags.m_IsActive = false;
-
+				
 			fScrollSpeed = new_speed;
 		}
 		else
@@ -424,48 +420,48 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 	/*
 	else if( curr_options->m_fRandomSpeed > 0 ) //&& !bAbsolute )	// RandomSpeed or EW, just one of them
 	{
-	//((pPlayer->m_CmdSpeed & eSpeedRandomVelocity) && !(pPlayer->m_CurPos.Line % 48)) pPlayer->SetSpeed((rand() % 4 + 1));
-	PlayerNumber pn = pPlayerState->m_PlayerNumber;
-
-	// Update speed changes if there's any active
-	if( pPlayerState->m_SpeedFlags.m_IsActive )
-	{
-	float cur_time = GAMESTATE->m_Position.m_fMusicSeconds;
-	float start = pPlayerState->m_SpeedFlags.m_StartTime;
-	float end = pPlayerState->m_SpeedFlags.m_EndTime;
-
-	float per = float(cur_time - start) / float(end - start);
-	if ( per < 0.f ) 
-	per = 0.f;
-	else if ( per > 1.f )
-	per = 1.f;
-
-	float new_speed = pPlayerState->m_SpeedFlags.m_OldSpeed + ( pPlayerState->m_SpeedFlags.m_NewSpeed - pPlayerState->m_SpeedFlags.m_OldSpeed )*per;
-	GAMESTATE->m_pPlayerState[pn]->m_SpeedFlags.m_CurSpeed = new_speed;
-
-	//LOG->Trace("xMAx::Song Position Change: music %f, start %f, end %f, per %f",GAMESTATE->m_Position.m_fMusicSeconds,new_speed,per);
-	if( per == 1.f )
-	GAMESTATE->m_pPlayerState[pn]->m_SpeedFlags.m_IsActive = false;
-
-	fScrollSpeed = new_speed;
-	}
-	else
-	{
-	fScrollSpeed = pPlayerState->m_SpeedFlags.m_NewSpeed;
-
-	if( (floor(fSongBeat) == fSongBeat) && (((int)floor(fSongBeat)) % 15 == 0))
-	//if( fNoteBeat == floor(fNoteBeat) )
-	{
-	//if( rand()%2 )
-	{
-	PlayerNumber pn = pPlayerState->m_PlayerNumber;
-	float ran_speed = rand()%4 + 1;
-
-	if( ran_speed != pPlayerState->m_SpeedFlags.m_NewSpeed )
-	GAMESTATE->m_pPlayerState[pn]->SetSpeed( ran_speed );
-	}
-	}	
-	}
+		//((pPlayer->m_CmdSpeed & eSpeedRandomVelocity) && !(pPlayer->m_CurPos.Line % 48)) pPlayer->SetSpeed((rand() % 4 + 1));
+		PlayerNumber pn = pPlayerState->m_PlayerNumber;
+		
+		// Update speed changes if there's any active
+		if( pPlayerState->m_SpeedFlags.m_IsActive )
+		{
+			float cur_time = GAMESTATE->m_Position.m_fMusicSeconds;
+			float start = pPlayerState->m_SpeedFlags.m_StartTime;
+			float end = pPlayerState->m_SpeedFlags.m_EndTime;
+			
+			float per = float(cur_time - start) / float(end - start);
+			if ( per < 0.f ) 
+				per = 0.f;
+			else if ( per > 1.f )
+				per = 1.f;
+			
+			float new_speed = pPlayerState->m_SpeedFlags.m_OldSpeed + ( pPlayerState->m_SpeedFlags.m_NewSpeed - pPlayerState->m_SpeedFlags.m_OldSpeed )*per;
+			GAMESTATE->m_pPlayerState[pn]->m_SpeedFlags.m_CurSpeed = new_speed;
+			
+			//LOG->Trace("xMAx::Song Position Change: music %f, start %f, end %f, per %f",GAMESTATE->m_Position.m_fMusicSeconds,new_speed,per);
+			if( per == 1.f )
+				GAMESTATE->m_pPlayerState[pn]->m_SpeedFlags.m_IsActive = false;
+				
+			fScrollSpeed = new_speed;
+		}
+		else
+		{
+			fScrollSpeed = pPlayerState->m_SpeedFlags.m_NewSpeed;
+			
+			if( (floor(fSongBeat) == fSongBeat) && (((int)floor(fSongBeat)) % 15 == 0))
+			//if( fNoteBeat == floor(fNoteBeat) )
+			{
+				//if( rand()%2 )
+				{
+					PlayerNumber pn = pPlayerState->m_PlayerNumber;
+					float ran_speed = rand()%4 + 1;
+					
+					if( ran_speed != pPlayerState->m_SpeedFlags.m_NewSpeed )
+						GAMESTATE->m_pPlayerState[pn]->SetSpeed( ran_speed );
+				}
+			}	
+		}
 	}
 	*/
 	fYOffset *= fScrollSpeed;
@@ -476,22 +472,22 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 /*
 static void ArrowGetReverseShiftAndScale( int iCol, float fYReverseOffsetPixels, float &fShiftOut, float &fScaleOut )
 {
-// XXX: Hack: we need to scale the reverse shift by the zoom.
-float fMiniPercent = curr_options->m_fEffects[PlayerOptions::EFFECT_MINI];
-float fZoom = 1 - fMiniPercent*0.5f;
+	// XXX: Hack: we need to scale the reverse shift by the zoom.
+	float fMiniPercent = curr_options->m_fEffects[PlayerOptions::EFFECT_MINI];
+	float fZoom = 1 - fMiniPercent*0.5f;
 
-// don't divide by 0
-if( fabsf(fZoom) < 0.01 )
-fZoom = 0.01f;
+	// don't divide by 0
+	if( fabsf(fZoom) < 0.01 )
+		fZoom = 0.01f;
 
-//float fPercentReverse = curr_options->GetReversePercentForColumn(iCol);
-// // xMAx - test for reverse by Player.cpp only - 15-02-16
-float fPercentReverse = 0;
-fShiftOut = SCALE( fPercentReverse, 0.f, 1.f, -fYReverseOffsetPixels/fZoom/2, fYReverseOffsetPixels/fZoom/2 );
-float fPercentCentered = curr_options->m_fScrolls[PlayerOptions::SCROLL_CENTERED];
-fShiftOut = SCALE( fPercentCentered, 0.f, 1.f, fShiftOut, 0.0f );
+	//float fPercentReverse = curr_options->GetReversePercentForColumn(iCol);
+	// // xMAx - test for reverse by Player.cpp only - 15-02-16
+	float fPercentReverse = 0;
+	fShiftOut = SCALE( fPercentReverse, 0.f, 1.f, -fYReverseOffsetPixels/fZoom/2, fYReverseOffsetPixels/fZoom/2 );
+	float fPercentCentered = curr_options->m_fScrolls[PlayerOptions::SCROLL_CENTERED];
+	fShiftOut = SCALE( fPercentCentered, 0.f, 1.f, fShiftOut, 0.0f );
 
-fScaleOut = SCALE( fPercentReverse, 0.f, 1.f, 1.f, -1.f );
+	fScaleOut = SCALE( fPercentReverse, 0.f, 1.f, 1.f, -1.f );
 }
 */
 
@@ -504,7 +500,7 @@ float ArrowEffects::GetYPos( int iCol, float fYOffset )
 	{
 		f += fEffects[PlayerOptions::EFFECT_TIPSY] * ( RageFastCos( RageTimer::GetTimeSinceStartFast()*TIPSY_TIMER_FREQUENCY + iCol*TIPSY_COLUMN_FREQUENCY) * ARROW_SIZE*TIPSY_ARROW_MAGNITUDE );
 	}
-
+	
 	// In beware's DDR Extreme-focused fork of StepMania 3.9, this value is
 	// floored, making arrows show on integer Y coordinates. Supposedly it makes
 	// the arrows look better, but testing needs to be done.
@@ -520,7 +516,7 @@ float ArrowEffects::GetYOffsetFromYPos( int iCol, float YPos )
 	{
 		f -= fEffects[PlayerOptions::EFFECT_TIPSY] * ( RageFastCos( RageTimer::GetTimeSinceStartFast()*TIPSY_OFFSET_TIMER_FREQUENCY + iCol*TIPSY_OFFSET_COLUMN_FREQUENCY) * ARROW_SIZE*TIPSY_OFFSET_ARROW_MAGNITUDE );
 	}
-
+	
 	return f;
 }
 
@@ -534,26 +530,26 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 	// TODO: Don't index by PlayerNumber.
 	const Style::ColumnInfo* pCols = pStyle->m_ColumnInfo[pPlayerState->m_PlayerNumber];
 	PerPlayerData &data = g_EffectData[pPlayerState->m_PlayerNumber];
-
+	
 	if( fEffects[PlayerOptions::EFFECT_TORNADO] != 0 )
 	{
 		const float fRealPixelOffset = pCols[iColNum].fXOffset;
 		const float fPositionBetween = SCALE( fRealPixelOffset, data.m_fMinTornadoX[iColNum], data.m_fMaxTornadoX[iColNum], 
-						      TORNADO_POSITION_SCALE_TO_LOW, TORNADO_POSITION_SCALE_TO_HIGH );
+						     TORNADO_POSITION_SCALE_TO_LOW, TORNADO_POSITION_SCALE_TO_HIGH );
 		float fRads = acosf( fPositionBetween );
 		fRads += fYOffset * TORNADO_OFFSET_FREQUENCY / SCREEN_HEIGHT;
 
 		const float fAdjustedPixelOffset = SCALE( RageFastCos(fRads), TORNADO_OFFSET_SCALE_FROM_LOW, TORNADO_OFFSET_SCALE_FROM_HIGH, 
-							  data.m_fMinTornadoX[iColNum], data.m_fMaxTornadoX[iColNum] );
+							 data.m_fMinTornadoX[iColNum], data.m_fMaxTornadoX[iColNum] );
 
 		fPixelOffsetFromCenter += (fAdjustedPixelOffset - fRealPixelOffset) * fEffects[PlayerOptions::EFFECT_TORNADO];
 	}
 
 	if( fEffects[PlayerOptions::EFFECT_DRUNK] != 0 )
 		fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_DRUNK] * 
-		( RageFastCos( RageTimer::GetTimeSinceStartFast() + iColNum*DRUNK_COLUMN_FREQUENCY
-		  + fYOffset*DRUNK_OFFSET_FREQUENCY/SCREEN_HEIGHT) * ARROW_SIZE*DRUNK_ARROW_MAGNITUDE );
-
+			( RageFastCos( RageTimer::GetTimeSinceStartFast() + iColNum*DRUNK_COLUMN_FREQUENCY
+				      + fYOffset*DRUNK_OFFSET_FREQUENCY/SCREEN_HEIGHT) * ARROW_SIZE*DRUNK_ARROW_MAGNITUDE );
+					  
 	if( fEffects[PlayerOptions::EFFECT_FLIP] != 0 )
 	{
 		const int iFirstCol = 0;
@@ -564,7 +560,7 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 		const float fDistance = fNewPixelOffset - fOldPixelOffset;
 		fPixelOffsetFromCenter += fDistance * fEffects[PlayerOptions::EFFECT_FLIP];
 	}
-
+	
 	if( fEffects[PlayerOptions::EFFECT_INVERT] != 0 )
 		fPixelOffsetFromCenter += data.m_fInvertDistance[iColNum] * fEffects[PlayerOptions::EFFECT_INVERT];
 
@@ -582,26 +578,26 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 		{
 			case StyleType_OnePlayerTwoSides:
 			case StyleType_TwoPlayersSharedSides: // fall through?
-			{
-				// find the middle, and split based on iColNum
-				// it's unknown if this will work for routine.
-				const int iMiddleColumn = static_cast<int>(floor(pStyle->m_iColsPerPlayer/2.0f));
-				if( iColNum > iMiddleColumn-1 )
-					fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_XMODE]*-(fYOffset);
-				else
-					fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_XMODE]*fYOffset;
-			}
-			break;
+				{
+					// find the middle, and split based on iColNum
+					// it's unknown if this will work for routine.
+					const int iMiddleColumn = static_cast<int>(floor(pStyle->m_iColsPerPlayer/2.0f));
+					if( iColNum > iMiddleColumn-1 )
+						fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_XMODE]*-(fYOffset);
+					else
+						fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_XMODE]*fYOffset;
+				}
+				break;
 			case StyleType_OnePlayerOneSide:
 			case StyleType_TwoPlayersTwoSides: // fall through
-			{
-				// the code was the same for both of these cases in StepNXA.
-				if( pPlayerState->m_PlayerNumber == PLAYER_2 )
-					fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_XMODE]*-(fYOffset);
-				else
-					fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_XMODE]*fYOffset;
-			}
-			break;
+				{
+					// the code was the same for both of these cases in StepNXA.
+					if( pPlayerState->m_PlayerNumber == PLAYER_2 )
+						fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_XMODE]*-(fYOffset);
+					else
+						fPixelOffsetFromCenter += fEffects[PlayerOptions::EFFECT_XMODE]*fYOffset;
+				}
+				break;
 			DEFAULT_FAIL(pStyle->m_StyleType);
 		}
 	}
@@ -684,7 +680,7 @@ float ArrowEffects::ReceptorGetRotationZ( const PlayerState* pPlayerState )
 float ArrowEffects::GetCenterLine()
 {
 	/* Another mini hack: if EFFECT_MINI is on, then our center line is at
-	* eg. 320, not 160. */
+	 * eg. 320, not 160. */
 	const float fMiniPercent = curr_options->m_fEffects[PlayerOptions::EFFECT_MINI];
 	const float fZoom = 1 - fMiniPercent*0.5f;
 	return CENTER_LINE_Y / fZoom;
@@ -746,10 +742,10 @@ float ArrowGetPercentVisible( float fYPosWithoutReverse, float fCenterLine, bool
 	//const float fDistFromCenterLine = fYPosWithoutReverse - GetCenterLine( pPlayerState );
 	const float fDistFromCenterLine = fYPosWithoutReverse - fCenterLine;
 
-	/*	
+/*	
 	if( fYPosWithoutReverse < 0 && HIDDEN_SUDDEN_PAST_RECEPTOR)	// past Gray Arrows
-	return 1;	// totally visible
-	*/ //xMAx - no es necesario 
+		return 1;	// totally visible
+*/ //xMAx - no es necesario 
 
 	const float* fAppearances = curr_options->m_fAppearances;
 
@@ -760,7 +756,7 @@ float ArrowGetPercentVisible( float fYPosWithoutReverse, float fCenterLine, bool
 		CLAMP( fHiddenVisibleAdjust, -1, 0 );
 		fVisibleAdjust += fHiddenVisibleAdjust;
 	}
-
+	
 	if( (fAppearances[PlayerOptions::APPEARANCE_HIDDEN] != 0) || bForceVanish )
 	{
 		float fHiddenVisibleAdjust = SCALE( fYPosWithoutReverse, GetHiddenStartLine(fCenterLine), GetHiddenEndLine(fCenterLine), 0, -1 );
@@ -818,16 +814,16 @@ float ArrowEffects::GetAlpha( int iCol, float fYOffset, float fPercentFadeToFail
 /*
 float ArrowEffects::GetGlow( const PlayerState* pPlayerState, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fCenterLine ) //xMAx -added fCenterLine
 {
-// Get the YPos without reverse (that is, factor in EFFECT_TIPSY).
-float fYPosWithoutReverse = ArrowEffects::GetYPos( pPlayerState, iCol, fYOffset, fYReverseOffsetPixels, false );
+	// Get the YPos without reverse (that is, factor in EFFECT_TIPSY).
+	float fYPosWithoutReverse = ArrowEffects::GetYPos( pPlayerState, iCol, fYOffset, fYReverseOffsetPixels, false );
 
-float fPercentVisible = ArrowGetPercentVisible( pPlayerState, fYPosWithoutReverse, fCenterLine );
+	float fPercentVisible = ArrowGetPercentVisible( pPlayerState, fYPosWithoutReverse, fCenterLine );
 
-if( fPercentFadeToFail != -1 )
-fPercentVisible = 1 - fPercentFadeToFail;
+	if( fPercentFadeToFail != -1 )
+		fPercentVisible = 1 - fPercentFadeToFail;
 
-const float fDistFromHalf = fabsf( fPercentVisible - 0.5f );
-return SCALE( fDistFromHalf, 0, 0.5f, 1.3f, 0 );
+	const float fDistFromHalf = fabsf( fPercentVisible - 0.5f );
+	return SCALE( fDistFromHalf, 0, 0.5f, 1.3f, 0 );
 }
 */
 
@@ -854,7 +850,7 @@ float ArrowEffects::GetZPos( int iCol, float fYOffset )
 
 	if( fEffects[PlayerOptions::EFFECT_BUMPY] != 0 )
 		fZPos += fEffects[PlayerOptions::EFFECT_BUMPY] * 50*RageFastSin( fYOffset/128.0f );	//xMAx - changed values to simulate SI and RI piu mods
-
+		
 	return fZPos;
 }
 
@@ -864,7 +860,7 @@ bool ArrowEffects::NeedZBuffer()
 	// We also need to use the Z buffer if twirl is in play, because of
 	// hold modulation. -vyhd (OpenITG r623)
 	if( fEffects[PlayerOptions::EFFECT_BUMPY] != 0 ||
-	    fEffects[PlayerOptions::EFFECT_TWIRL] != 0 )
+		fEffects[PlayerOptions::EFFECT_TWIRL] != 0 )
 	{
 		return true;
 	}
@@ -876,7 +872,7 @@ float ArrowEffects::GetZoom( const PlayerState* pPlayerState )
 	float fZoom = 1.0f;
 	// FIXME: Move the zoom values into Style
 	if( GAMESTATE->GetCurrentStyle()->m_bNeedsZoomOutWith2Players &&
-	    (GAMESTATE->GetNumSidesJoined()==2 || GAMESTATE->AnyPlayersAreCpu()) )
+		(GAMESTATE->GetNumSidesJoined()==2 || GAMESTATE->AnyPlayersAreCpu()) )
 		fZoom *= 0.6f;
 
 	float fTinyPercent = curr_options->m_fEffects[PlayerOptions::EFFECT_TINY];
@@ -927,248 +923,248 @@ ThemeMetric<float> FADE_BEFORE_TARGETS_PERCENT( "NoteField", "FadeBeforeTargetsP
 ThemeMetric<float> DRAW_DISTANCE_BEFORE_TARGET_PIXELS( "Player", "DrawDistanceBeforeTargetsPixels" );
 ThemeMetric<float> GRAY_ARROWS_Y_STANDARD( "Player", "ReceptorArrowsYStandard" );
 ThemeMetric<float> GRAY_ARROWS_Y_REVERSE( "Player", "ReceptorArrowsYReverse" );
-
-
+    
+	
 // lua start
 #include "LuaBinding.h"
 
 namespace
 {
-/ Update() need to be exposed to use ArrowEffects off ScreenGameplay. It is harmless.	 //
-int Update( lua_State *L )	{ ArrowEffects::Update(); return 0; }
+	/ Update() need to be exposed to use ArrowEffects off ScreenGameplay. It is harmless.	 //
+	int Update( lua_State *L )	{ ArrowEffects::Update(); return 0; }
 
-// Provide a reasonable default value for fYReverseOffset
-float YReverseOffset( lua_State *L, int argnum )
-{
-float fYReverseOffsetPixels = GRAY_ARROWS_Y_REVERSE - GRAY_ARROWS_Y_STANDARD;
-if( lua_gettop(L) >= argnum && !lua_isnil(L, argnum) )
-{
-fYReverseOffsetPixels = FArg(argnum);
-}
-return fYReverseOffsetPixels;
-}
+	// Provide a reasonable default value for fYReverseOffset
+	float YReverseOffset( lua_State *L, int argnum )
+	{
+		float fYReverseOffsetPixels = GRAY_ARROWS_Y_REVERSE - GRAY_ARROWS_Y_STANDARD;
+		if( lua_gettop(L) >= argnum && !lua_isnil(L, argnum) )
+		{
+			fYReverseOffsetPixels = FArg(argnum);
+		}
+		return fYReverseOffsetPixels;
+	}
+	
+	// ( PlayerState ps, int iCol, float fNoteBeat )
+	int GetYOffset( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		float fPeakYOffset;
+		bool bIsPastPeak;
 
-// ( PlayerState ps, int iCol, float fNoteBeat )
-int GetYOffset( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-float fPeakYOffset;
-bool bIsPastPeak;
+		lua_pushnumber( L, ArrowEffects::GetYOffset( ps, IArg(2)-1, FArg(3), fPeakYOffset, bIsPastPeak ) );
+		lua_pushnumber( L, fPeakYOffset );
+		lua_pushboolean( L, bIsPastPeak );
+		return 3;
+	}
 
-lua_pushnumber( L, ArrowEffects::GetYOffset( ps, IArg(2)-1, FArg(3), fPeakYOffset, bIsPastPeak ) );
-lua_pushnumber( L, fPeakYOffset );
-lua_pushboolean( L, bIsPastPeak );
-return 3;
-}
+	// ( PlayerState ps, int iCol, float fYOffset, float fYReverseOffsetPixels )
+	int GetYPos( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		float fYReverseOffsetPixels = YReverseOffset( L, 4 );
+		lua_pushnumber( L, ArrowEffects::GetYPos( ps, IArg(2)-1, FArg(3), fYReverseOffsetPixels ) );
+		return 1;
+	}
 
-// ( PlayerState ps, int iCol, float fYOffset, float fYReverseOffsetPixels )
-int GetYPos( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-float fYReverseOffsetPixels = YReverseOffset( L, 4 );
-lua_pushnumber( L, ArrowEffects::GetYPos( ps, IArg(2)-1, FArg(3), fYReverseOffsetPixels ) );
-return 1;
-}
+	// ( PlayerState ps, int iCol, float fYPos, float fYReverseOffsetPixels )
+	int GetYOffsetFromYPos( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		float fYReverseOffsetPixels = YReverseOffset( L, 4 );
+		lua_pushnumber( L, ArrowEffects::GetYOffsetFromYPos( ps, IArg(2)-1, FArg(3), fYReverseOffsetPixels ) );
+		return 1;
+	}
 
-// ( PlayerState ps, int iCol, float fYPos, float fYReverseOffsetPixels )
-int GetYOffsetFromYPos( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-float fYReverseOffsetPixels = YReverseOffset( L, 4 );
-lua_pushnumber( L, ArrowEffects::GetYOffsetFromYPos( ps, IArg(2)-1, FArg(3), fYReverseOffsetPixels ) );
-return 1;
-}
+	// ( PlayerState ps, int iCol, float fYOffset )
+	int GetXPos( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		lua_pushnumber( L, ArrowEffects::GetXPos( ps, IArg(2)-1, FArg(3) ) );
+		return 1;
+	}
 
-// ( PlayerState ps, int iCol, float fYOffset )
-int GetXPos( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-lua_pushnumber( L, ArrowEffects::GetXPos( ps, IArg(2)-1, FArg(3) ) );
-return 1;
-}
+	// ( PlayerState ps, int iCol, float fYOffset )
+	int GetZPos( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		lua_pushnumber( L, ArrowEffects::GetZPos( ps, IArg(2)-1, FArg(3) ) );
+		return 1;
+	}
 
-// ( PlayerState ps, int iCol, float fYOffset )
-int GetZPos( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-lua_pushnumber( L, ArrowEffects::GetZPos( ps, IArg(2)-1, FArg(3) ) );
-return 1;
-}
+	// ( PlayerState ps, float fYOffset )
+	int GetRotationX( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		lua_pushnumber( L, ArrowEffects::GetRotationX( ps, FArg(2) ) );
+		return 1;
+	}
 
-// ( PlayerState ps, float fYOffset )
-int GetRotationX( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-lua_pushnumber( L, ArrowEffects::GetRotationX( ps, FArg(2) ) );
-return 1;
-}
+	// ( PlayerState ps, float fYOffset )
+	int GetRotationY( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		lua_pushnumber( L, ArrowEffects::GetRotationY( ps, FArg(2) ) );
+		return 1;
+	}
 
-// ( PlayerState ps, float fYOffset )
-int GetRotationY( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-lua_pushnumber( L, ArrowEffects::GetRotationY( ps, FArg(2) ) );
-return 1;
-}
+	// ( PlayerState ps, float fNoteBeat, bool bIsHoldHead )
+	int GetRotationZ( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		// Make bIsHoldHead optional.
+		bool bIsHoldHead = false;
+		if( lua_gettop(L) >= 3 && !lua_isnil(L, 3) )
+		{
+			bIsHoldHead = BArg(3);
+		}
+		lua_pushnumber( L, ArrowEffects::GetRotationZ( ps, FArg(2), bIsHoldHead ) );
+		return 1;
+	}
 
-// ( PlayerState ps, float fNoteBeat, bool bIsHoldHead )
-int GetRotationZ( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-// Make bIsHoldHead optional.
-bool bIsHoldHead = false;
-if( lua_gettop(L) >= 3 && !lua_isnil(L, 3) )
-{
-bIsHoldHead = BArg(3);
-}
-lua_pushnumber( L, ArrowEffects::GetRotationZ( ps, FArg(2), bIsHoldHead ) );
-return 1;
-}
+	// ( PlayerState ps )
+	int ReceptorGetRotationZ( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		lua_pushnumber( L, ArrowEffects::ReceptorGetRotationZ( ps ) );
+		return 1;
+	}
 
-// ( PlayerState ps )
-int ReceptorGetRotationZ( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-lua_pushnumber( L, ArrowEffects::ReceptorGetRotationZ( ps ) );
-return 1;
-}
+	//( PlayerState ps, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar )
+	int GetAlpha( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		// Provide reasonable default values.
+		float fPercentFadeToFail = -1;
+		float fYReverseOffsetPixels = YReverseOffset( L, 5 );
+		float fDrawDistanceBeforeTargetsPixels = DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
+		float fFadeInPercentOfDrawFar = FADE_BEFORE_TARGETS_PERCENT;
+		if( lua_gettop(L) >= 4 && !lua_isnil(L, 4) )
+		{
+			fPercentFadeToFail = FArg(4);
+		}
+		if( lua_gettop(L) >= 6 && !lua_isnil(L, 6) )
+		{
+			fDrawDistanceBeforeTargetsPixels = FArg(6);
+		}
+		if( lua_gettop(L) >= 7 && !lua_isnil(L, 7) )
+		{
+			fFadeInPercentOfDrawFar = FArg(7);
+		}
+		lua_pushnumber( L, ArrowEffects::GetAlpha( ps, IArg(2)-1, FArg(3), fPercentFadeToFail, fYReverseOffsetPixels, fDrawDistanceBeforeTargetsPixels, fFadeInPercentOfDrawFar ) );
+		return 1;
+	}
 
-//( PlayerState ps, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar )
-int GetAlpha( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-// Provide reasonable default values.
-float fPercentFadeToFail = -1;
-float fYReverseOffsetPixels = YReverseOffset( L, 5 );
-float fDrawDistanceBeforeTargetsPixels = DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
-float fFadeInPercentOfDrawFar = FADE_BEFORE_TARGETS_PERCENT;
-if( lua_gettop(L) >= 4 && !lua_isnil(L, 4) )
-{
-fPercentFadeToFail = FArg(4);
-}
-if( lua_gettop(L) >= 6 && !lua_isnil(L, 6) )
-{
-fDrawDistanceBeforeTargetsPixels = FArg(6);
-}
-if( lua_gettop(L) >= 7 && !lua_isnil(L, 7) )
-{
-fFadeInPercentOfDrawFar = FArg(7);
-}
-lua_pushnumber( L, ArrowEffects::GetAlpha( ps, IArg(2)-1, FArg(3), fPercentFadeToFail, fYReverseOffsetPixels, fDrawDistanceBeforeTargetsPixels, fFadeInPercentOfDrawFar ) );
-return 1;
-}
+	
+	//( PlayerState ps, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar )
+	int GetGlow( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		// Provide reasonable default values.
+		float fPercentFadeToFail = -1; // 
+		float fYReverseOffsetPixels = YReverseOffset( L, 5 );
+		float fDrawDistanceBeforeTargetsPixels = DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
+		float fFadeInPercentOfDrawFar = FADE_BEFORE_TARGETS_PERCENT;
+		if( lua_gettop(L) >= 4 && !lua_isnil(L, 4) )
+		{
+			fPercentFadeToFail = FArg(4);
+		}
+		if( lua_gettop(L) >= 6 && !lua_isnil(L, 6) )
+		{
+			fDrawDistanceBeforeTargetsPixels = FArg(6);
+		}
+		if( lua_gettop(L) >= 7 && !lua_isnil(L, 7) )
+		{
+			fFadeInPercentOfDrawFar = FArg(7);
+		}
+		lua_pushnumber( L, ArrowEffects::GetGlow( ps, IArg(2)-1, FArg(3), fPercentFadeToFail, fYReverseOffsetPixels, fDrawDistanceBeforeTargetsPixels, fFadeInPercentOfDrawFar ) );
+		return 1;
+	}
+	
+	// ( PlayerState ps, float fNoteBeat )
+	int GetBrightness( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		lua_pushnumber( L, ArrowEffects::GetBrightness( ps, FArg(2) ) );
+		return 1;
+	}
 
+	// ( PlayerState ps )
+	int NeedZBuffer( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		lua_pushboolean( L, ArrowEffects::NeedZBuffer( ps ) );
+		return 1;
+	}
+	
+	// ( PlayerState ps )
+	int GetZoom( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
+		lua_pushnumber( L, ArrowEffects::GetZoom( ps ) );
+		return 1;
+	}
+	
+	// ( PlayerState ps, float fYOffset, fOverlappedTime )
+	int GetFrameWidthScale( lua_State *L )
+	{
+		PlayerState *ps = Luna<PlayerState>::check( L, 1 );
 
-//( PlayerState ps, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar )
-int GetGlow( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-// Provide reasonable default values.
-float fPercentFadeToFail = -1; // 
-float fYReverseOffsetPixels = YReverseOffset( L, 5 );
-float fDrawDistanceBeforeTargetsPixels = DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
-float fFadeInPercentOfDrawFar = FADE_BEFORE_TARGETS_PERCENT;
-if( lua_gettop(L) >= 4 && !lua_isnil(L, 4) )
-{
-fPercentFadeToFail = FArg(4);
-}
-if( lua_gettop(L) >= 6 && !lua_isnil(L, 6) )
-{
-fDrawDistanceBeforeTargetsPixels = FArg(6);
-}
-if( lua_gettop(L) >= 7 && !lua_isnil(L, 7) )
-{
-fFadeInPercentOfDrawFar = FArg(7);
-}
-lua_pushnumber( L, ArrowEffects::GetGlow( ps, IArg(2)-1, FArg(3), fPercentFadeToFail, fYReverseOffsetPixels, fDrawDistanceBeforeTargetsPixels, fFadeInPercentOfDrawFar ) );
-return 1;
-}
+		// Make fOverlappedTime optional.
+		float fOverlappedTime = 0;
+		if( lua_gettop(L) >= 3 && !lua_isnil(L, 3) )
+		{
+			fOverlappedTime = FArg(3);
+		}
+		lua_pushnumber( L, ArrowEffects::GetFrameWidthScale( ps, FArg(2), fOverlappedTime ) );
+		return 1;
+	}
 
-// ( PlayerState ps, float fNoteBeat )
-int GetBrightness( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-lua_pushnumber( L, ArrowEffects::GetBrightness( ps, FArg(2) ) );
-return 1;
-}
-
-// ( PlayerState ps )
-int NeedZBuffer( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-lua_pushboolean( L, ArrowEffects::NeedZBuffer( ps ) );
-return 1;
-}
-
-// ( PlayerState ps )
-int GetZoom( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-lua_pushnumber( L, ArrowEffects::GetZoom( ps ) );
-return 1;
-}
-
-// ( PlayerState ps, float fYOffset, fOverlappedTime )
-int GetFrameWidthScale( lua_State *L )
-{
-PlayerState *ps = Luna<PlayerState>::check( L, 1 );
-
-// Make fOverlappedTime optional.
-float fOverlappedTime = 0;
-if( lua_gettop(L) >= 3 && !lua_isnil(L, 3) )
-{
-fOverlappedTime = FArg(3);
-}
-lua_pushnumber( L, ArrowEffects::GetFrameWidthScale( ps, FArg(2), fOverlappedTime ) );
-return 1;
-}
-
-const luaL_Reg ArrowEffectsTable[] =
-{
-LIST_METHOD( Update ),
-LIST_METHOD( GetYOffset ),
-LIST_METHOD( GetYPos ),
-LIST_METHOD( GetYOffsetFromYPos ),
-LIST_METHOD( GetXPos ),
-LIST_METHOD( GetZPos ),
-LIST_METHOD( GetRotationX ),
-LIST_METHOD( GetRotationY ),
-LIST_METHOD( GetRotationZ ),
-LIST_METHOD( ReceptorGetRotationZ ),
-LIST_METHOD( GetAlpha ),
-LIST_METHOD( GetGlow ),
-LIST_METHOD( GetBrightness ),
-LIST_METHOD( NeedZBuffer ),
-LIST_METHOD( GetZoom ),
-LIST_METHOD( GetFrameWidthScale ),
-{ NULL, NULL }
-};
+	const luaL_Reg ArrowEffectsTable[] =
+	{
+		LIST_METHOD( Update ),
+		LIST_METHOD( GetYOffset ),
+		LIST_METHOD( GetYPos ),
+		LIST_METHOD( GetYOffsetFromYPos ),
+		LIST_METHOD( GetXPos ),
+		LIST_METHOD( GetZPos ),
+		LIST_METHOD( GetRotationX ),
+		LIST_METHOD( GetRotationY ),
+		LIST_METHOD( GetRotationZ ),
+		LIST_METHOD( ReceptorGetRotationZ ),
+		LIST_METHOD( GetAlpha ),
+		LIST_METHOD( GetGlow ),
+		LIST_METHOD( GetBrightness ),
+		LIST_METHOD( NeedZBuffer ),
+		LIST_METHOD( GetZoom ),
+		LIST_METHOD( GetFrameWidthScale ),
+		{ NULL, NULL }
+	};
 }
 
 LUA_REGISTER_NAMESPACE( ArrowEffects )
 */
 
 /*
-* (c) 2001-2004 Chris Danford
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * (c) 2001-2004 Chris Danford
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

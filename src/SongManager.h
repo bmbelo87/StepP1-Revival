@@ -180,7 +180,7 @@ public:
 	void RefreshCourseGroupInfo();
 	// Lua
 	void PushSelf( lua_State *L );
-
+	
 	// xMAx -----------------------------------------------------------------------------------------
 	const vector<Song*> &GetFullSongs() const 		{ return m_pFullSongs; };
 	const vector<Song*> &GetRemixSongs() const 		{ return m_pRemixSongs; };
@@ -195,7 +195,7 @@ public:
 	const vector<Song*> &GetRandomSongs() const 	{ return m_pRandomChannel; };
 	const vector<Song*> &GetJMusicSongs() const 	{ return m_pJMusic; };
 	const vector<LevelSongList*> &GetLevelSections() const { return m_vLevelsList; };
-
+	
 	bool IsFullSongChannelAvailable(void) 	{ return !m_pFullSongs.empty(); };
 	bool IsRemixChannelAvailable(void) 		{ return !m_pRemixSongs.empty(); };
 	bool IsShortCutChannelAvailable(void) 	{ return !m_pShortCutSongs.empty(); };
@@ -206,19 +206,19 @@ public:
 	bool IsMZChannelAvailable(void) 		{ return !m_pQUEST.empty(); };
 	bool IsCoOpPlayChannelAvailable(void) 	{ return !m_pCoOpPlay.empty(); };
 	bool IsJMusicChannelAvailable(void) 	{ return !m_pJMusic.empty(); };
-
+	
 	void GetAvailableGroupNames( vector<RString> &arrayGroupNames );
 	void GetSongGroupNamesAvailables( vector<RString> &AddTo );
 	bool IsGroupAvailable( RString &sGroupName );
 	void UpdateSortArrays();
 	void CleanUpSortArrays(void);
-
+	
 	void UpdateSongSortByType( SongType m_SongTypeToSort, vector<Song*> &arraySongType );
 	void UpdateSongSortByCategory( SongCategory m_SongCategoryToSort, vector<Song*> &arraySongCategory );
 	void UpdateSongSortByLabel( RString m_sLabel, vector<Song*> &arraySongLabel );
 	void UpdateCoOpChannel( vector<Song*> &arraySongCoOp );
 	//-----------------------------------------------------------------------------------------------
-
+	
 protected:
 	// xMAx
 	vector<Song*>		m_pFullSongs;	
@@ -232,10 +232,10 @@ protected:
 	vector<Song*>		m_pQUEST;
 	vector<Song*>		m_pCoOpPlay;
 	vector<Song*>		m_pJMusic;
-
+	
 	vector<Song*>			m_pRandomChannel;
 	vector<LevelSongList*>	m_vLevelsList;
-
+	
 	void InitRandomChannel();
 	void LoadLevelChannelsForSong( Song* pSong );
 	//--------------------------------------------------------------------------------------

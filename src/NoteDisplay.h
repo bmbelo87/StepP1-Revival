@@ -98,19 +98,19 @@ public:
 	* @param fDrawDistanceBeforeTargetsPixels how much ot draw before the receptors.
 	* @param fFadeInPercentOfDrawFar when to start fading in. */
 	void DrawTap(const TapNote& tn, int iCol, float fBeat, 
-		      bool bOnSameRowAsHoldStart, bool bOnSameRowAsRollBeat,
-		      bool bIsAddition, float fPercentFadeToFail,
-		      float fReverseOffsetPixels,
-		      float fDrawDistanceAfterTargetsPixels,
-		      float fDrawDistanceBeforeTargetsPixels,
-		      float fFadeInPercentOfDrawFar,
-		      float fCenterLine,
-		      float fYOffset = -1);	//xMAx - added
+		     bool bOnSameRowAsHoldStart, bool bOnSameRowAsRollBeat,
+		     bool bIsAddition, float fPercentFadeToFail,
+		     float fReverseOffsetPixels,
+		     float fDrawDistanceAfterTargetsPixels,
+		     float fDrawDistanceBeforeTargetsPixels,
+		     float fFadeInPercentOfDrawFar,
+		     float fCenterLine,
+		     float fYOffset = -1);	//xMAx - added
 
 	void DrawHold( const TapNote& tn, int iCol, int iRow, bool bIsBeingHeld, const HoldNoteResult &Result, 
-		       bool bIsAddition, float fPercentFadeToFail, float fReverseOffsetPixels, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, 
-		       //float fDrawDistanceBeforeTargetsPixels2, float fFadeInPercentOfDrawFar ); //xMAx
-		       float fDrawDistanceBeforeTargetsPixels2, float fFadeInPercentOfDrawFar, float fStartYOffset, float fEndYOffset, bool bStartIsPastPeak, bool bEndIsPastPeak, float fCenterLine );  //xMAx
+		      bool bIsAddition, float fPercentFadeToFail, float fReverseOffsetPixels, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, 
+		      //float fDrawDistanceBeforeTargetsPixels2, float fFadeInPercentOfDrawFar ); //xMAx
+		      float fDrawDistanceBeforeTargetsPixels2, float fFadeInPercentOfDrawFar, float fStartYOffset, float fEndYOffset, bool bStartIsPastPeak, bool bEndIsPastPeak, float fCenterLine );  //xMAx
 
 	bool DrawHoldHeadForTapsOnSameRow() const;
 
@@ -126,16 +126,16 @@ private:
 	//Sprite *GetHoldSprite( NoteColorSprite ncs[NUM_HoldType][NUM_ActiveType], NotePart part, float fNoteBeat, bool bIsRoll, bool bIsBeingHeld, int htype = 0 );
 
 	void DrawActor( const TapNote& tn, Actor* pActor, NotePart part, int iCol, float fYOffset, float fBeat, bool bIsAddition, float fPercentFadeToFail,
-			float fReverseOffsetPixels, float fColorScale, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fCenterLine );
+		       float fReverseOffsetPixels, float fColorScale, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fCenterLine );
 	void DrawHoldBody( const TapNote& tn, int iCol, float fBeat, bool bIsBeingHeld, float fYHead, float fYTail, bool bIsAddition, float fPercentFadeToFail, 
-			   float fColorScale, 
-			   bool bGlow, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fCenterLine );
+			  float fColorScale, 
+			  bool bGlow, float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fCenterLine );
 	void DrawHoldPart( vector<Sprite*> &vpSpr, int iCol, int fYStep, float fPercentFadeToFail, float fColorScale, bool bGlow,
-			   float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fOverlappedTime,
-			   float fYTop, float fYBottom, 
-			   float fYStartPos, float fYEndPos, 
-			   bool bWrapping, bool bAnchorToTop, bool bFlipTextureVertically, bool bIsHidden, float fYHoldHead,
-			   float fCenterLine, bool bForceSudden, bool bForceVanish );	// xMAx added bIsHidden & fYHoldHead & Force conditions
+			  float fDrawDistanceAfterTargetsPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fOverlappedTime,
+			  float fYTop, float fYBottom, 
+			  float fYStartPos, float fYEndPos, 
+			  bool bWrapping, bool bAnchorToTop, bool bFlipTextureVertically, bool bIsHidden, float fYHoldHead,
+			  float fCenterLine, bool bForceSudden, bool bForceVanish );	// xMAx added bIsHidden & fYHoldHead & Force conditions
 
 	const PlayerState	*m_pPlayerState;	// to look up PlayerOptions
 	NoteMetricCache_t	*cache;

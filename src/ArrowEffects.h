@@ -15,7 +15,7 @@ public:
 	// mods later. -Kyz - Added from SM5 5.0.10 - xMAx
 	static void SetCurrentOptions(const PlayerOptions* options);
 	// Used in NoteField (twice) and in Player (once)
-
+	
 	// fYOffset is a vertical position in pixels relative to the center
 	// (positive if has not yet been stepped on, negative if has already passed).
 	// The ArrowEffect and ScrollSpeed is applied in this stage.
@@ -27,15 +27,15 @@ public:
 		return GetYOffset( pPlayerState, iCol, fNoteBeat, fThrowAway, bThrowAway, bAbsolute );
 	}
 	/**
-	* @brief Retrieve the actual display position.
-	*
-	* In this case, reverse and post-reverse-effects are factored in (fYOffset -> YPos). 
-	* @param pPlayerState the Player's state in question, including mods.
-	* @param iCol the specific arrow column.
-	* @param fYOffset the original display position.
-	* @param fYReverseOffsetPixels the amount offset due to reverse.
-	* @param WithReverse a flag to see if the Reverse mod is on.
-	* @return the actual display position. */
+	 * @brief Retrieve the actual display position.
+	 *
+	 * In this case, reverse and post-reverse-effects are factored in (fYOffset -> YPos). 
+	 * @param pPlayerState the Player's state in question, including mods.
+	 * @param iCol the specific arrow column.
+	 * @param fYOffset the original display position.
+	 * @param fYReverseOffsetPixels the amount offset due to reverse.
+	 * @param WithReverse a flag to see if the Reverse mod is on.
+	 * @return the actual display position. */
 	//static float GetYPos( int iCol, float fYOffset, float fYReverseOffsetPixels, bool WithReverse = true );
 	static float GetYPos( int iCol, float fYOffset );
 
@@ -60,13 +60,13 @@ public:
 	static float GetXPos( const PlayerState* pPlayerState, int iCol, float fYOffset );
 
 	/**
-	* @brief Retrieve the Z position.
-	*
-	* This is normally 0. This is only visible with perspective modes.
-	* @param pPlayerState the Player's state, including the mods.
-	* @param iCol the specific arrow column.
-	* @param fYPos the Y position of the arrow.
-	* @return the Z position. */
+	 * @brief Retrieve the Z position.
+	 *
+	 * This is normally 0. This is only visible with perspective modes.
+	 * @param pPlayerState the Player's state, including the mods.
+	 * @param iCol the specific arrow column.
+	 * @param fYPos the Y position of the arrow.
+	 * @return the Z position. */
 	static float GetZPos( int iCol, float fYPos );
 
 	// Enable this if any ZPos effects are enabled.
@@ -81,16 +81,16 @@ public:
 	/*
 	static float GetGlow( const PlayerState* pPlayerState, int iCol, float fYPos, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar, float fCenterLine );
 	*/
-
+	
 	static float GetCenterLine();	//xMAx - Used in NoteField, once
 
 	/**
-	* @brief Retrieve the current brightness.
-	*
-	* Note that this depends on fYOffset.
-	* @param pPlayerState the present PlayerState.
-	* @param fNoteBeat the current beat.
-	* @return the current brightness. */
+	 * @brief Retrieve the current brightness.
+	 *
+	 * Note that this depends on fYOffset.
+	 * @param pPlayerState the present PlayerState.
+	 * @param fNoteBeat the current beat.
+	 * @return the current brightness. */
 	static float GetBrightness( const PlayerState* pPlayerState, float fNoteBeat );
 
 	// This is the zoom of the individual tracks, not of the whole Player.
@@ -102,28 +102,28 @@ public:
 #endif
 
 /**
-* @file
-* @author Chris Danford (c) 2001-2004
-* @section LICENSE
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * @file
+ * @author Chris Danford (c) 2001-2004
+ * @section LICENSE
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

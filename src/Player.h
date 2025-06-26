@@ -54,17 +54,19 @@ public:
 		int iTrack;
 		int iRow;
 		TapNote *pTN;
-
+		
 		bool operator==( const TrackRowTapNote &other ) const
 		{
-#define COMPARE(x)	if(x!=other.x) return false
+			#define COMPARE(x)	if(x!=other.x) return false
 			COMPARE(iTrack);
 			COMPARE(iRow);
 			COMPARE(pTN);
-#undef COMPARE
+			#undef COMPARE
 			return true;
 		}
 	};
+	
+	
 
 	void Init( 
 		const RString &sType,
@@ -81,12 +83,12 @@ public:
 	void CrossedRows( int iLastRowCrossed, const RageTimer &now);
 	void CrossedHoldsRows( int iLastRowCrossed, const RageTimer &now, float fDeltaTime );
 	bool IsOniDead() const;
-
+	
 	/**
-	* @brief Retrieve the Player's TimingData.
-	*
-	* This is primarily for a lua hook.
-	* @return the TimingData in question. */
+	 * @brief Retrieve the Player's TimingData.
+	 *
+	 * This is primarily for a lua hook.
+	 * @return the TimingData in question. */
 	TimingData GetPlayerTimingData() const
 	{
 		return *(this->m_Timing);
@@ -109,9 +111,9 @@ public:
 	void SetActorWithJudgmentPosition( Actor *pActor ) { m_pActorWithJudgmentPosition = pActor; }
 	void SetActorWithComboPosition( Actor *pActor ) { m_pActorWithComboPosition = pActor; }
 	void SetSendJudgmentAndComboMessages( bool b ) { m_bSendJudgmentAndComboMessages = b; }
-
+	
 	PlayerState * GetPlayerState() { return this->m_pPlayerState; }
-
+	
 	// xMAx ------------------------------------------------------
 	/*				
 	JUDGE  PERFECT  DELAY  INTERVAL
@@ -131,20 +133,20 @@ public:
 		int iDelta;
 		JudgeData &operator=( const JudgeData &judgeData );
 	};
-
-
+	
+	
 	float HOLD_TIMING;
 	float PERF_U, PERF_D;
 	float GREAT_U, GREAT_D;
 	float GOOD_U, GOOD_D;
 	float BAD_U, BAD_D;
-
+	
 	bool m_bCountNotesSeparately;
 	/** xMAx: use this when using Record mode in the steps editor */
 	/** Else, the game will send Combo/Judging messages when the "Player" were updated in the Update() function in the Editor */
 	/** That will happen only after one Player load (which happens when play in the editor) */
 	inline void Unload() { m_bLoaded = false; };
-
+	
 	// ------------------------------------------------------------
 protected:
 	void UpdateTapNotesMissedOlderThan( float fMissIfOlderThanThisBeat );
@@ -158,7 +160,7 @@ protected:
 	void SetCombo( int iCombo, int iMisses );
 
 	void ChangeLife( TapNoteScore tns );
-
+	
 	int GetClosestNoteDirectional( int col, int iStartRow, int iMaxRowsAhead, bool bAllowGraded, bool bForward, bool bAllowHoldHead ) const;
 	int GetClosestNote( int col, int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind, bool bAllowGraded, bool bAllowHoldHead = true ) const;	//xMAx - added "bool bAllowHoldHead"
 
@@ -170,14 +172,14 @@ protected:
 		if( iter != m_NoteData.end(col) )
 			iter->second.result.bHidden = true;
 	}
-
+	
 	bool			m_bLoaded;
 
 	/** @brief The player's present state. */
 	PlayerState		*m_pPlayerState;
 	/** @brief The player's present stage stats. */
 	PlayerStageStats	*m_pPlayerStageStats;
-	TimingData		*m_Timing;
+	TimingData      *m_Timing;
 
 	bool			m_bPaused;
 	bool			m_bDelay;
@@ -197,7 +199,7 @@ protected:
 	ScoreKeeper			*m_pSecondaryScoreKeeper;
 	Inventory			*m_pInventory;
 
-
+	
 	NoteData::all_tracks_iterator *m_pIterNeedsTapJudging;
 	NoteData::all_tracks_iterator *m_pIterUncrossedRows;
 	NoteData::all_tracks_iterator *m_pIterNeedsHoldJudging;
@@ -238,26 +240,26 @@ public:
 #endif
 
 /*
-* (c) 2001-2006 Chris Danford, Steve Checkoway
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * (c) 2001-2006 Chris Danford, Steve Checkoway
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

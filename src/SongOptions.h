@@ -13,8 +13,8 @@ enum LifeType
 	NUM_LifeType,
 	LifeType_Invalid
 };
-const RString &LifeTypeToString( LifeType cat );
-const RString &LifeTypeToLocalizedString( LifeType cat );
+const RString& LifeTypeToString( LifeType cat );
+const RString& LifeTypeToLocalizedString( LifeType cat );
 LuaDeclareType( LifeType );
 
 enum DrainType
@@ -25,8 +25,8 @@ enum DrainType
 	NUM_DrainType,
 	DrainType_Invalid
 };
-const RString &DrainTypeToString( DrainType cat );
-const RString &DrainTypeToLocalizedString( DrainType cat );
+const RString& DrainTypeToString( DrainType cat );
+const RString& DrainTypeToLocalizedString( DrainType cat );
 LuaDeclareType( DrainType );
 
 enum AutosyncType
@@ -38,8 +38,8 @@ enum AutosyncType
 	NUM_AutosyncType,
 	AutosyncType_Invalid
 };
-const RString &AutosyncTypeToString( AutosyncType cat );
-const RString &AutosyncTypeToLocalizedString( AutosyncType cat );
+const RString& AutosyncTypeToString( AutosyncType cat );
+const RString& AutosyncTypeToLocalizedString( AutosyncType cat );
 LuaDeclareType( AutosyncType );
 
 enum SoundEffectType
@@ -50,8 +50,8 @@ enum SoundEffectType
 	NUM_SoundEffectType,
 	SoundEffectType_Invalid
 };
-const RString &SoundEffectTypeToString( SoundEffectType cat );
-const RString &SoundEffectTypeToLocalizedString( SoundEffectType cat );
+const RString& SoundEffectTypeToString( SoundEffectType cat );
+const RString& SoundEffectTypeToLocalizedString( SoundEffectType cat );
 LuaDeclareType( SoundEffectType );
 
 class SongOptions
@@ -59,7 +59,7 @@ class SongOptions
 public:
 	LifeType m_LifeType;
 	DrainType m_DrainType;	// only used with LifeBar
-	int m_BatteryLives;
+	int m_iBatteryLives;
 	bool m_bAssistClap;
 	bool m_bAssistMetronome;
 	float m_fMusicRate,	m_SpeedfMusicRate;
@@ -77,7 +77,7 @@ public:
 	 * This is taken from Init(), but uses the intended
 	 * initialization lists. */
 	SongOptions(): m_LifeType(LifeType_Bar), m_DrainType(DrainType_Normal),
-		m_BatteryLives(4), m_bAssistClap(false),
+		m_iBatteryLives(4), m_bAssistClap(false),
 		m_bAssistMetronome(false), m_fMusicRate(1.0f),
 		m_SpeedfMusicRate(1.0f), m_fHaste(0.0f),
 		m_SpeedfHaste(1.0f), m_AutosyncType(AutosyncType_Off),
@@ -103,7 +103,7 @@ public:
 	bool m_bShowSingles;
 	bool m_bShowHalfDoubles;
 	bool m_bShowDoubles;
-
+	
 	// Lua
 	void PushSelf( lua_State *L );
 };

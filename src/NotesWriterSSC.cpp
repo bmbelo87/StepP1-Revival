@@ -17,9 +17,9 @@
 #include "Steps.h"
 
 /**
-* @brief Turn a vector of lines into a single line joined by newline characters.
-* @param lines the list of lines to join.
-* @return the joined lines. */
+ * @brief Turn a vector of lines into a single line joined by newline characters.
+ * @param lines the list of lines to join.
+ * @return the joined lines. */
 static RString JoinLineList( vector<RString> &lines )
 {
 	for( unsigned i = 0; i < lines.size(); ++i )
@@ -53,7 +53,7 @@ struct TimingTagWriter {
 	void Write( const int row, const int a, const int b ) { Write( row, ssprintf( "%d=%d", a, b ) );  }
 	void Write( const int row, const float a, const float b ) { Write( row, ssprintf( "%.6f=%.6f", a, b) ); }
 	void Write( const int row, const float a, const float b, const unsigned short c )
-	{ Write( row, ssprintf( "%.6f=%.6f=%hd", a, b, c) ); }
+		{ Write( row, ssprintf( "%.6f=%.6f=%hd", a, b, c) ); }
 
 	void Init( const RString sTag ) { m_sNext = "#" + sTag + ":"; }
 	void Finish( ) { m_pvsLines->push_back( ( m_sNext != "," ? m_sNext : "" ) + ";" ); }
@@ -181,93 +181,93 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 static void WriteTimingTags( RageFile &f, const TimingData &timing, bool bIsSong = false )
 {
 	vector<RString> sTemp;
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_BPM, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#BPMS:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_STOP, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#STOPS:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_DELAY, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#DELAYS:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_WARP, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#WARPS:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_TIME_SIG, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#TIMESIGNATURES:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_TICKCOUNT, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#TICKCOUNTS:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_COMBO, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#COMBOS:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_SPEED, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#SPEEDS:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_SCROLL, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#SCROLLS:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_FAKE, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#FAKES:%s;", join(",\r\n", sTemp).c_str()));
 	sTemp.clear();
-
+	
 	sTemp = timing.ToVectorString(SEGMENT_LABEL, 3);
 	if( sTemp.size() )
 		f.PutLine(ssprintf("#LABELS:%s;", join(",\r\n", sTemp).c_str()));
-
+	
 	/*
 	f.PutLine(ssprintf("#STOPS:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_STOP, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_STOP, 3)).c_str()));
 	f.PutLine(ssprintf("#DELAYS:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_DELAY, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_DELAY, 3)).c_str()));
 	f.PutLine(ssprintf("#WARPS:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_WARP, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_WARP, 3)).c_str()));
 	f.PutLine(ssprintf("#TIMESIGNATURES:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_TIME_SIG, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_TIME_SIG, 3)).c_str()));
 	f.PutLine(ssprintf("#TICKCOUNTS:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_TICKCOUNT, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_TICKCOUNT, 3)).c_str()));
 	f.PutLine(ssprintf("#COMBOS:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_COMBO, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_COMBO, 3)).c_str()));
 	f.PutLine(ssprintf("#SPEEDS:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_SPEED, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_SPEED, 3)).c_str()));
 	f.PutLine(ssprintf("#SCROLLS:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_SCROLL, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_SCROLL, 3)).c_str()));
 	f.PutLine(ssprintf("#FAKES:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_FAKE, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_FAKE, 3)).c_str()));
 	f.PutLine(ssprintf("#LABELS:%s;",
-	join(",\r\n", timing.ToVectorString(SEGMENT_LABEL, 3)).c_str()));
+			   join(",\r\n", timing.ToVectorString(SEGMENT_LABEL, 3)).c_str()));
 	*/ // xMAx
 }
 
 /**
-* @brief Write out the common tags for .SSC files.
-* @param f the file in question.
-* @param out the Song in question. */
+ * @brief Write out the common tags for .SSC files.
+ * @param f the file in question.
+ * @param out the Song in question. */
 static void WriteGlobalTags( RageFile &f, const Song &out, bool bSavingCache )
 {
 	f.PutLine( ssprintf( "#VERSION:%.2f;", STEPFILE_VERSION_NUMBER ) );
-
+	
 	if( bSavingCache )
 	{
 		if( out.m_sMainTitle != "" ) 			f.PutLine( ssprintf( "#TITLE:%s;", SmEscape(out.m_sMainTitle).c_str() ) );
@@ -328,7 +328,7 @@ static void WriteGlobalTags( RageFile &f, const Song &out, bool bSavingCache )
 	{
 		default: ASSERT_M(0, "An invalid selectable value was found for this song!"); // fall through
 		case Song::SHOW_ALWAYS:	f.Write( "YES" );		break;
-			//case Song::SHOW_NONSTOP:	f.Write( "NONSTOP" );	break;
+		//case Song::SHOW_NONSTOP:	f.Write( "NONSTOP" );	break;
 		case Song::SHOW_NEVER:		f.Write( "NO" );		break;
 	}
 	f.PutLine( ";" );
@@ -346,22 +346,22 @@ static void WriteGlobalTags( RageFile &f, const Song &out, bool bSavingCache )
 	f.Write( IntToString(out.m_iVolume) );
 	f.PutLine( ";" );
 	/*-------------  xMAx ---------------------*/
-
+	
 	switch( out.m_DisplayBPMType )
 	{
-		case DISPLAY_BPM_ACTUAL:
-			// write nothing
-			break;
-		case DISPLAY_BPM_SPECIFIED:
-			if( out.m_fSpecifiedBPMMin == out.m_fSpecifiedBPMMax )
-				f.PutLine( ssprintf( "#DISPLAYBPM:%.6f;", out.m_fSpecifiedBPMMin ) );
-			else
-				f.PutLine( ssprintf( "#DISPLAYBPM:%.6f:%.6f;", out.m_fSpecifiedBPMMin, out.m_fSpecifiedBPMMax ) );
-			break;
-		case DISPLAY_BPM_RANDOM:
-			f.PutLine( ssprintf( "#DISPLAYBPM:*;" ) );
-			break;
-		default:
+	case DISPLAY_BPM_ACTUAL:
+		// write nothing
+		break;
+	case DISPLAY_BPM_SPECIFIED:
+		if( out.m_fSpecifiedBPMMin == out.m_fSpecifiedBPMMax )
+			f.PutLine( ssprintf( "#DISPLAYBPM:%.6f;", out.m_fSpecifiedBPMMin ) );
+		else
+			f.PutLine( ssprintf( "#DISPLAYBPM:%.6f:%.6f;", out.m_fSpecifiedBPMMin, out.m_fSpecifiedBPMMax ) );
+		break;
+	case DISPLAY_BPM_RANDOM:
+		f.PutLine( ssprintf( "#DISPLAYBPM:*;" ) );
+		break;
+	default:
 			break;
 	}
 
@@ -380,7 +380,7 @@ static void WriteGlobalTags( RageFile &f, const Song &out, bool bSavingCache )
 			f.Write( "#BGCHANGES:" );
 		/*
 		else if( out.GetBackgroundChanges(b).empty() )
-		continue;	// skip
+			continue;	// skip
 		*/
 		else
 			f.Write( ssprintf("#BGCHANGES%d:", b+1) );
@@ -398,12 +398,12 @@ static void WriteGlobalTags( RageFile &f, const Song &out, bool bSavingCache )
 				f.PutLine( (*bgc).ToString() +"," );
 
 			/* If there's an animation plan at all, add a dummy "-nosongbg-" tag to
-			* indicate that this file doesn't want a song BG entry added at the end.
-			* See SSCLoader::TidyUpData. This tag will be removed on load. Add it
-			* at a very high beat, so it won't cause problems if loaded in older versions. */
+			 * indicate that this file doesn't want a song BG entry added at the end.
+			 * See SSCLoader::TidyUpData. This tag will be removed on load. Add it
+			 * at a very high beat, so it won't cause problems if loaded in older versions. */
 			if( b==0 && !out.GetBackgroundChanges(b).empty() )
 				f.PutLine( "99999=-nosongbg-=1.000=0=0=0 // don't automatically add -songbackground-" );
-
+			
 			f.PutLine( ";" );
 		}
 	}
@@ -425,7 +425,7 @@ static void WriteGlobalTags( RageFile &f, const Song &out, bool bSavingCache )
 			f.PutLine( ";" );
 		}
 	}
-
+	
 	if( out.m_vsKeysoundFile.size() )
 	{
 		f.Write( "#KEYSOUNDS:" );
@@ -453,23 +453,23 @@ static void WriteGlobalTags( RageFile &f, const Song &out, bool bSavingCache )
 		{
 			const Attack &a = out.m_Attacks[j];
 			f.Write( ssprintf( "  TIME=%.2f:LEN=%.2f:MODS=%s",
-				 a.fStartSecond, a.fSecsRemaining, a.sModifiers.c_str() ) );
+				a.fStartSecond, a.fSecsRemaining, a.sModifiers.c_str() ) );
 
 			if( j+1 < out.m_Attacks.size() )
 				f.Write( ":" );
 		}
 		f.Write( ";" );
 	}
-
+	
 	f.PutLine("");
 }
 
 /**
-* @brief Retrieve the individual batches of NoteData.
-* @param song the Song in question.
-* @param in the Steps in question.
-* @param bSavingCache a flag to see if we're saving certain cache data.
-* @return the NoteData in RString form. */
+ * @brief Retrieve the individual batches of NoteData.
+ * @param song the Song in question.
+ * @param in the Steps in question.
+ * @param bSavingCache a flag to see if we're saving certain cache data.
+ * @return the NoteData in RString form. */
 static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCache )
 {
 	vector<RString> lines;
@@ -477,7 +477,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	lines.push_back( "" );
 	// Escape to prevent some clown from making a comment of "\r\n;"
 	lines.push_back( ssprintf("//---------------%s - %s----------------",
-			 GAMEMAN->GetStepsTypeInfo(in.m_StepsType).szName, SmEscape(in.GetDescription()).c_str()) );
+		GAMEMAN->GetStepsTypeInfo(in.m_StepsType).szName, SmEscape(in.GetDescription()).c_str()) );
 	lines.push_back( "#NOTEDATA:;" ); // our new separator.
 	if( in.GetChartName() != "" ) lines.push_back( ssprintf( "#CHARTNAME:%s;", SmEscape(in.GetChartName()).c_str()));
 	lines.push_back( ssprintf( "#STEPSTYPE:%s;", GAMEMAN->GetStepsTypeInfo(in.m_StepsType).szName ) );
@@ -553,8 +553,8 @@ bool NotesWriterSSC::Write( RString sPath, const Song &out, const vector<Steps*>
 	int flags = RageFile::WRITE;
 
 	/* If we're not saving cache, we're saving real data, so enable SLOW_FLUSH
-	* to prevent data loss. If we're saving cache, this will slow things down
-	* too much. */
+	 * to prevent data loss. If we're saving cache, this will slow things down
+	 * too much. */
 	if( !bSavingCache )
 		flags |= RageFile::SLOW_FLUSH;
 
@@ -566,7 +566,7 @@ bool NotesWriterSSC::Write( RString sPath, const Song &out, const vector<Steps*>
 	}
 
 	WriteGlobalTags( f, out, bSavingCache );
-
+	
 	if( bSavingCache )
 	{
 		f.PutLine( ssprintf( "// cache tags:" ) );
@@ -609,8 +609,8 @@ void NotesWriterSSC::GetEditFileContents( const Song *pSong, const Steps *pSteps
 RString NotesWriterSSC::GetEditFileName( const Song *pSong, const Steps *pSteps )
 {
 	/* Try to make a unique name. This isn't guaranteed. Edit descriptions are
-	* case-sensitive, filenames on disk are usually not, and we decimate certain
-	* characters for FAT filesystems. */
+	 * case-sensitive, filenames on disk are usually not, and we decimate certain
+	 * characters for FAT filesystems. */
 	RString sFile = pSong->GetTranslitFullTitle() + " - " + pSteps->GetDescription();
 
 	// HACK:
@@ -657,7 +657,7 @@ bool NotesWriterSSC::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, R
 	}
 
 	/* If the file name of the edit has changed since the last save, then delete the old
-	* file after saving the new one. If we delete it first, then we'll lose data on error. */
+	 * file after saving the new one. If we delete it first, then we'll lose data on error. */
 
 	if( bFileNameChanging )
 		FILEMAN->Remove( pSteps->GetFilename() );
@@ -667,26 +667,26 @@ bool NotesWriterSSC::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, R
 }
 
 /*
-* (c) 2011 Jason Felds
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * (c) 2011 Jason Felds
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

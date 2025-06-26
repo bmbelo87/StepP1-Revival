@@ -18,11 +18,11 @@
 static Preference<bool> g_bShowMasks("ShowMasks", false);
 
 /**
-* @brief Set up a hidden Actor that won't be drawn.
-*
-* It's useful to be able to construct a basic Actor in XML, in
-* order to simply delay a Transition, or receive and send broadcasts.
-* Since these actors will never draw, set them hidden by default. */
+ * @brief Set up a hidden Actor that won't be drawn.
+ *
+ * It's useful to be able to construct a basic Actor in XML, in
+ * order to simply delay a Transition, or receive and send broadcasts.
+ * Since these actors will never draw, set them hidden by default. */
 class HiddenActor: public Actor
 {
 public:
@@ -63,8 +63,8 @@ void Actor::SetBGMTime( float fTime, float fBeat, float fTimeNoOffset, float fBe
 	g_fCurrentBGMBeat = fBeat;
 
 	/* This timer is generally only used for effects tied to the background music
-	* when GameSoundManager is aligning music beats.  Alignment doesn't handle
-	* g_fVisualDelaySeconds. */
+	 * when GameSoundManager is aligning music beats.  Alignment doesn't handle
+	 * g_fVisualDelaySeconds. */
 	g_fCurrentBGMTimeNoOffset = fTimeNoOffset;
 	g_fCurrentBGMBeatNoOffset = fBeatNoOffset;
 }
@@ -155,14 +155,14 @@ Actor::Actor()
 {
 	m_pLuaInstance = new LuaClass;
 	Lua *L = LUA->Get();
-	m_pLuaInstance->PushSelf( L );
-	lua_newtable( L );
-	lua_pushvalue( L, -1 );
-	lua_setmetatable( L, -2 );
-	lua_setfield( L, -2, "ctx" );
-	lua_pop( L, 1 );
+		m_pLuaInstance->PushSelf( L );
+		lua_newtable( L );
+		lua_pushvalue( L, -1 );
+		lua_setmetatable( L, -2 );
+		lua_setfield( L, -2, "ctx" );
+		lua_pop( L, 1 );
 	LUA->Release( L );
-
+	
 	m_size = RageVector2( 1, 1 );
 	InitState();
 	m_pParent = NULL;
@@ -246,9 +246,9 @@ Actor::Actor( const Actor &cpy ):
 }
 
 /* XXX: This calls InitCommand, which must happen after all other
-* initialization (eg. ActorFrame loading children).  However, it
-* also loads input variables, which should happen first.  The
-* former is more important. */
+ * initialization (eg. ActorFrame loading children).  However, it
+ * also loads input variables, which should happen first.  The
+ * former is more important. */
 void Actor::LoadFromNode( const XNode* pNode )
 {
 	Lua *L = LUA->Get();
@@ -284,10 +284,10 @@ void Actor::LoadFromNode( const XNode* pNode )
 void Actor::Draw()
 {
 	if( !m_bVisible ||
-	    m_fHibernateSecondsLeft > 0 || 
-	    this->EarlyAbortDraw() )
+		m_fHibernateSecondsLeft > 0 || 
+		this->EarlyAbortDraw() )
 		return; // early abort
-
+	
 	this->PreDraw();
 	ASSERT( m_pTempState != NULL );
 	if( m_pTempState->diffuse[0].a != 0 || m_pTempState->diffuse[1].a != 0 || m_pTempState->diffuse[2].a != 0 || m_pTempState->diffuse[3].a != 0 || m_pTempState->glow.a != 0 ) // This Actor is not fully transparent
@@ -297,7 +297,7 @@ void Actor::Draw()
 		this->DrawPrimitives();	// call the most-derived version of DrawPrimitives();
 		this->EndDraw();
 	}
-
+	
 	m_pTempState = NULL;
 }
 
@@ -350,74 +350,74 @@ void Actor::PreDraw() // calculate actor properties
 			fPercentThroughEffect = 0;
 		}
 		ASSERT_M( fPercentThroughEffect >= 0 && fPercentThroughEffect <= 1, 
-			  ssprintf("PercentThroughEffect: %f", fPercentThroughEffect) );
+			ssprintf("PercentThroughEffect: %f", fPercentThroughEffect) );
 
 		bool bBlinkOn = fPercentThroughEffect > 0.5f;
 		float fPercentBetweenColors = RageFastSin( (fPercentThroughEffect + 0.25f) * 2 * PI ) / 2 + 0.5f;
 		ASSERT_M( fPercentBetweenColors >= 0 && fPercentBetweenColors <= 1,
-			  ssprintf("PercentBetweenColors: %f, PercentThroughEffect: %f", fPercentBetweenColors, fPercentThroughEffect) );
+			ssprintf("PercentBetweenColors: %f, PercentThroughEffect: %f", fPercentBetweenColors, fPercentThroughEffect) );
 		float fOriginalAlpha = tempState.diffuse[0].a;
 
 		// todo: account for SSC_FUTURES -aj
 		switch( m_Effect )
 		{
-			case diffuse_blink:
-				/* XXX: Should diffuse_blink and diffuse_shift multiply the tempState color? 
-				* (That would have the same effect with 1,1,1,1, and allow tweening the diffuse
-				* while blinking and shifting.) */
-				for(int i=0; i<4; i++)
-				{
-					tempState.diffuse[i] = bBlinkOn ? m_effectColor1 : m_effectColor2;
-					tempState.diffuse[i].a *= fOriginalAlpha;	// multiply the alphas so we can fade even while an effect is playing
-				}
-				break;
-			case diffuse_shift:
-				for(int i=0; i<4; i++)
-				{
-					tempState.diffuse[i] = m_effectColor1*fPercentBetweenColors + m_effectColor2*(1.0f-fPercentBetweenColors);
-					tempState.diffuse[i].a *= fOriginalAlpha;	// multiply the alphas so we can fade even while an effect is playing
-				}
-				break;
-			case diffuse_ramp:
-				for(int i=0; i<4; i++)
-				{
-					tempState.diffuse[i] = m_effectColor1*fPercentThroughEffect + m_effectColor2*(1.0f-fPercentThroughEffect);
-					tempState.diffuse[i].a *= fOriginalAlpha;	// multiply the alphas so we can fade even while an effect is playing
-				}
-				break;
-			case glow_blink:
-				tempState.glow = bBlinkOn ? m_effectColor1 : m_effectColor2;
-				tempState.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
-				break;
-			case glow_shift:
-				tempState.glow = m_effectColor1*fPercentBetweenColors + m_effectColor2*(1.0f-fPercentBetweenColors);
-				tempState.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
-				break;
-			case glow_ramp:
-				tempState.glow = m_effectColor1*fPercentThroughEffect + m_effectColor2*(1.0f-fPercentThroughEffect);
-				tempState.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
-				break;
-			case rainbow:
-				tempState.diffuse[0] = RageColor(
-					RageFastCos( fPercentBetweenColors*2*PI ) * 0.5f + 0.5f,
-					RageFastCos( fPercentBetweenColors*2*PI + PI * 2.0f / 3.0f ) * 0.5f + 0.5f,
-					RageFastCos( fPercentBetweenColors*2*PI + PI * 4.0f / 3.0f) * 0.5f + 0.5f,
-					fOriginalAlpha );
-				for( int i=1; i<4; i++ )
-					tempState.diffuse[i] = tempState.diffuse[0];
-				break;
-			case wag:
-				tempState.rotation += m_vEffectMagnitude * RageFastSin( fPercentThroughEffect * 2.0f * PI );
-				break;
-			case spin:
-				// nothing needs to be here
-				break;
-			case vibrate:
-				tempState.pos.x += m_vEffectMagnitude.x * randomf(-1.0f, 1.0f) * GetZoom();
-				tempState.pos.y += m_vEffectMagnitude.y * randomf(-1.0f, 1.0f) * GetZoom();
-				tempState.pos.z += m_vEffectMagnitude.z * randomf(-1.0f, 1.0f) * GetZoom();
-				break;
-			case bounce:
+		case diffuse_blink:
+			/* XXX: Should diffuse_blink and diffuse_shift multiply the tempState color? 
+			 * (That would have the same effect with 1,1,1,1, and allow tweening the diffuse
+			 * while blinking and shifting.) */
+			for(int i=0; i<4; i++)
+			{
+				tempState.diffuse[i] = bBlinkOn ? m_effectColor1 : m_effectColor2;
+				tempState.diffuse[i].a *= fOriginalAlpha;	// multiply the alphas so we can fade even while an effect is playing
+			}
+			break;
+		case diffuse_shift:
+			for(int i=0; i<4; i++)
+			{
+				tempState.diffuse[i] = m_effectColor1*fPercentBetweenColors + m_effectColor2*(1.0f-fPercentBetweenColors);
+				tempState.diffuse[i].a *= fOriginalAlpha;	// multiply the alphas so we can fade even while an effect is playing
+			}
+			break;
+		case diffuse_ramp:
+			for(int i=0; i<4; i++)
+			{
+				tempState.diffuse[i] = m_effectColor1*fPercentThroughEffect + m_effectColor2*(1.0f-fPercentThroughEffect);
+				tempState.diffuse[i].a *= fOriginalAlpha;	// multiply the alphas so we can fade even while an effect is playing
+			}
+			break;
+		case glow_blink:
+			tempState.glow = bBlinkOn ? m_effectColor1 : m_effectColor2;
+			tempState.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
+			break;
+		case glow_shift:
+			tempState.glow = m_effectColor1*fPercentBetweenColors + m_effectColor2*(1.0f-fPercentBetweenColors);
+			tempState.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
+			break;
+		case glow_ramp:
+			tempState.glow = m_effectColor1*fPercentThroughEffect + m_effectColor2*(1.0f-fPercentThroughEffect);
+			tempState.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
+			break;
+		case rainbow:
+			tempState.diffuse[0] = RageColor(
+				RageFastCos( fPercentBetweenColors*2*PI ) * 0.5f + 0.5f,
+				RageFastCos( fPercentBetweenColors*2*PI + PI * 2.0f / 3.0f ) * 0.5f + 0.5f,
+				RageFastCos( fPercentBetweenColors*2*PI + PI * 4.0f / 3.0f) * 0.5f + 0.5f,
+				fOriginalAlpha );
+			for( int i=1; i<4; i++ )
+				tempState.diffuse[i] = tempState.diffuse[0];
+			break;
+		case wag:
+			tempState.rotation += m_vEffectMagnitude * RageFastSin( fPercentThroughEffect * 2.0f * PI );
+			break;
+		case spin:
+			// nothing needs to be here
+			break;
+		case vibrate:
+			tempState.pos.x += m_vEffectMagnitude.x * randomf(-1.0f, 1.0f) * GetZoom();
+			tempState.pos.y += m_vEffectMagnitude.y * randomf(-1.0f, 1.0f) * GetZoom();
+			tempState.pos.z += m_vEffectMagnitude.z * randomf(-1.0f, 1.0f) * GetZoom();
+			break;
+		case bounce:
 			{
 				float fPercentOffset = RageFastSin( fPercentThroughEffect*PI ); 
 				tempState.pos += m_vEffectMagnitude * fPercentOffset;
@@ -426,7 +426,7 @@ void Actor::PreDraw() // calculate actor properties
 				tempState.pos.z = roundf( tempState.pos.z );
 			}
 			break;
-			case bob:
+		case bob:
 			{
 				float fPercentOffset = RageFastSin( fPercentThroughEffect*PI*2 ); 
 				tempState.pos += m_vEffectMagnitude * fPercentOffset;
@@ -435,7 +435,7 @@ void Actor::PreDraw() // calculate actor properties
 				tempState.pos.z = roundf( tempState.pos.z );
 			}
 			break;
-			case pulse:
+		case pulse:
 			{
 				float fMinZoom = m_vEffectMagnitude[0];
 				float fMaxZoom = m_vEffectMagnitude[1];
@@ -450,7 +450,7 @@ void Actor::PreDraw() // calculate actor properties
 				tempState.scale.z *= c.b;
 			}
 			break;
-			case xpulse:	// xMAx
+		case xpulse:	// xMAx
 			{
 				float fMinZoom = m_vEffectMagnitude[0];
 				float fMaxZoom = m_vEffectMagnitude[1];
@@ -459,8 +459,8 @@ void Actor::PreDraw() // calculate actor properties
 				tempState.scale.x *= fZoom;
 			}
 			break;
-			default:
-				FAIL_M(ssprintf("Invalid effect: %i", m_Effect));
+		default:
+			FAIL_M(ssprintf("Invalid effect: %i", m_Effect));
 		}
 	}
 
@@ -495,7 +495,7 @@ void Actor::PreDraw() // calculate actor properties
 		m_internalGlow.a = 0;
 	}
 }
-
+	
 void Actor::BeginDraw() // set the world matrix
 {
 	DISPLAY->PushMatrix();
@@ -508,14 +508,14 @@ void Actor::BeginDraw() // set the world matrix
 			m_pTempState->pos.x,
 			m_pTempState->pos.y,
 			m_pTempState->pos.z
-		);
+			);
 		DISPLAY->PreMultMatrix( m );
 	}
 
 	{
 		/* The only time rotation and quat should normally be used simultaneously
-		* is for m_baseRotation. Most objects aren't rotated at all, so optimize
-		* that case. */
+		 * is for m_baseRotation. Most objects aren't rotated at all, so optimize
+		 * that case. */
 		const float fRotateX = m_pTempState->rotation.x + m_baseRotation.x;
 		const float fRotateY = m_pTempState->rotation.y + m_baseRotation.y;
 		const float fRotateZ = m_pTempState->rotation.z + m_baseRotation.z;
@@ -557,7 +557,7 @@ void Actor::BeginDraw() // set the world matrix
 			fX,
 			fY,
 			0
-		);
+			);
 		DISPLAY->PreMultMatrix( m );
 	}
 
@@ -626,7 +626,7 @@ void Actor::EndDraw()
 void Actor::UpdateTweening( float fDeltaTime )
 {
 	while( !m_Tweens.empty() // something to do
-	       && fDeltaTime > 0 )	// something will change
+		&& fDeltaTime > 0 )	// something will change
 	{
 		// update current tween state
 		// earliest tween
@@ -645,7 +645,7 @@ void Actor::UpdateTweening( float fDeltaTime )
 			m_start = m_current;	// set the start position
 			SetCurrentTweenStart();
 		}
-
+	
 		if( TI.m_fTimeLeftInTween == 0 )	// Current tween is over.  Stop.
 		{
 			m_current = TS;
@@ -687,12 +687,12 @@ bool Actor::IsFirstUpdate() const
 
 void Actor::Update( float fDeltaTime )
 {
-	//	LOG->Trace( "Actor::Update( %f )", fDeltaTime );
+//	LOG->Trace( "Actor::Update( %f )", fDeltaTime );
 	ASSERT_M( fDeltaTime >= 0, ssprintf("DeltaTime: %f",fDeltaTime) );
-	/*
+/*
 	if( !m_bVisible )
-	return;
-	*/ // xMAx - revert, april 2017
+		return;
+*/ // xMAx - revert, april 2017
 	if( m_fHibernateSecondsLeft > 0 )
 	{
 		m_fHibernateSecondsLeft -= fDeltaTime;
@@ -714,62 +714,62 @@ void Actor::UpdateInternal( float fDeltaTime )
 
 	switch( m_EffectClock )
 	{
-		case CLOCK_TIMER:
-			m_fSecsIntoEffect += fDeltaTime;
-			m_fEffectDelta = fDeltaTime;
+	case CLOCK_TIMER:
+		m_fSecsIntoEffect += fDeltaTime;
+		m_fEffectDelta = fDeltaTime;
 
-			/* Wrap the counter, so it doesn't increase indefinitely (causing loss
-			* of precision if a screen is left to sit for a day). */
-			if( m_fSecsIntoEffect >= GetEffectPeriod() )
-				m_fSecsIntoEffect -= GetEffectPeriod();
-			break;
+		/* Wrap the counter, so it doesn't increase indefinitely (causing loss
+		 * of precision if a screen is left to sit for a day). */
+		if( m_fSecsIntoEffect >= GetEffectPeriod() )
+			m_fSecsIntoEffect -= GetEffectPeriod();
+		break;
 
-		case CLOCK_TIMER_GLOBAL:
+	case CLOCK_TIMER_GLOBAL:
+	{
+		float fTime = RageTimer::GetTimeSinceStartFast();
+		m_fEffectDelta = fTime - m_fSecsIntoEffect;
+		m_fSecsIntoEffect = fTime;
+		break;
+	}
+
+	case CLOCK_BGM_BEAT:
+		m_fEffectDelta = g_fCurrentBGMBeat - m_fSecsIntoEffect;
+		m_fSecsIntoEffect = g_fCurrentBGMBeat;
+		break;
+
+	case CLOCK_BGM_BEAT_PLAYER1:
+		m_fEffectDelta = g_vfCurrentBGMBeatPlayer[PLAYER_1] - m_fSecsIntoEffect;
+		m_fSecsIntoEffect = g_vfCurrentBGMBeatPlayerNoOffset[PLAYER_1];
+		break;
+		
+	case CLOCK_BGM_BEAT_PLAYER2:
+		m_fEffectDelta = g_vfCurrentBGMBeatPlayer[PLAYER_2] - m_fSecsIntoEffect;
+		m_fSecsIntoEffect = g_vfCurrentBGMBeatPlayerNoOffset[PLAYER_2];
+		break;
+	
+	case CLOCK_BGM_TIME:
+		m_fEffectDelta = g_fCurrentBGMTime - m_fSecsIntoEffect;
+		m_fSecsIntoEffect = g_fCurrentBGMTime;
+		break;
+
+	case CLOCK_BGM_BEAT_NO_OFFSET:
+		m_fEffectDelta = g_fCurrentBGMBeatNoOffset - m_fSecsIntoEffect;
+		m_fSecsIntoEffect = g_fCurrentBGMBeatNoOffset;
+		break;
+
+	case CLOCK_BGM_TIME_NO_OFFSET:
+		m_fEffectDelta = g_fCurrentBGMTimeNoOffset - m_fSecsIntoEffect;
+		m_fSecsIntoEffect = g_fCurrentBGMTimeNoOffset;
+		break;
+
+	default:
+		if( m_EffectClock >= CLOCK_LIGHT_1 && m_EffectClock <= CLOCK_LIGHT_LAST )
 		{
-			float fTime = RageTimer::GetTimeSinceStartFast();
-			m_fEffectDelta = fTime - m_fSecsIntoEffect;
-			m_fSecsIntoEffect = fTime;
-			break;
+			int i = m_EffectClock - CLOCK_LIGHT_1;
+			m_fEffectDelta = g_fCabinetLights[i] - m_fSecsIntoEffect;
+			m_fSecsIntoEffect = g_fCabinetLights[i];
 		}
-
-		case CLOCK_BGM_BEAT:
-			m_fEffectDelta = g_fCurrentBGMBeat - m_fSecsIntoEffect;
-			m_fSecsIntoEffect = g_fCurrentBGMBeat;
-			break;
-
-		case CLOCK_BGM_BEAT_PLAYER1:
-			m_fEffectDelta = g_vfCurrentBGMBeatPlayer[PLAYER_1] - m_fSecsIntoEffect;
-			m_fSecsIntoEffect = g_vfCurrentBGMBeatPlayerNoOffset[PLAYER_1];
-			break;
-
-		case CLOCK_BGM_BEAT_PLAYER2:
-			m_fEffectDelta = g_vfCurrentBGMBeatPlayer[PLAYER_2] - m_fSecsIntoEffect;
-			m_fSecsIntoEffect = g_vfCurrentBGMBeatPlayerNoOffset[PLAYER_2];
-			break;
-
-		case CLOCK_BGM_TIME:
-			m_fEffectDelta = g_fCurrentBGMTime - m_fSecsIntoEffect;
-			m_fSecsIntoEffect = g_fCurrentBGMTime;
-			break;
-
-		case CLOCK_BGM_BEAT_NO_OFFSET:
-			m_fEffectDelta = g_fCurrentBGMBeatNoOffset - m_fSecsIntoEffect;
-			m_fSecsIntoEffect = g_fCurrentBGMBeatNoOffset;
-			break;
-
-		case CLOCK_BGM_TIME_NO_OFFSET:
-			m_fEffectDelta = g_fCurrentBGMTimeNoOffset - m_fSecsIntoEffect;
-			m_fSecsIntoEffect = g_fCurrentBGMTimeNoOffset;
-			break;
-
-		default:
-			if( m_EffectClock >= CLOCK_LIGHT_1 && m_EffectClock <= CLOCK_LIGHT_LAST )
-			{
-				int i = m_EffectClock - CLOCK_LIGHT_1;
-				m_fEffectDelta = g_fCabinetLights[i] - m_fSecsIntoEffect;
-				m_fSecsIntoEffect = g_fCabinetLights[i];
-			}
-			break;
+		break;
 	}
 
 	// update effect
@@ -791,7 +791,7 @@ void Actor::UpdateInternal( float fDeltaTime )
 RString Actor::GetLineage() const
 {
 	RString sPath;
-
+	
 	if( m_pParent )
 		sPath = m_pParent->GetLineage() + '/';
 	sPath += ssprintf( "<%s> %s", typeid(*this).name(), m_sName.c_str() );
@@ -881,12 +881,12 @@ void Actor::ScaleTo( const RectF &rect, StretchType st )
 	float fNewZoom = 0.f;
 	switch( st )
 	{
-		case cover:
-			fNewZoom = fNewZoomX>fNewZoomY ? fNewZoomX : fNewZoomY;	// use larger zoom
-			break;
-		case fit_inside:
-			fNewZoom = fNewZoomX>fNewZoomY ? fNewZoomY : fNewZoomX; // use smaller zoom
-			break;
+	case cover:
+		fNewZoom = fNewZoomX>fNewZoomY ? fNewZoomX : fNewZoomY;	// use larger zoom
+		break;
+	case fit_inside:
+		fNewZoom = fNewZoomX>fNewZoomY ? fNewZoomY : fNewZoomX; // use smaller zoom
+		break;
 	}
 
 	SetX( rect.left + rect_width * m_fHorizAlign );
@@ -1191,12 +1191,12 @@ float Actor::GetTweenTimeLeft() const
 }
 
 /* This is a hack to change all tween states while leaving existing tweens alone.
-*
-* Hmm. Most commands actually act on a TweenStateAndInfo, not the Actor itself.
-* Conceptually, it wouldn't be hard to give TweenState a presence in Lua, so
-* we can simply say eg. "for x in states(Actor) do x.SetDiffuseColor(c) end".
-* However, we'd then have to give every TweenState a userdata in Lua while it's
-* being manipulated, which would add overhead ... */
+ *
+ * Hmm. Most commands actually act on a TweenStateAndInfo, not the Actor itself.
+ * Conceptually, it wouldn't be hard to give TweenState a presence in Lua, so
+ * we can simply say eg. "for x in states(Actor) do x.SetDiffuseColor(c) end".
+ * However, we'd then have to give every TweenState a userdata in Lua while it's
+ * being manipulated, which would add overhead ... */
 void Actor::SetGlobalDiffuseColor( RageColor c )
 {
 	for( int i=0; i<4; i++ ) // color, not alpha
@@ -1371,14 +1371,14 @@ void Actor::SetParent( Actor *pParent )
 	m_pParent = pParent;
 
 	Lua *L = LUA->Get();
-	int iTop = lua_gettop( L );
+		int iTop = lua_gettop( L );
 
-	this->PushContext( L );
-	lua_pushstring( L, "__index" );
-	pParent->PushContext( L );
-	lua_settable( L, -3 );
+		this->PushContext( L );
+		lua_pushstring( L, "__index" );
+		pParent->PushContext( L );
+		lua_settable( L, -3 );
 
-	lua_settop( L, iTop );
+		lua_settop( L, iTop );
 	LUA->Release( L );
 }
 
@@ -1592,7 +1592,7 @@ public:
 		if (f1 < 0 || f2 < 0 || f3 < 0 || f4 < 0)
 		{
 			LuaHelpers::ReportScriptErrorFmt("Effect timings (%f,%f,%f,%f) must not be negative; ignoring",
-							  f1, f2, f3, f4);
+					f1, f2, f3, f4);
 			return 0;
 		}
 		if (f1 == 0 && f2 == 0 && f3 == 0 && f4 == 0)
@@ -1703,8 +1703,8 @@ public:
 	static int GetSecsIntoEffect( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetSecsIntoEffect() ); return 1; }
 	static int GetEffectDelta( T* p, lua_State *L )		{ lua_pushnumber( L, p->GetEffectDelta() ); return 1; }
 	DEFINE_METHOD( GetDiffuse, GetDiffuse() )
-		DEFINE_METHOD( GetGlow, GetGlow() )
-		static int GetDiffuseAlpha( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetDiffuseAlpha() ); return 1; }
+	DEFINE_METHOD( GetGlow, GetGlow() )
+	static int GetDiffuseAlpha( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetDiffuseAlpha() ); return 1; }
 	static int GetVisible( T* p, lua_State *L )		{ lua_pushboolean( L, p->GetVisible() ); return 1; }
 	static int GetHAlign( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetHorizAlign() ); return 1; }
 	static int GetVAlign( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetVertAlign() ); return 1; }
@@ -1729,8 +1729,8 @@ public:
 
 	LunaActor()
 	{
-		ADD_METHOD( name );
-		ADD_METHOD( sleep );
+  		ADD_METHOD( name );
+  		ADD_METHOD( sleep );
 		ADD_METHOD( linear );
 		ADD_METHOD( accelerate );
 		ADD_METHOD( decelerate );
@@ -1901,26 +1901,26 @@ LUA_REGISTER_INSTANCED_BASE_CLASS( Actor )
 
 
 /*
-* (c) 2001-2004 Chris Danford
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * (c) 2001-2004 Chris Danford
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

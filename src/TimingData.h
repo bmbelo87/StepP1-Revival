@@ -15,9 +15,9 @@ template<class T>
 inline T ToDerived( const TimingSegment *t, TimingSegmentType tst )
 {
 	ASSERT_M( t && tst == t->GetType(),
-		  ssprintf("type mismatch (expected %s, got %s)",
-		  TimingSegmentTypeToString(tst).c_str(),
-		  TimingSegmentTypeToString(t->GetType()).c_str() ) );
+		ssprintf("type mismatch (expected %s, got %s)",
+		TimingSegmentTypeToString(tst).c_str(),
+		TimingSegmentTypeToString(t->GetType()).c_str() ) );
 
 	return static_cast<T>( t );
 }
@@ -54,14 +54,14 @@ TimingSegmentToX( Fake, FAKE );
 #undef TimingSegmentToX
 
 /**
-* @brief Holds data for translating beats<->seconds.
-*/
+ * @brief Holds data for translating beats<->seconds.
+ */
 class TimingData
 {
 public:
 	/**
-	* @brief Sets up initial timing data with a defined offset.
-	* @param fOffset the offset from the 0th beat. */
+	 * @brief Sets up initial timing data with a defined offset.
+	 * @param fOffset the offset from the 0th beat. */
 	TimingData( float fOffset = 0 );
 	~TimingData();
 
@@ -93,31 +93,31 @@ public:
 
 	TimingData CopyRange(int startRow, int endRow) const;
 	/**
-	* @brief Gets the actual BPM of the song,
-	* while respecting a limit.
-	*
-	* The high limit is due to the implementation of mMods.
-	* @param fMinBPMOut the minimium specified BPM.
-	* @param fMaxBPMOut the maximum specified BPM.
-	* @param highest the highest allowed max BPM.
-	*/
+	 * @brief Gets the actual BPM of the song,
+	 * while respecting a limit.
+	 *
+	 * The high limit is due to the implementation of mMods.
+	 * @param fMinBPMOut the minimium specified BPM.
+	 * @param fMaxBPMOut the maximum specified BPM.
+	 * @param highest the highest allowed max BPM.
+	 */
 	void GetActualBPM( float &fMinBPMOut, float &fMaxBPMOut, float highest = FLT_MAX ) const;
 
 	/**
-	* @brief Retrieve the TimingSegment at the specified row.
-	* @param iNoteRow the row that has a TimingSegment.
-	* @param tst the TimingSegmentType requested.
-	* @return the segment in question.
-	*/
+	 * @brief Retrieve the TimingSegment at the specified row.
+	 * @param iNoteRow the row that has a TimingSegment.
+	 * @param tst the TimingSegmentType requested.
+	 * @return the segment in question.
+	 */
 	const TimingSegment* GetSegmentAtRow( int iNoteRow, TimingSegmentType tst ) const;
 	TimingSegment* GetSegmentAtRow( int iNoteRow, TimingSegmentType tst );
 
 	/**
-	* @brief Retrieve the TimingSegment at the given beat.
-	* @param fBeat the beat that has a TimingSegment.
-	* @param tst the TimingSegmentType requested.
-	* @return the segment in question.
-	*/
+	 * @brief Retrieve the TimingSegment at the given beat.
+	 * @param fBeat the beat that has a TimingSegment.
+	 * @param tst the TimingSegmentType requested.
+	 * @return the segment in question.
+	 */
 	const TimingSegment* GetSegmentAtBeat( float fBeat, TimingSegmentType tst ) const
 	{
 		return GetSegmentAtRow( BeatToNoteRow(fBeat), tst );
@@ -127,7 +127,7 @@ public:
 		return const_cast<TimingSegment*>( GetSegmentAtBeat(fBeat, tst) );
 	}
 
-#define DefineSegmentWithName(Seg, SegName, SegType) \
+	#define DefineSegmentWithName(Seg, SegName, SegType) \
 		const Seg* Get##Seg##AtRow( int iNoteRow ) const \
 		{ \
 			const TimingSegment *t = GetSegmentAtRow( iNoteRow, SegType ); \
@@ -154,7 +154,7 @@ public:
 	// display the rest of this file as one giant string
 
 	// (TimeSignature,TIME_SIG) -> (TimeSignatureSegment,SEGMENT_TIME_SIG)
-#define DefineSegment(Seg, SegType ) \
+	#define DefineSegment(Seg, SegType ) \
 		DefineSegmentWithName( Seg##Segment, Seg, SEGMENT_##SegType )
 
 	DefineSegment( BPM, BPM );
@@ -169,8 +169,8 @@ public:
 	DefineSegment( Fake, FAKE );
 	DefineSegment( TimeSignature, TIME_SIG );
 
-#undef DefineSegmentWithName
-#undef DefineSegment
+	#undef DefineSegmentWithName
+	#undef DefineSegment
 
 	/* convenience aliases (Set functions are deprecated) */
 	float GetBPMAtRow( int iNoteRow ) const { return GetBPMSegmentAtRow(iNoteRow)->GetBPM(); }
@@ -280,9 +280,9 @@ public:
 	bool IsFakeAtBeat( float fBeat ) const { return IsFakeAtRow( BeatToNoteRow( fBeat ) ); }
 
 	/**
-	* @brief Determine if this notes on this row can be judged.
-	* @param row the row to focus on.
-	* @return true if the row can be judged, false otherwise. */
+	 * @brief Determine if this notes on this row can be judged.
+	 * @param row the row to focus on.
+	 * @return true if the row can be judged, false otherwise. */
 	bool IsJudgableAtRow( int row ) const { return !IsWarpAtRow(row) && !IsFakeAtRow(row); }
 	bool IsJudgableAtBeat( float beat ) const { return IsJudgableAtRow( BeatToNoteRow( beat ) ); }
 
@@ -323,10 +323,10 @@ public:
 	bool HasScrollChanges() const;
 
 	/**
-	* @brief Compare two sets of timing data to see if they are equal.
-	* @param other the other TimingData.
-	* @return the equality or lack thereof of the two TimingData.
-	*/
+	 * @brief Compare two sets of timing data to see if they are equal.
+	 * @param other the other TimingData.
+	 * @return the equality or lack thereof of the two TimingData.
+	 */
 	bool operator==( const TimingData &other )
 	{
 		FOREACH_ENUM( TimingSegmentType, tst )
@@ -337,12 +337,12 @@ public:
 			// optimization: check vector sizes before contents
 			if( us.size() != them.size() )
 				return false;
-
+			
 			for( unsigned i = 0; i < us.size(); ++i )
 			{
 				/* UGLY: since TimingSegment's comparison compares base data,
-				* and the derived versions only compare derived data, we must
-				* manually call each. */
+				 * and the derived versions only compare derived data, we must
+				 * manually call each. */
 				if( !(*us[i]).TimingSegment::operator==(*them[i]) )
 					return false;
 				if( !(*us[i]).operator==(*them[i]) )
@@ -355,10 +355,10 @@ public:
 	}
 
 	/**
-	* @brief Compare two sets of timing data to see if they are not equal.
-	* @param other the other TimingData.
-	* @return the inequality or lack thereof of the two TimingData.
-	*/
+	 * @brief Compare two sets of timing data to see if they are not equal.
+	 * @param other the other TimingData.
+	 * @return the inequality or lack thereof of the two TimingData.
+	 */
 	bool operator!=( const TimingData &other ) { return !operator==(other); }
 
 	void ScaleRegion( float fScale = 1, int iStartRow = 0, int iEndRow = MAX_NOTE_ROW, bool bAdjustBPM = false );
@@ -377,20 +377,20 @@ public:
 	}
 
 	/**
-	* @brief Tidy up the timing data, e.g. provide default BPMs, labels, tickcounts.
-	* @param allowEmpty true if completely empty TimingData should be left
-	*                   alone, false if it should be changed
-	*/
+	 * @brief Tidy up the timing data, e.g. provide default BPMs, labels, tickcounts.
+	 * @param allowEmpty true if completely empty TimingData should be left
+	 *                   alone, false if it should be changed
+	 */
 	void TidyUpData(bool allowEmpty);
 
 	// Lua
 	void PushSelf( lua_State *L );
 
 	/**
-	* @brief The file of the song/steps that use this TimingData.
-	*
-	* This is for informational purposes only.
-	*/
+	 * @brief The file of the song/steps that use this TimingData.
+	 *
+	 * This is for informational purposes only.
+	 */
 	RString					m_sFile;
 
 	/** @brief The initial offset of a song. */
@@ -411,28 +411,28 @@ protected:
 #endif
 
 /**
-* @file
-* @author Chris Danford, Glenn Maynard (c) 2001-2004
-* @section LICENSE
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * @file
+ * @author Chris Danford, Glenn Maynard (c) 2001-2004
+ * @section LICENSE
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

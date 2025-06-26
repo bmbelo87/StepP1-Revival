@@ -4,7 +4,7 @@
 #include "GameState.h"
 #include "CommonMetrics.h"
 
-static const char *LifeTypeNames [] = {
+static const char *LifeTypeNames[] = {
 	"Bar",
 	"Battery",
 	"Time",
@@ -13,7 +13,7 @@ XToString( LifeType );
 XToLocalizedString( LifeType );
 LuaXType( LifeType );
 
-static const char *DrainTypeNames [] = {
+static const char *DrainTypeNames[] = {
 	"Normal",
 	"NoRecover",
 	"SuddenDeath",
@@ -22,7 +22,7 @@ XToString( DrainType );
 XToLocalizedString( DrainType );
 LuaXType( DrainType );
 
-static const char *AutosyncTypeNames [] = {
+static const char *AutosyncTypeNames[] = {
 	"Off",
 	"Song",
 	"Machine",
@@ -32,7 +32,7 @@ XToString( AutosyncType );
 XToLocalizedString( AutosyncType );
 LuaXType( AutosyncType );
 
-static const char *SoundEffectTypeNames [] = {
+static const char *SoundEffectTypeNames[] = {
 	"Off",
 	"Speed",
 	"Pitch",
@@ -45,7 +45,7 @@ void SongOptions::Init()
 {
 	m_LifeType = LifeType_Bar;
 	m_DrainType = DrainType_Normal;
-	m_BatteryLives = 4;
+	m_iBatteryLives = 4;
 	m_bAssistClap = false;
 	m_bAssistMetronome = false;
 	m_fMusicRate = 1.0f;
@@ -58,9 +58,9 @@ void SongOptions::Init()
 	m_bRandomBGOnly = false;
 	m_bSaveScore = true;
 	m_bSaveReplay = false; // don't save replays by default?
-
+	
 	// xMAx
-	m_bUseBGAOff = false;
+	m_bUseBGAOff = false; 	
 	m_bUseBGADark = false;
 	m_bShowSingles = true;
 	m_bShowHalfDoubles = true;
@@ -76,7 +76,7 @@ void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
 
 	DO_COPY( m_LifeType );
 	DO_COPY( m_DrainType );
-	DO_COPY( m_BatteryLives );
+	DO_COPY( m_iBatteryLives );
 	APPROACH( fMusicRate );
 	APPROACH( fHaste );
 	DO_COPY( m_bAssistClap );
@@ -87,11 +87,11 @@ void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
 	DO_COPY( m_bRandomBGOnly );
 	DO_COPY( m_bSaveScore );
 	DO_COPY( m_bSaveReplay );
-	DO_COPY( m_bUseBGAOff ); //
-	DO_COPY( m_bUseBGADark ); //
-	DO_COPY( m_bShowSingles ); //
-	DO_COPY( m_bShowHalfDoubles ); //
-	DO_COPY( m_bShowDoubles ); //
+	DO_COPY( m_bUseBGAOff );
+	DO_COPY( m_bUseBGADark );
+	DO_COPY( m_bShowSingles );
+	DO_COPY( m_bShowHalfDoubles );
+	DO_COPY( m_bShowDoubles );
 #undef APPROACH
 #undef DO_COPY
 }
@@ -113,13 +113,13 @@ void SongOptions::GetMods( vector<RString> &AddTo ) const
 	case LifeType_Bar:		
 		switch( m_DrainType )
 		{
-		case DrainType_Normal:							break;
+		case DrainType_Normal:						break;
 		case DrainType_NoRecover:		AddTo.push_back("NoRecover");	break;
-		case DrainType_SuddenDeath:		AddTo.push_back("SuddenDeath");	break;
+		case DrainType_SuddenDeath:	AddTo.push_back("SuddenDeath");	break;
 		}
 		break;
 	case LifeType_Battery:
-		AddTo.push_back( ssprintf( "%dLives", m_BatteryLives ) );
+		AddTo.push_back( ssprintf( "%dLives", m_iBatteryLives ) );
 		break;
 	case LifeType_Time:
 		AddTo.push_back( "LifeTime" );
@@ -141,8 +141,8 @@ void SongOptions::GetMods( vector<RString> &AddTo ) const
 
 	switch( m_AutosyncType )
 	{
-	case AutosyncType_Off:			                        	break;
-	case AutosyncType_Song:		AddTo.push_back("AutosyncSong");	break;
+	case AutosyncType_Off:	                                	break;
+	case AutosyncType_Song:	AddTo.push_back("AutosyncSong");	break;
 	case AutosyncType_Machine:	AddTo.push_back("AutosyncMachine");	break;
 	case AutosyncType_Tempo:	AddTo.push_back("AutosyncTempo");	break;
 	default:
@@ -225,7 +225,7 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 	Regex lives("^([0-9]+) ?(lives|life)$");
 	if( lives.Compare(sBit, matches) )
 	{
-		m_BatteryLives = StringToInt( matches[0] );
+		m_iBatteryLives = StringToInt( matches[0] );
 		return true;
 	}
 
@@ -239,7 +239,7 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 			on = false;
 	}
 
-	if( sBit == "norecover" )				m_DrainType = DrainType_NoRecover;
+	if(	 sBit == "norecover" )				m_DrainType = DrainType_NoRecover;
 	else if( sBit == "suddendeath" || sBit == "death" )	m_DrainType = DrainType_SuddenDeath;
 	else if( sBit == "power-drop" )				m_DrainType = DrainType_NoRecover;
 	else if( sBit == "normal-drain" )			m_DrainType = DrainType_Normal;
@@ -247,7 +247,7 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 	else if( sBit == "clap" )				m_bAssistClap = on;
 	else if( sBit == "metronome" )				m_bAssistMetronome = on;
 	else if( sBit == "autosync" || sBit == "autosyncsong" )	m_AutosyncType = on ? AutosyncType_Song : AutosyncType_Off;
-	else if( sBit == "autosyncmachine" )			m_AutosyncType = on ? AutosyncType_Machine : AutosyncType_Off;
+	else if( sBit == "autosyncmachine" )			m_AutosyncType = on ? AutosyncType_Machine : AutosyncType_Off; 
 	else if( sBit == "autosynctempo" )			m_AutosyncType = on ? AutosyncType_Tempo : AutosyncType_Off;
 	else if( sBit == "effect" && !on )			m_SoundEffectType = SoundEffectType_Off;
 	else if( sBit == "effectspeed" )			m_SoundEffectType = on ? SoundEffectType_Speed : SoundEffectType_Off;
@@ -271,7 +271,7 @@ bool SongOptions::operator==( const SongOptions &other ) const
 #define COMPARE(x) { if( x != other.x ) return false; }
 	COMPARE( m_LifeType );
 	COMPARE( m_DrainType );
-	COMPARE( m_BatteryLives );
+	COMPARE( m_iBatteryLives );
 	COMPARE( m_fMusicRate );
 	COMPARE( m_fHaste );
 	COMPARE( m_bAssistClap );
@@ -282,11 +282,11 @@ bool SongOptions::operator==( const SongOptions &other ) const
 	COMPARE( m_bRandomBGOnly );
 	COMPARE( m_bSaveScore );
 	COMPARE( m_bSaveReplay );
-	COMPARE( m_bUseBGAOff ); //
-	COMPARE( m_bUseBGADark ); //
-	COMPARE( m_bShowSingles );//
-	COMPARE( m_bShowHalfDoubles );//
-	COMPARE( m_bShowDoubles );//
+	COMPARE( m_bUseBGAOff );	//
+	COMPARE( m_bUseBGADark );	//
+	COMPARE( m_bShowSingles );	//
+	COMPARE( m_bShowHalfDoubles );	//
+	COMPARE( m_bShowDoubles );	//
 #undef COMPARE
 	return true;
 }
@@ -295,46 +295,46 @@ bool SongOptions::operator==( const SongOptions &other ) const
 #include "LuaBinding.h"
 #include "OptionsBinding.h"
 
-//* @brief Allow Lua to have access to SongOptions. */
-class LunaSongOptions : public Luna<SongOptions>
+/** @brief Allow Lua to have access to SongOptions. */
+class LunaSongOptions: public Luna<SongOptions>
 {
 public:
 
-	ENUM_INTERFACE( LifeSetting, LifeType, LifeType );
-	ENUM_INTERFACE( DrainSetting, DrainType, DrainType );
-	ENUM_INTERFACE( AutosyncSetting, AutosyncType, AutosyncType );
+	ENUM_INTERFACE(LifeSetting, LifeType, LifeType);
+	ENUM_INTERFACE(DrainSetting, DrainType, DrainType);
+	ENUM_INTERFACE(AutosyncSetting, AutosyncType, AutosyncType);
 	//ENUM_INTERFACE(SoundEffectSetting, SoundEffectType, SoundEffectType);
 	// Broken, SoundEffectType_Speed disables rate mod, other settings have no effect. -Kyz
-	INT_INTERFACE( BatteryLives, BatteryLives );
-	BOOL_INTERFACE( AssistClap, AssistClap );
-	BOOL_INTERFACE( AssistMetronome, AssistMetronome );
-	BOOL_INTERFACE( StaticBackground, StaticBackground );
-	BOOL_INTERFACE( RandomBGOnly, RandomBGOnly );
-	BOOL_INTERFACE( SaveScore, SaveScore );
-	BOOL_INTERFACE( SaveReplay, SaveReplay );
-	FLOAT_INTERFACE( MusicRate, MusicRate, ( v > 0.0f && v <= 3.0f ) ); // Greater than 3 seems to crash frequently, haven't investigated why. -Kyz
-	FLOAT_INTERFACE( Haste, Haste, ( v >= -1.0f && v <= 1.0f ) );
+	//INT_INTERFACE(BatteryLives, BatteryLives);
+	BOOL_INTERFACE(AssistClap, AssistClap);
+	BOOL_INTERFACE(AssistMetronome, AssistMetronome);
+	BOOL_INTERFACE(StaticBackground, StaticBackground);
+	BOOL_INTERFACE(RandomBGOnly, RandomBGOnly);
+	BOOL_INTERFACE(SaveScore, SaveScore);
+	BOOL_INTERFACE(SaveReplay, SaveReplay);
+	FLOAT_INTERFACE(MusicRate, MusicRate, (v > 0.0f && v <= 3.0f)); // Greater than 3 seems to crash frequently, haven't investigated why. -Kyz
+	FLOAT_INTERFACE(Haste, Haste, (v >= -1.0f && v <= 1.0f));
 
 	// xMAx
-	BOOL_INTERFACE( UseBGAOff, UseBGAOff );
+	BOOL_INTERFACE(UseBGAOff, UseBGAOff);
 	LunaSongOptions()
 	{
-		ADD_METHOD( LifeSetting );
-		ADD_METHOD( DrainSetting );
-		ADD_METHOD( AutosyncSetting );
+		ADD_METHOD(LifeSetting);
+		ADD_METHOD(DrainSetting);
+		ADD_METHOD(AutosyncSetting);
 		//ADD_METHOD(SoundEffectSetting);
-		ADD_METHOD( BatteryLives );
-		ADD_METHOD( AssistClap );
-		ADD_METHOD( AssistMetronome );
-		ADD_METHOD( StaticBackground );
-		ADD_METHOD( RandomBGOnly );
-		ADD_METHOD( SaveScore );
-		ADD_METHOD( SaveReplay );
-		ADD_METHOD( MusicRate );
-		ADD_METHOD( Haste );
-
+		//ADD_METHOD(BatteryLives);
+		ADD_METHOD(AssistClap);
+		ADD_METHOD(AssistMetronome);
+		ADD_METHOD(StaticBackground);
+		ADD_METHOD(RandomBGOnly);
+		ADD_METHOD(SaveScore);
+		ADD_METHOD(SaveReplay);
+		ADD_METHOD(MusicRate);
+		ADD_METHOD(Haste);
+		
 		// xMAx
-		ADD_METHOD( UseBGAOff );
+		ADD_METHOD(UseBGAOff);
 	}
 };
 

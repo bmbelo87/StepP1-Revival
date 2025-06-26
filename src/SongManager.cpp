@@ -38,18 +38,18 @@
 
 SongManager*	SONGMAN = NULL;	// global and accessible from anywhere in our program
 
-const RString ADDITIONAL_SONGS_DIR	= "/AdditionalSongs/";
+const RString ADDITIONAL_SONGS_DIR		= "/AdditionalSongs/";
 const RString ADDITIONAL_COURSES_DIR	= "/AdditionalCourses/";
-const RString EDIT_SUBDIR		= "Edits/";
+const RString EDIT_SUBDIR				= "Edits/";
 
 /** @brief The file that contains various random attacks. */
 const RString ATTACK_FILE		= "/Data/RandomAttacks.txt";
 
-static const ThemeMetric<RageColor>	EXTRA_COLOR			( "SongManager", "ExtraColor" );
-static const ThemeMetric<int>		EXTRA_COLOR_METER		( "SongManager", "ExtraColorMeter" );
+static const ThemeMetric<RageColor>	EXTRA_COLOR					( "SongManager", "ExtraColor" );
+static const ThemeMetric<int>		EXTRA_COLOR_METER			( "SongManager", "ExtraColorMeter" );
 static const ThemeMetric<bool>		USE_PREFERRED_SORT_COLOR	( "SongManager", "UsePreferredSortColor" );
-static const ThemeMetric<bool>		USE_UNLOCK_COLOR		( "SongManager", "UseUnlockColor" );
-static const ThemeMetric<RageColor>	UNLOCK_COLOR			( "SongManager", "UnlockColor" );
+static const ThemeMetric<bool>		USE_UNLOCK_COLOR			( "SongManager", "UseUnlockColor" );
+static const ThemeMetric<RageColor>	UNLOCK_COLOR				( "SongManager", "UnlockColor" );
 static const ThemeMetric<bool>		MOVE_UNLOCKS_TO_BOTTOM_OF_PREFERRED_SORT	( "SongManager", "MoveUnlocksToBottomOfPreferredSort" );
 static const ThemeMetric<int>		EXTRA_STAGE2_DIFFICULTY_MAX	( "SongManager", "ExtraStage2DifficultyMax" );
 
@@ -94,19 +94,19 @@ static LocalizedString LOADING_RANDOM_CHANNEL_LIST 	( "SongManager", "Loading Ra
 void SongManager::InitAll( LoadingWindow *ld )
 {
 	InitSongsFromDisk( ld );
-
+	
 	//InitCoursesFromDisk( ld );
 	/*
 	InitAutogenCourses();
 	InitRandomAttacks();
 	*/ // xMAx
-
+	
 	// xMAx - Carga las listas de canciones segun el tipo y categoria.
 	ld->SetIndeterminate( true );
 	ld->SetTotalWork( 0 );
 	ld->SetText( LOADING_AUTO_CHANNELS );
 	UpdateSortArrays();
-
+	
 	ld->SetIndeterminate( true );
 	ld->SetTotalWork( 0 );
 	ld->SetText( LOADING_RANDOM_CHANNEL_LIST );
@@ -165,7 +165,7 @@ void SongManager::InitSongsFromDisk( LoadingWindow *ld )
 		LevelSongList* pNewList = new LevelSongList(i+1);
 		m_vLevelsList.push_back( pNewList );
 	}
-
+	
 	RageTimer tm;
 	LoadStepManiaSongDir( SpecialFiles::SONGS_DIR, ld );
 
@@ -177,9 +177,9 @@ void SongManager::InitSongsFromDisk( LoadingWindow *ld )
 		PREFSMAN->m_bFastLoad.Set( bOldVal );
 	}
 	//LoadEnabledSongsFromPref();
-
+	
 	LOG->Trace( "Found %d songs in %f seconds.", (int)m_pSongs.size(), tm.GetDeltaTime() );
-
+	
 	// Ordena las canciones agregadas a la lista
 	for( int i=0; i<24; i++ )
 	{
@@ -267,7 +267,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName )
 	LOG->Trace( "Group banner for '%s' is '%s'.", sGroupDirName.c_str(), 
 				sBannerPath != ""? sBannerPath.c_str():"(none)" );
 	*/
-
+	
 	RString sCustomBannerPath = THEME->GetPathG("","/ChannelsGraphics");
 	if ( sGroupDirName == "04-SKILLUP ZONE" )  			sCustomBannerPath += "/C_SU.PNG";
 	else if ( sGroupDirName == "06-PRO~PRO2" )  		sCustomBannerPath += "/C_LOGO6.PNG";
@@ -287,10 +287,10 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName )
 	else if ( sGroupDirName == "05-JUMP" )  			sCustomBannerPath += "/C_JUMP.PNG";
 	else if ( sGroupDirName == "19-STEPF2" )  			sCustomBannerPath += "/C_SF2.PNG";
 	else if ( sGroupDirName == "07-INFINITY" )  		sCustomBannerPath += "/C_INF.PNG";
-
+	
 	if( sCustomBannerPath != THEME->GetPathG("","/ChannelsGraphics") )
 		sBannerPath = sCustomBannerPath;
-
+	
 	m_sSongGroupNames.push_back( sGroupDirName );
 	m_sSongGroupBannerPaths.push_back( sBannerPath );
 	//m_sSongGroupBackgroundPaths.push_back( sBackgroundPath );
@@ -305,7 +305,7 @@ void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
 	// isn't updated after every song and course. -Kyz
 	RageTimer loading_window_last_update_time;
 	loading_window_last_update_time.Touch();
-
+	
 	// Make sure sDir has a trailing slash.
 	if( sDir.Right(1) != "/" )
 		sDir += "/";
@@ -365,9 +365,9 @@ void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
 			LOG->Trace("Song group: \"%s\" is empty. No songs loaded", (sDir+sGroupDirName).c_str() );
 			continue;
 		}
-
+		
 		LOG->Trace("Attempting to load %i songs from \"%s\"", int(arraySongDirs.size()),
-			   (sDir+sGroupDirName).c_str() );
+				   (sDir+sGroupDirName).c_str() );
 		int loaded = 0;
 
 		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
@@ -382,15 +382,15 @@ void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
 				loading_window_last_update_time.Touch();
 				ld->SetProgress(songIndex);
 				ld->SetText( LOADING_SONGS.GetValue() +
-					    ssprintf("\n%s\n%s",
-					    Basename(sGroupDirName).c_str(),
-					    Basename(sSongDirName).c_str()
-				)
+					ssprintf("\n%s\n%s",
+						Basename(sGroupDirName).c_str(),
+						Basename(sSongDirName).c_str()
+					)
 				);
 			}
-
+			
 			// xMAx: how to disable songs to be edited: pNewSong->m_bCanBeEdit = false;
-
+			
 			Song* pNewSong = new Song;
 			if( !pNewSong->LoadFromSongDir( sSongDirName ) )
 			{
@@ -398,24 +398,24 @@ void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
 				delete pNewSong;
 				continue;
 			}
-
+			
 			m_pSongs.push_back( pNewSong );
 			index_entry.push_back( pNewSong );
-
+			
 			loaded++;
 			songIndex++;
-
-			// xMAx - Carga los canales por niveles, excepto para el canal del modo bï¿½sico
+			
+			// xMAx - Carga los canales por niveles, excepto para el canal del modo básico
 			if( sGroupDirName != GAMESTATE->m_sBasicModeGroupName )
 				LoadLevelChannelsForSong( pNewSong );
 		}
 
 		// Don't add the group name if we didn't load any songs in this group.
 		if(!loaded) continue;
-
+		
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
-
-		// xMAx - ordena las canciones (previamente a cargar algï¿½n item)
+		
+		// xMAx - ordena las canciones (previamente a cargar algún item)
 		SongUtil::SortSongPointerArrayByGroupAndSongFolder( m_mapSongGroupIndex[sGroupDirName] );
 		SongUtil::SortSongPointerArrayByCategory( m_mapSongGroupIndex[sGroupDirName] );
 
@@ -442,103 +442,103 @@ void SongManager::LoadLevelChannelsForSong( Song* pSong )
 		if( pSong->m_SongType != SONGTYPE_ARCADE )
 			return;
 	}
-
+		
 	if( pSong->m_sGroupName == GAMESTATE->m_sBasicModeGroupName )
 		return;
-
+		
 	switch( PREFSMAN->m_RandomExclude )
 	{
 		case RN_EXCLUDE_NONE: break;
 		case RN_EXCLUDE_PRO:
 			if( pSong->m_sGroupName == "06-PRO~PRO2" || pSong->m_sGroupName == "07-INFINITY" )
 				return;
-
+				
 			break;
 		case RN_EXCLUDE_FAN:
-		{
-			bool bExclude = true;
-			if( pSong->m_sGroupName == "08-1ST~3RD" || pSong->m_sGroupName == "09-S.E.~EXTRA" || pSong->m_sGroupName == "10-REBIRTH~PREX 3" ||
-			   pSong->m_sGroupName == "11-EXCEED~ZERO" || pSong->m_sGroupName == "12-NX-NX2" || pSong->m_sGroupName == "13-NX ABSOLUTE" || 
-			   pSong->m_sGroupName == "14-FIESTA" || pSong->m_sGroupName == "15-FIESTA EX" || pSong->m_sGroupName == "16-FIESTA 2" || 
-			   pSong->m_sGroupName == "17-PRIME" )
-				bExclude = false;
-
-			if( bExclude )
-				return;
-		}
-		break;
+			{
+				bool bExclude = true;
+				if( pSong->m_sGroupName == "08-1ST~3RD" || pSong->m_sGroupName == "09-S.E.~EXTRA" || pSong->m_sGroupName == "10-REBIRTH~PREX 3" ||
+					pSong->m_sGroupName == "11-EXCEED~ZERO" || pSong->m_sGroupName == "12-NX-NX2" || pSong->m_sGroupName == "13-NX ABSOLUTE" || 
+					pSong->m_sGroupName == "14-FIESTA" || pSong->m_sGroupName == "15-FIESTA EX" || pSong->m_sGroupName == "16-FIESTA 2" || 
+					pSong->m_sGroupName == "17-PRIME" )
+					bExclude = false;
+					
+				if( bExclude )
+					return;
+			}
+			break;
 		case RN_EXCLUDE_PRO_AND_FAN:
-		{
-			if( pSong->m_sGroupName == "06-PRO~PRO2" || pSong->m_sGroupName == "07-INFINITY" )
-				return;
-
-			bool bExclude = true;
-			if( pSong->m_sGroupName == "08-1ST~3RD" || pSong->m_sGroupName == "09-S.E.~EXTRA" || pSong->m_sGroupName == "10-REBIRTH~PREX 3" ||
-			   pSong->m_sGroupName == "11-EXCEED~ZERO" || pSong->m_sGroupName == "12-NX-NX2" || pSong->m_sGroupName == "13-NX ABSOLUTE" || 
-			   pSong->m_sGroupName == "14-FIESTA" || pSong->m_sGroupName == "15-FIESTA EX" || pSong->m_sGroupName == "16-FIESTA 2" || 
-			   pSong->m_sGroupName == "17-PRIME" )
-				bExclude = false;
-
-			if( bExclude )
-				return;
-		}
-		break;
+			{
+				if( pSong->m_sGroupName == "06-PRO~PRO2" || pSong->m_sGroupName == "07-INFINITY" )
+					return;
+					
+				bool bExclude = true;
+				if( pSong->m_sGroupName == "08-1ST~3RD" || pSong->m_sGroupName == "09-S.E.~EXTRA" || pSong->m_sGroupName == "10-REBIRTH~PREX 3" ||
+					pSong->m_sGroupName == "11-EXCEED~ZERO" || pSong->m_sGroupName == "12-NX-NX2" || pSong->m_sGroupName == "13-NX ABSOLUTE" || 
+					pSong->m_sGroupName == "14-FIESTA" || pSong->m_sGroupName == "15-FIESTA EX" || pSong->m_sGroupName == "16-FIESTA 2" || 
+					pSong->m_sGroupName == "17-PRIME" )
+					bExclude = false;
+					
+				if( bExclude )
+					return;
+			}
+			break;
 		default: return; break;
 	}
-
+		
 	bool bWasAdded = false;
 	vector<Steps*> m_vpSteps = pSong->GetAllSteps();
-
+	
 	bool bLevelWasAdded[24];
 	for(unsigned i=0; i<24; i++)
 		bLevelWasAdded[i] = false;
-
+		
 	for( unsigned i=0; i<m_vpSteps.size(); i++ )
 	{
 		int style = -1; // 0 = single; 1 = double
-
+		
 		if( m_vpSteps[i]->m_StepsType == StepsType_pump_single )
 			style = 0;
 		else if( m_vpSteps[i]->m_StepsType == StepsType_pump_double )
 			style = 1;
-
+			
 		int iMeter = m_vpSteps[i]->GetMeter();
-
+		
 		if( iMeter >= 1 && iMeter <= 24 )
 		{
 			LevelSongList* pCurList = m_vLevelsList[iMeter-1];
-
+			
 			if( style == 0 || style == 1 )
 				((*pCurList)[style]).push_back( pSong );
-
+			
 			if( !bLevelWasAdded[iMeter-1] )
 			{
 				((*pCurList).m_pAllStyles).push_back( pSong );
 				bLevelWasAdded[iMeter-1] = true;
 			}
-
+			
 			bWasAdded = true;
 		}
 		else if( iMeter > 24 && iMeter < 99 )
 		{
 			LevelSongList* pCurList = m_vLevelsList[23];
-
+			
 			if( style == 0 || style == 1 )
 				((*pCurList)[style]).push_back( pSong );
-
+			
 			if( !bLevelWasAdded[23] )
 			{
 				((*pCurList).m_pAllStyles).push_back( pSong );
 				bLevelWasAdded[23] = true;
 			}
-
+				
 			bWasAdded = true;
 		}
 	}
-
+	
 	/*
 	if( bWasAdded )
-	LOG->Trace("xMAx::Added song \"%s\" to random list", pSong->m_sMainTitle.c_str() );
+		LOG->Trace("xMAx::Added song \"%s\" to random list", pSong->m_sMainTitle.c_str() );
 	*/
 }
 
@@ -619,7 +619,7 @@ void SongManager::FreeSongs()
 
 	for( unsigned i=0; i<m_pSongs.size(); i++ )
 		SAFE_DELETE( m_pSongs[i] );
-
+		
 	m_pSongs.clear();
 	m_mapSongGroupIndex.clear();
 
@@ -629,7 +629,7 @@ void SongManager::FreeSongs()
 
 	// xMAx - Se limpian los arreglos de cada Sort customizado
 	CleanUpSortArrays();
-
+	
 	// Elimina listas viejas
 	for(unsigned i=0; i<m_vLevelsList.size(); i++)
 	{
@@ -638,12 +638,12 @@ void SongManager::FreeSongs()
 		(*m_vLevelsList[i]).m_pAllStyles.clear();
 		(*m_vLevelsList[i]).m_pStyle.clear();
 	}
-
+	
 	for(unsigned i=0; i<m_vLevelsList.size(); i++)
 	{
 		SAFE_DELETE( m_vLevelsList[i] );
 	}
-
+	
 	m_vLevelsList.clear();
 }
 
@@ -700,10 +700,10 @@ RageColor SongManager::GetSongColor( const Song* pSong ) const
 
 	// protected by royal freem corporation. any modification/removal of
 	// this code will result in prosecution.
-	/*	
+/*	
 	if( pSong->m_sMainTitle == "DVNO")
-	return RageColor(1.0f,0.8f,0.0f,1.0f);
-	*/ //xMAx - (._.  )
+		return RageColor(1.0f,0.8f,0.0f,1.0f);
+*/ //xMAx - (._.  )
 	// end royal freem protection
 
 	// Use unlock color if applicable
@@ -1666,10 +1666,10 @@ void SongManager::UpdatePopular()
 		// Filter out locked songs.
 		if( !apBestSongs[j]->NormallyDisplayed() )
 			bFiltered = true;
-
+			
 		if( apBestSongs[j]->m_sGroupName == GAMESTATE->m_sBasicModeGroupName )
-			bFiltered = true;	// xMAx - para no incluir canciones del modo bï¿½sico
-
+			bFiltered = true;	// xMAx - para no incluir canciones del modo básico
+			
 		if( !bFiltered )
 			continue;
 
@@ -2136,40 +2136,40 @@ int SongManager::GetSongRank(Song* pSong)
 // xMAx ------------------------------------------------------------------------------------------------------------------------------------
 // Regresa un vector con el nombre de los grupos disponibles
 // Revisar GameConstantsAndTypes.cpp para ver los nombres de los "SortOrders", que tienen que corresponder con la lista
-// TODO: Cambiar el nombre de ï¿½sta funciï¿½n!!
+// TODO: Cambiar el nombre de ésta función!!
 void SongManager::GetSongGroupNamesAvailables( vector<RString> &AddTo )
 {
 	AddTo.clear();
-
-	// Se obtienen los canales NO automï¿½ticos, dependiendo si poseen o no canciones para jugar
+	
+	// Se obtienen los canales NO automáticos, dependiendo si poseen o no canciones para jugar
 	vector<RString> v_sTemp;
 	this->GetAvailableGroupNames( v_sTemp );
-
+	
 	SongCriteria sc;
 	sc.m_iMaxStagesForSong = GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer();
-
+	
 	unsigned NumAdd = 0;
-
-
-
+	
+	
+	
 	// ALL TUNES
 	if ( GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 2 )
 	{
 		AddTo.push_back(RString("SO_ALLTUNES"));
 		NumAdd++;
 	}
-
+	
 	// TO TEST - MUSIC TRAIN
 	/*AddTo.push_back(RString("AllCourses"));
 	NumAdd++;*/
-
+	
 	// RANDOM
 	if ( GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 2 && !m_pRandomChannel.empty() ) 
 	{
 		AddTo.push_back(RString("SO_RANDOM"));
 		NumAdd++;
 	}
-
+	
 	// ORIGINAL, KPOP, WORLD MUSIC
 	if ( (GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 2) && PREFSMAN->m_bShowCategoryChannels )
 	{
@@ -2178,19 +2178,19 @@ void SongManager::GetSongGroupNamesAvailables( vector<RString> &AddTo )
 			AddTo.push_back(RString("SO_ORIGINAL"));
 			NumAdd++;
 		}
-
+		
 		if ( this->IsKpopChannelAvailable() && SongUtil::HasAtLeastOnePlayableSong( sc, GetKpopSongs(), SORT_KPOP ) )
 		{
 			AddTo.push_back(RString("SO_KPOP"));
 			NumAdd++;
 		}
-
+		
 		if ( this->IsWorldMusicChannelAvailable() && SongUtil::HasAtLeastOnePlayableSong( sc, GetWorldMusicSongs(), SORT_WORLDMUSIC ) )
 		{
 			AddTo.push_back(RString("SO_WORLDMUSIC"));
 			NumAdd++;
 		}
-
+		
 		// J-MUSIC
 		if ( this->IsJMusicChannelAvailable() && SongUtil::HasAtLeastOnePlayableSong( sc, GetJMusicSongs(), SORT_JMUSIC ) )
 		{
@@ -2198,43 +2198,43 @@ void SongManager::GetSongGroupNamesAvailables( vector<RString> &AddTo )
 			NumAdd++;
 		}
 	}
-
+	
 	// FULL SONGS
 	if ( (GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 4) && this->IsFullSongChannelAvailable() )
 	{
 		AddTo.push_back(RString("SO_FULLSONGS"));
 		NumAdd++;
 	}
-
+	
 	// REMIX
 	if ( (GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 3) && this->IsRemixChannelAvailable() )
 	{
 		AddTo.push_back(RString("SO_REMIX"));
 		NumAdd++;
 	}
-
+	
 	// SHORT CUT
 	if ( (GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 1) && this->IsShortCutChannelAvailable() )
 	{
 		AddTo.push_back(RString("SO_SHORTCUT"));
 		NumAdd++;
 	}
-
+	
 	// UCS
 	if ( (GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 2) && this->IsUCSChannelAvailable() && SongUtil::HasAtLeastOnePlayableSong( sc, GetUCS(), SORT_UCS ) )
 	{
 		AddTo.push_back(RString("SO_UCS"));
 		NumAdd++;
 	}
-
+	
 	// CO-OP
 	if ( (GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 2) && (GAMESTATE->GetNumSidesJoined() == 1) && this->IsCoOpPlayChannelAvailable() 
-	    && SongUtil::HasAtLeastOnePlayableSong( sc, GetCoOpPlaySongs(), SORT_COOP ) )
+		&& SongUtil::HasAtLeastOnePlayableSong( sc, GetCoOpPlaySongs(), SORT_COOP ) )
 	{
 		AddTo.push_back(RString("SO_COOP"));
 		NumAdd++;
 	}
-
+	
 	// SKILL UP ZONE
 	// Omite el canal del BasicMode en la lista de canciones para el FullMode
 	for( unsigned i = 0; i < v_sTemp.size() ; ++i )
@@ -2242,30 +2242,30 @@ void SongManager::GetSongGroupNamesAvailables( vector<RString> &AddTo )
 		if( v_sTemp[i] == "04-SKILLUP ZONE" )
 			AddTo.push_back( v_sTemp[i] );
 	}
-
+	
 	// MISSION ZONE
 	if ( (GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 2) && this->IsMZChannelAvailable() && SongUtil::HasAtLeastOnePlayableSong( sc, GetQuestSongs(), SORT_QUEST ) )
 	{
 		AddTo.push_back(RString("SO_QUEST"));
 		NumAdd++;
 	}
-
+	
 	// LEVEL CHANNELS
 	if( GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() >= 2 && PREFSMAN->m_bShowLevelChannels )
 	{
 		for( unsigned i=0; i<m_vLevelsList.size(); i++ )
 		{
 			RString sSO = RString(ssprintf("SO_LEVEL_%i",i+1));
-
+			
 			if( !((*m_vLevelsList[i]).m_pAllStyles).empty() && SongUtil::HasAtLeastOnePlayableSong( sc, ((*m_vLevelsList[i]).m_pAllStyles), StringToSortOrder( sSO ) ) ) 
-			{ AddTo.push_back( sSO ); NumAdd++; }
+				{ AddTo.push_back( sSO ); NumAdd++; }
 		}
 	}
-
-	// Solo se agregï¿½ solo el canal "SHORT CUT" si  este canal estaba disponible - no se deben agregar mï¿½s canales
+	
+	// Solo se agregó solo el canal "SHORT CUT" si  este canal estaba disponible - no se deben agregar más canales
 	if ( GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() == 1)
 		return;
-
+	
 	// Omite el canal del BasicMode en la lista de canciones para el FullMode
 	for( unsigned i = 0; i < v_sTemp.size() ; ++i )
 	{
@@ -2273,15 +2273,15 @@ void SongManager::GetSongGroupNamesAvailables( vector<RString> &AddTo )
 			continue;
 		AddTo.push_back( v_sTemp[i] );
 	}
-
+	
 	/*
 	if ( PREFSMAN->m_bUseFAV )
 	{
-	AddTo.push_back(RString("FAVORITES"));
-	NumAdd++;
+		AddTo.push_back(RString("FAVORITES"));
+		NumAdd++;
 	}
 	*/
-
+	
 	ASSERT( AddTo.size() != NumAdd );
 }
 
@@ -2298,18 +2298,18 @@ void SongManager::GetAvailableGroupNames( vector<RString> &arrayGroupNames )
 			arrayGroupNames.push_back( v_sAllGroupNames[i] );
 }
 
-// Pregunta si el grupo estï¿½ disponible
+// Pregunta si el grupo está disponible
 bool SongManager::IsGroupAvailable( RString &sGroupName )
 {
 	if( !DoesSongGroupExist( sGroupName ) )
 		return false;
-
+	
 	vector<Song*> apGroupSongs;
 	apGroupSongs = GetSongs(sGroupName);
 
 	SongCriteria sc;
 	sc.m_iMaxStagesForSong = GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer();
-
+	
 	return SongUtil::HasAtLeastOnePlayableSong( sc, apGroupSongs );
 }
 
@@ -2322,7 +2322,7 @@ void SongManager::InitRandomChannel()
 	StripCvsAndSvn( arraySongDirs );
 	StripMacResourceForks( arraySongDirs );
 	SortRStringArray( arraySongDirs );
-
+	
 	for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 	{
 		RString sSongDirName = arraySongDirs[j];
@@ -2333,7 +2333,7 @@ void SongManager::InitRandomChannel()
 			int iMinLevel=0;
 			int iMaxLevel=0;
 			int style = -1;
-
+				
 			if( pNewSong->m_sMainTitle == "S01_S04" )		{ iMinLevel=1; iMaxLevel=4; style=0; }
 			else if( pNewSong->m_sMainTitle == "D01_D04" ) 	{ iMinLevel=1; iMaxLevel=4; style=1; }
 			else if( pNewSong->m_sMainTitle == "S05_S07" ) 	{ iMinLevel=5; iMaxLevel=7; style=0; }
@@ -2355,7 +2355,7 @@ void SongManager::InitRandomChannel()
 				delete pNewSong;
 				continue;
 			}
-
+			
 			bool bAddSong = false;
 			for( int i = iMinLevel; i<=iMaxLevel; i++ )
 			{
@@ -2366,7 +2366,7 @@ void SongManager::InitRandomChannel()
 					break;
 				}
 			}
-
+			
 			if( bAddSong )
 				m_pRandomChannel.push_back( pNewSong );
 			else
@@ -2389,17 +2389,17 @@ void SongManager::UpdateSortArrays()
 	UpdateSongSortByType( SONGTYPE_SHORTCUT, 	m_pShortCutSongs );
 	UpdateSongSortByType( SONGTYPE_REMIX, 		m_pRemixSongs );
 	UpdateSongSortByType( SONGTYPE_ARCADE, 		m_pAllTunes );
-
+	
 	UpdateSongSortByCategory( SONGCATEGORY_ORIGINAL, 	m_pOriginalSongs );
 	UpdateSongSortByCategory( SONGCATEGORY_KPOP, 		m_pKpopSongs );
 	UpdateSongSortByCategory( SONGCATEGORY_WORLDMUSIC, 	m_pWorldMusicSongs );
 	UpdateSongSortByCategory( SONGCATEGORY_JMUSIC, 		m_pJMusic );
-
+	
 	UpdateSongSortByLabel( "UCS", 	m_pUCS );
 	UpdateSongSortByLabel( "QUEST", m_pQUEST );
-
+	
 	UpdateCoOpChannel( m_pCoOpPlay );
-
+	
 	/*
 	UpdatePopular();
 	UpdateShuffled();
@@ -2424,12 +2424,12 @@ void SongManager::CleanUpSortArrays(void)
 		delete m_pRandomChannel[i];
 	}
 	m_pRandomChannel.clear();
-
+	
 	m_pPopularSongs.clear();
 	m_pShuffledSongs.clear();
 }
 
-// Funciones de actualizaciï¿½n de los grupos ------------------------------------------
+// Funciones de actualización de los grupos ------------------------------------------
 void SongManager::UpdateSongSortByType( SongType m_SongTypeToSort, vector<Song*> &arraySongType )
 {
 	vector<Song*> aTemp;
@@ -2439,11 +2439,11 @@ void SongManager::UpdateSongSortByType( SongType m_SongTypeToSort, vector<Song*>
 	{
 		if ( m_pSongs[i]->m_sGroupName == BasicGroupName )
 			continue;
-
+			
 		if ( m_pSongs[i]->m_SongType == m_SongTypeToSort )
 			aTemp.push_back( m_pSongs[i] );
 	}
-
+	
 	arraySongType.clear();
 	arraySongType = aTemp;
 	SongUtil::SortSongPointerArrayByGroupAndSongFolder( arraySongType );
@@ -2459,17 +2459,17 @@ void SongManager::UpdateSongSortByCategory( SongCategory m_SongCategoryToSort, v
 	{
 		if ( m_pSongs[i]->m_sGroupName == BasicGroupName )
 			continue;
-
+			
 		if ( m_pSongs[i]->m_SongType == SONGTYPE_SPECIAL )
 			continue;
-
+		
 		if ( m_pSongs[i]->m_SongType != SONGTYPE_ARCADE && !(PREFSMAN->m_bShowSpecialSongsInCategoryChannels) )
 			continue;
-
+		
 		if ( m_pSongs[i]->m_SongCategory == m_SongCategoryToSort )
 			aTemp.push_back( m_pSongs[i] );
 	}
-
+	
 	arraySongCategory.clear();
 	arraySongCategory = aTemp;
 	SongUtil::SortSongPointerArrayByGroupAndSongFolder( arraySongCategory );
@@ -2485,12 +2485,12 @@ void SongManager::UpdateSongSortByLabel( RString m_sLabel, vector<Song*> &arrayS
 	{
 		if ( m_pSongs[i]->m_sGroupName == BasicGroupName )
 			continue;
-
+			
 		if ( m_pSongs[i]->m_SongType == SONGTYPE_SPECIAL )
 			continue;
-
+			
 		vector<Steps*> aSteps = m_pSongs[i]->GetAllSteps();
-
+		
 		if( aSteps.empty() )
 			continue;
 
@@ -2503,9 +2503,9 @@ void SongManager::UpdateSongSortByLabel( RString m_sLabel, vector<Song*> &arrayS
 			}
 		}
 	}
-
+	
 	//LOG->Trace("xMAx::Loaded %i songs for channel by label: \"%s\"", aTemp.size(), m_sLabel.c_str() );
-
+	
 	arraySongLabel.clear();
 	arraySongLabel = aTemp;
 	SongUtil::SortSongPointerArrayByGroupAndSongFolder( arraySongLabel );
@@ -2521,12 +2521,12 @@ void SongManager::UpdateCoOpChannel( vector<Song*> &arraySongCoOp )
 	{
 		if ( m_pSongs[i]->m_sGroupName == BasicGroupName )
 			continue;
-
+			
 		if ( m_pSongs[i]->m_SongType == SONGTYPE_SPECIAL )
 			continue;
-
+		
 		vector<Steps*> aSteps = m_pSongs[i]->GetAllSteps();
-
+		
 		if( aSteps.empty() )
 			continue;
 
@@ -2537,7 +2537,7 @@ void SongManager::UpdateCoOpChannel( vector<Song*> &arraySongCoOp )
 				aTemp.push_back( m_pSongs[i] );
 				break;
 			}
-
+			
 			if( aSteps[j]->m_StepsType == StepsType_pump_double && (aSteps[j]->GetDescription().find("DP") != std::string::npos) && aSteps[j]->GetMeter() == 99 )
 			{
 				aTemp.push_back( m_pSongs[i] );
@@ -2545,9 +2545,9 @@ void SongManager::UpdateCoOpChannel( vector<Song*> &arraySongCoOp )
 			}
 		}
 	}
-
+	
 	//LOG->Trace("xMAx::Loaded %i songs for channel Co-Op Play", aTemp.size() );
-
+	
 	arraySongCoOp.clear();
 	arraySongCoOp = aTemp;
 	SongUtil::SortSongPointerArrayByGroupAndSongFolder( arraySongCoOp );
@@ -2754,7 +2754,7 @@ public:
 	//_---------------------------------------------------------------------------------------------------------------------------------------
 	LunaSongManager()
 	{
-		/*
+	/*
 		ADD_METHOD( GetAllSongs );
 		ADD_METHOD( GetAllCourses );
 		ADD_METHOD( FindSong );
@@ -2794,7 +2794,7 @@ public:
 		ADD_METHOD( SongToPreferredSortSectionName );
 		ADD_METHOD( WasLoadedFromAdditionalSongs );
 		ADD_METHOD( WasLoadedFromAdditionalCourses );
-		*/
+	*/
 		// xMAx -------------------------------------------------------
 		//ADD_METHOD( GetAvailableGroupNames );
 		ADD_METHOD( AreSongGroupAvailables );
@@ -2802,13 +2802,14 @@ public:
 		ADD_METHOD( GetSongGroupNames ); //taken from above
 		ADD_METHOD( GetSongGroupBannerPath );
 		ADD_METHOD( IsShortCutChannelAvailable );	//usado en ScreenProfileSave overlay
-		/*
+	/*
 		ADD_METHOD( IsRemixChannelAvailable );
 		ADD_METHOD( IsShortCutChannelAvailable );
 		ADD_METHOD( IsFullSongChannelAvailable );
-		*/
+	*/
 	}
 };
+
 LUA_REGISTER_CLASS( SongManager )
 // lua end
 

@@ -20,9 +20,9 @@ class SongCriteria
 {
 public:
 	/**
-	* @brief What group name are we searching for for Songs?
-	*
-	* If an empty string, don't bother using this for searching. */
+	 * @brief What group name are we searching for for Songs?
+	 *
+	 * If an empty string, don't bother using this for searching. */
 	RString m_sGroupName;
 	bool m_bUseSongGenreAllowedList;
 	vector<RString> m_vsSongGenreAllowedList;
@@ -60,19 +60,19 @@ public:
 	}
 
 	/**
-	* @brief Determine if the song matches the current criteria.
-	* @param p the song to compare against the criteria.
-	* @return true of the song matches the criteria, false otherwise.
-	*/
+	 * @brief Determine if the song matches the current criteria.
+	 * @param p the song to compare against the criteria.
+	 * @return true of the song matches the criteria, false otherwise.
+	 */
 	bool Matches( const Song *p ) const;
 	/**
-	* @brief Determine if two sets of criteria are equivalent.
-	* @param other the other criteria.
-	* @return true if the two sets of criteria are equal, false otherwise.
-	*/
+	 * @brief Determine if two sets of criteria are equivalent.
+	 * @param other the other criteria.
+	 * @return true if the two sets of criteria are equal, false otherwise.
+	 */
 	bool operator==( const SongCriteria &other ) const
 	{
-		/** @brief A quick way to match every part of the song criterium. */
+/** @brief A quick way to match every part of the song criterium. */
 #define X(x) (x == other.x)
 		return 
 			X(m_sGroupName) && 
@@ -89,10 +89,10 @@ public:
 #undef X
 	}
 	/**
-	* @brief Determine if two sets of criteria are not equivalent.
-	* @param other the other criteria.
-	* @return true if the two sets of criteria are not equal, false otherwise.
-	*/
+	 * @brief Determine if two sets of criteria are not equivalent.
+	 * @param other the other criteria.
+	 * @return true if the two sets of criteria are not equal, false otherwise.
+	 */
 	bool operator!=( const SongCriteria &other ) const { return !operator==( other ); }
 };
 
@@ -111,7 +111,7 @@ namespace SongUtil
 		bool bIncludeAutoGen = true, 
 		unsigned uHash = 0,
 		int iMaxToGet = -1 
-	);
+		);
 	Steps* GetOneSteps( 
 		const Song *pSong,
 		StepsType st = StepsType_Invalid, 
@@ -122,13 +122,13 @@ namespace SongUtil
 		const RString &sCredit = "",
 		unsigned uHash = 0,
 		bool bIncludeAutoGen = true
-	);
+		);
 	Steps* GetStepsByDifficulty(	const Song *pSong, StepsType st, Difficulty dc, bool bIncludeAutoGen = true );
 	Steps* GetStepsByMeter(		const Song *pSong, StepsType st, int iMeterLow, int iMeterHigh );
 	Steps* GetStepsByDescription(	const Song *pSong, StepsType st, RString sDescription );
 	Steps* GetStepsByCredit(	const Song *pSong, StepsType st, RString sCredit );
 	Steps* GetClosestNotes(		const Song *pSong, StepsType st, Difficulty dc, bool bIgnoreLocked=false );
-
+	
 	void AdjustDuplicateSteps( Song *pSong ); // part of TidyUpData
 	void DeleteDuplicateSteps( Song *pSong, vector<Steps*> &vSteps );
 
@@ -153,13 +153,13 @@ namespace SongUtil
 	int CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2);
 
 	/**
-	* @brief Determine if the requested description for an edit is unique.
-	* @param pSong the song the edit is for.
-	* @param st the steps type for the edit.
-	* @param sPreferredDescription the requested description.
-	* @param pExclude the steps that want the description.
-	* @return true if it is unique, false otherwise.
-	*/
+	 * @brief Determine if the requested description for an edit is unique.
+	 * @param pSong the song the edit is for.
+	 * @param st the steps type for the edit.
+	 * @param sPreferredDescription the requested description.
+	 * @param pExclude the steps that want the description.
+	 * @return true if it is unique, false otherwise.
+	 */
 	bool IsEditDescriptionUnique( const Song* pSong, StepsType st, const RString &sPreferredDescription, const Steps *pExclude );
 	bool IsChartNameUnique( const Song* pSong, StepsType st, const RString &name, const Steps *pExclude );
 	RString MakeUniqueEditDescription( const Song* pSong, StepsType st, const RString &sPreferredDescription );
@@ -170,11 +170,11 @@ namespace SongUtil
 
 	void GetAllSongGenres( vector<RString> &vsOut );
 	/**
-	* @brief Filter the selection of songs to only match certain criteria.
-	* @param sc the intended song criteria.
-	* @param in the starting batch of songs.
-	* @param out the resulting batch.
-	* @param doCareAboutGame a flag to see if we should only get playable steps. */
+	 * @brief Filter the selection of songs to only match certain criteria.
+	 * @param sc the intended song criteria.
+	 * @param in the starting batch of songs.
+	 * @param out the resulting batch.
+	 * @param doCareAboutGame a flag to see if we should only get playable steps. */
 	void FilterSongs( const SongCriteria &sc, const vector<Song*> &in, vector<Song*> &out,
 			 bool doCareAboutGame = false );
 
@@ -184,14 +184,14 @@ namespace SongUtil
 	void GetPlayableSteps( const Song *pSong, vector<Steps*> &vOut, SortOrder so = SortOrder_Invalid );
 	void GetFilteredPlayableSteps( const Song *pSong, vector<Steps*> &vOut, SortOrder so = SortOrder_Invalid );
 	// -------------------
-
+	
 	bool IsStepsTypePlayable( Song *pSong, StepsType st );
 	bool IsStepsPlayable( Song *pSong, Steps *pSteps );
-
+	
 	/**
-	* @brief Determine if the song has any playable steps in the present game.
-	* @param s the current song.
-	* @return true if the song has playable steps, false otherwise. */
+	 * @brief Determine if the song has any playable steps in the present game.
+	 * @param s the current song.
+	 * @return true if the song has playable steps, false otherwise. */
 	bool IsSongPlayable( Song *s );
 
 	bool GetStepsTypeAndDifficultyFromSortOrder( SortOrder so, StepsType &st, Difficulty &dc );
@@ -204,9 +204,9 @@ class SongID
 
 public:
 	/**
-	* @brief Set up the SongID with default values.
-	*
-	* This used to call Unset() to do the same thing. */
+	 * @brief Set up the SongID with default values.
+	 *
+	 * This used to call Unset() to do the same thing. */
 	SongID(): sDir(""), m_Cache() { m_Cache.Unset(); }
 	void Unset() { FromSong(NULL); }
 	void FromSong( const Song *p );
@@ -231,28 +231,28 @@ public:
 #endif
 
 /**
-* @file
-* @author Chris Danford, Glenn Maynard (c) 2001-2004
-* @section LICENSE
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * @file
+ * @author Chris Danford, Glenn Maynard (c) 2001-2004
+ * @section LICENSE
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

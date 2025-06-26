@@ -233,7 +233,7 @@ void ScoreKeeperNormal::AddHoldScore( HoldNoteScore hns )
 	if( hns == HNS_Held )
 		AddScoreInternal( TNS_W1 );
 	else if ( hns == HNS_Missed )
-		AddScoreInternal( TNS_W4 ); // required for subtractive score display to work properly.
+		AddScoreInternal( TNS_Miss ); // required for subtractive score display to work properly.
 }
 
 void ScoreKeeperNormal::AddTapRowScore( TapNoteScore score, const NoteData &nd, int iRow )

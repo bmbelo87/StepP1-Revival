@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Inglês (Estados Unidos) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(65001)
-#endif //_WIN32
+#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -43,16 +41,16 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,0,34,332,1
 END
 
-IDD_LOADING_DIALOG DIALOGEX 0, 0, 320, 94
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE
+IDD_LOADING_DIALOG DIALOGEX 0, 0, 320, 259
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_BORDER
 EXSTYLE WS_EX_APPWINDOW
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CTEXT           "line1",IDC_STATIC_MESSAGE1,7,43,303,10,SS_NOPREFIX | SS_CENTERIMAGE
-    CTEXT           "line2",IDC_STATIC_MESSAGE2,7,52,303,10,SS_NOPREFIX | SS_CENTERIMAGE
-    CTEXT           "line3",IDC_STATIC_MESSAGE3,7,61,303,10,SS_NOPREFIX | SS_CENTERIMAGE
+    CTEXT           "line1",IDC_STATIC_MESSAGE1,7,201,302,10,SS_NOPREFIX | SS_CENTERIMAGE
+    CTEXT           "line2",IDC_STATIC_MESSAGE2,7,213,302,10,SS_NOPREFIX | SS_CENTERIMAGE
+    CTEXT           "line3",IDC_STATIC_MESSAGE3,7,224,302,10,SS_NOPREFIX | SS_CENTERIMAGE,WS_EX_TRANSPARENT
     CONTROL         "",IDC_SPLASH,"Static",SS_BITMAP,0,0,316,25
-    CONTROL         "",IDC_PROGRESS,"msctls_progress32",0x0,7,73,303,14
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,7,238,303,14
 END
 
 IDD_DISASM_CRASH DIALOGEX 0, 0, 332, 114
@@ -104,14 +102,18 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
+    IDD_ERROR_DIALOG, DIALOG
+    BEGIN
+    END
+
     IDD_LOADING_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 310
         TOPMARGIN, 7
-        BOTTOMMARGIN, 87
+        BOTTOMMARGIN, 252
     END
 
     IDD_DISASM_CRASH, DIALOG
@@ -174,7 +176,9 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ICON                ICON                    "StepMania.ICO"
+
 IDI_ICON1               ICON                    "smzip.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -202,7 +206,7 @@ BEGIN
             VALUE "FileDescription", "StepMania"
             VALUE "FileVersion", "5, 0, 0, 0"
             VALUE "InternalName", "StepMania 5"
-            VALUE "LegalCopyright", "Copyright © 2001-2014"
+            VALUE "LegalCopyright", "Copyright ? 2001-2014"
             VALUE "OriginalFilename", "StepMania.exe"
             VALUE "ProductName", "StepMania"
             VALUE "ProductVersion", "5, 0, 0, 0"
@@ -214,7 +218,18 @@ BEGIN
     END
 END
 
-#endif    // English (U.S.) resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_LOADING_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // Inglês (Estados Unidos) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

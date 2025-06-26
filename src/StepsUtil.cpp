@@ -22,17 +22,17 @@ bool StepsCriteria::Matches( const Song *pSong, const Steps *pSteps ) const
 		return false;
 	switch( m_Locked )
 	{
-		DEFAULT_FAIL(m_Locked);
-		case Locked_Locked:
-			if( UNLOCKMAN  &&  !UNLOCKMAN->StepsIsLocked(pSong,pSteps) )
-				return false;
-			break;
-		case Locked_Unlocked:
-			if( UNLOCKMAN  &&  UNLOCKMAN->StepsIsLocked(pSong,pSteps) )
-				return false;
-			break;
-		case Locked_DontCare:
-			break;
+	DEFAULT_FAIL(m_Locked);
+	case Locked_Locked:
+		if( UNLOCKMAN  &&  !UNLOCKMAN->StepsIsLocked(pSong,pSteps) )
+			return false;
+		break;
+	case Locked_Unlocked:
+		if( UNLOCKMAN  &&  UNLOCKMAN->StepsIsLocked(pSong,pSteps) )
+			return false;
+		break;
+	case Locked_DontCare:
+		break;
 	}
 
 	return true;
@@ -41,7 +41,7 @@ bool StepsCriteria::Matches( const Song *pSong, const Steps *pSteps ) const
 void StepsUtil::GetAllMatching( const SongCriteria &soc, const StepsCriteria &stc, vector<SongAndSteps> &out )
 {
 	const RString &sGroupName = soc.m_sGroupName.empty()? GROUP_ALL:soc.m_sGroupName;
-	const vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
+        const vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
 
 	FOREACH_CONST( Song*, songs, so )
 	{
@@ -55,7 +55,7 @@ void StepsUtil::GetAllMatching( Song *pSong, const StepsCriteria &stc, vector<So
 {
 	const vector<Steps*> &vSteps = ( stc.m_st == StepsType_Invalid ?  pSong->GetAllSteps() :
 					 pSong->GetStepsByStepsType(stc.m_st) );
-
+	
 	FOREACH_CONST( Steps*, vSteps, st )
 		if( stc.Matches(pSong, *st) )
 			out.push_back( SongAndSteps(pSong, *st) );
@@ -64,12 +64,12 @@ void StepsUtil::GetAllMatching( Song *pSong, const StepsCriteria &stc, vector<So
 bool StepsUtil::HasMatching( const SongCriteria &soc, const StepsCriteria &stc )
 {
 	const RString &sGroupName = soc.m_sGroupName.empty()? GROUP_ALL:soc.m_sGroupName;
-	const vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
+        const vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
 
 	FOREACH_CONST( Song*, songs, so )
 	{
 		if( soc.Matches(*so) && HasMatching(*so, stc) )
-			return true;
+		        return true;
 	}
 	return false;
 }
@@ -77,11 +77,11 @@ bool StepsUtil::HasMatching( const SongCriteria &soc, const StepsCriteria &stc )
 bool StepsUtil::HasMatching( const Song *pSong, const StepsCriteria &stc )
 {
 	const vector<Steps*> &vSteps = stc.m_st == StepsType_Invalid? pSong->GetAllSteps():pSong->GetStepsByStepsType( stc.m_st );
-
+	
 	FOREACH_CONST( Steps*, vSteps, st )
 	{
 		if( stc.Matches(pSong, *st) )
-			return true;
+	  	        return true;
 	}
 	return false;
 }
@@ -164,7 +164,7 @@ bool StepsUtil::CompareNotesPointersByDifficulty(const Steps *pSteps1, const Ste
 void StepsUtil::SortNotesArrayByDifficulty( vector<Steps*> &arraySteps )
 {
 	/* Sort in reverse order of priority. Sort by description first, to get
-	* a predictable order for songs with no radar values (edits). */
+	 * a predictable order for songs with no radar values (edits). */
 	//stable_sort( arraySteps.begin(), arraySteps.end(), CompareStepsPointersByDescription );//xMAx
 	//stable_sort( arraySteps.begin(), arraySteps.end(), CompareNotesPointersByRadarValues );//xMAx
 	stable_sort( arraySteps.begin(), arraySteps.end(), CompareNotesPointersByMeter );
@@ -176,68 +176,68 @@ bool StepsUtil::CompareStepsPointersByTypeAndDifficulty(const Steps *pStep1, con
 	/* --- xMAx - para simular SinglePerformance y DoublePerformance */
 	/*
 	if( (pStep1->m_StepsType == StepsType_pump_single) && (pStep2->m_StepsType == StepsType_pump_double) )
-	if ( pStep1->GetDescription().find("SP") != std::string::npos )
-	if( pStep2->GetDescription().find("DP") != std::string::npos )
-	return true;
+		if ( pStep1->GetDescription().find("SP") != std::string::npos )
+			if( pStep2->GetDescription().find("DP") != std::string::npos )
+				return true;
 
-	else
-	return false;
+			else
+				return false;
 
-	else
-	return true;
-
+		else
+			return true;
+	
 	if( (pStep1->m_StepsType == StepsType_pump_double) && (pStep2->m_StepsType == StepsType_pump_single) )
-	if ( pStep1->GetDescription().find("DP") != std::string::npos )
-	return false;
-	else
-	if( pStep2->GetDescription().find("SP") != std::string::npos )
-	return true;
-	else
-	return false;
-
+		if ( pStep1->GetDescription().find("DP") != std::string::npos )
+			return false;
+		else
+			if( pStep2->GetDescription().find("SP") != std::string::npos )
+				return true;
+			else
+				return false;
+			
 	if( (pStep1->m_StepsType == StepsType_pump_single) && (pStep2->m_StepsType == StepsType_pump_single) )
 	{
-	if ( pStep1->GetDescription().find("SP") != std::string::npos )
-	if ( pStep2->GetDescription().find("SP") != std::string::npos )
-	//return true;
-	return pStep1->GetMeter() < pStep2->GetMeter();
-	else
-	return false;
-
-	else
-
-
-	if ( pStep2->GetDescription().find("SP") != std::string::npos )	// sabemos que step1 no es SP
-	return true;
+		if ( pStep1->GetDescription().find("SP") != std::string::npos )
+			if ( pStep2->GetDescription().find("SP") != std::string::npos )
+				//return true;
+				return pStep1->GetMeter() < pStep2->GetMeter();
+			else
+				return false;
+			
+			else
+			
+		
+		if ( pStep2->GetDescription().find("SP") != std::string::npos )	// sabemos que step1 no es SP
+			return true;
 	}
-
+			
 	if( (pStep1->m_StepsType == StepsType_pump_double) && (pStep2->m_StepsType == StepsType_pump_double) )
 	{
-	if ( pStep1->GetDescription().find("DP") != std::string::npos )
-	if ( pStep2->GetDescription().find("DP") != std::string::npos )
-	//return true;
-	return pStep1->GetMeter() < pStep2->GetMeter();
-	else
-	return false;
-
-	if ( pStep2->GetDescription().find("DP") != std::string::npos )
-	return true;
+		if ( pStep1->GetDescription().find("DP") != std::string::npos )
+			if ( pStep2->GetDescription().find("DP") != std::string::npos )
+				//return true;
+				return pStep1->GetMeter() < pStep2->GetMeter();
+			else
+				return false;
+				
+		if ( pStep2->GetDescription().find("DP") != std::string::npos )
+				return true;
 	}
-
-
+	
+	
 	if( pStep1->m_StepsType != pStep2->m_StepsType )
-	return pStep1->m_StepsType < pStep2->m_StepsType;
+		return pStep1->m_StepsType < pStep2->m_StepsType;
 	*/
-
+	
 	StepsType StepType1 = pStep1->m_StepsType;
 	StepsType StepType2 = pStep2->m_StepsType;
-
+	
 	if( StepType1 == StepsType_pump_halfdouble )
 		StepType1 = StepsType_pump_double;
-
+		
 	if( StepType2 == StepsType_pump_halfdouble )
 		StepType2 = StepsType_pump_double;
-
+		
 	if( (StepType1 == StepsType_pump_single) && (StepType2 == StepsType_pump_double) )
 		if ( pStep1->GetDescription().find("SP") != std::string::npos )
 			if( pStep2->GetDescription().find("DP") != std::string::npos )
@@ -246,7 +246,7 @@ bool StepsUtil::CompareStepsPointersByTypeAndDifficulty(const Steps *pStep1, con
 				return false;
 		else
 			return true;
-
+	
 	if( (StepType1 == StepsType_pump_double) && (StepType2 == StepsType_pump_single) )
 		if ( pStep1->GetDescription().find("DP") != std::string::npos )
 			return false;
@@ -255,7 +255,7 @@ bool StepsUtil::CompareStepsPointersByTypeAndDifficulty(const Steps *pStep1, con
 				return true;
 			else
 				return false;
-
+			
 	if( (StepType1 == StepsType_pump_single) && (StepType2 == StepsType_pump_single) )
 	{
 		if ( pStep1->GetDescription().find("SP") != std::string::npos )
@@ -264,14 +264,14 @@ bool StepsUtil::CompareStepsPointersByTypeAndDifficulty(const Steps *pStep1, con
 				return pStep1->GetMeter() < pStep2->GetMeter();
 			else
 				return false;
-
-		else
-
-
-			if ( pStep2->GetDescription().find("SP") != std::string::npos )	// sabemos que step1 no es SP
-				return true;
+			
+			else
+			
+		
+		if ( pStep2->GetDescription().find("SP") != std::string::npos )	// sabemos que step1 no es SP
+			return true;
 	}
-
+			
 	if( (StepType1 == StepsType_pump_double) && (StepType2 == StepsType_pump_double) )
 	{
 		if ( pStep1->GetDescription().find("DP") != std::string::npos )
@@ -280,18 +280,18 @@ bool StepsUtil::CompareStepsPointersByTypeAndDifficulty(const Steps *pStep1, con
 				return pStep1->GetMeter() < pStep2->GetMeter();
 			else
 				return false;
-
+				
 		if ( pStep2->GetDescription().find("DP") != std::string::npos )
-			return true;
+				return true;
 	}
-
-
+	
+	
 	if( StepType1 != StepType2 )
 		return StepType1 < StepType2;
-
+	
 	/*if( pStep1->GetDifficulty() != pStep2->GetDifficulty() )
-	return pStep1->GetDifficulty() < pStep2->GetDifficulty();*/
-
+		return pStep1->GetDifficulty() < pStep2->GetDifficulty();*/
+		
 	return pStep1->GetMeter() < pStep2->GetMeter();
 }
 void StepsUtil::SortStepsByTypeAndDifficulty( vector<Steps*> &arraySongPointers )
@@ -352,13 +352,13 @@ void StepsID::FromSteps( const Steps *p )
 }
 
 /* XXX: Don't allow duplicate edit descriptions, and don't allow edit descriptions
-* to be difficulty names (eg. "Hard").  If we do that, this will be completely unambiguous.
-*
-* XXX: Unless two memcards are inserted and there's overlap in the names.  In that
-* case, maybe both edits should be renamed to "Pn: foo"; as long as we don't write
-* them back out (which we don't do except in the editor), it won't be permanent. 
-* We could do this during the actual Steps::GetID() call, instead, but then it'd have
-* to have access to Song::m_LoadedFromProfile. */
+ * to be difficulty names (eg. "Hard").  If we do that, this will be completely unambiguous.
+ *
+ * XXX: Unless two memcards are inserted and there's overlap in the names.  In that
+ * case, maybe both edits should be renamed to "Pn: foo"; as long as we don't write
+ * them back out (which we don't do except in the editor), it won't be permanent. 
+ * We could do this during the actual Steps::GetID() call, instead, but then it'd have
+ * to have access to Song::m_LoadedFromProfile. */
 
 Steps *StepsID::ToSteps( const Song *p, bool bAllowNull ) const
 {
@@ -377,12 +377,12 @@ Steps *StepsID::ToSteps( const Song *p, bool bAllowNull ) const
 	{
 		pRet = SongUtil::GetOneSteps( p, st, dc, -1, -1, "", "", 0, true );
 	}
-
+	
 	if( !bAllowNull && pRet == NULL )
 		FAIL_M( ssprintf("%i, %i, \"%s\"", st, dc, sDescription.c_str()) );
 
 	m_Cache.Set( pRet );
-
+	
 	return pRet;
 }
 
@@ -450,7 +450,7 @@ bool StepsID::operator<( const StepsID &rhs ) const
 	COMP(st);
 	COMP(dc);
 	COMP(sDescription);
-	// BUG-FIX (xMAx - taken from StepMania dev team)
+// BUG-FIX (xMAx - taken from StepMania dev team)
 	//COMP(uHash);
 	// See explanation in class declaration. -Kyz
 	if(uHash != 0 && rhs.uHash != 0)
@@ -479,26 +479,26 @@ bool StepsID::operator==(const StepsID &rhs) const
 
 
 /*
-* (c) 2001-2004 Chris Danford, Glenn Maynard
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * (c) 2001-2004 Chris Danford, Glenn Maynard
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

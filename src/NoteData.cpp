@@ -1,8 +1,8 @@
 /*
-* NoteData is organized by:
-*  track - corresponds to different columns of notes on the screen
-*  row/index - corresponds to subdivisions of beats
-*/
+ * NoteData is organized by:
+ *  track - corresponds to different columns of notes on the screen
+ *  row/index - corresponds to subdivisions of beats
+ */
 
 #include "global.h"
 #include "NoteData.h"
@@ -49,7 +49,7 @@ void NoteData::ClearRangeForTrack( int rowBegin, int rowEnd, int iTrack )
 	}
 
 	/* If the range is empty, don't do anything. Otherwise, an empty range will
-	* cause hold notes to be split when they shouldn't be. */
+	 * cause hold notes to be split when they shouldn't be. */
 	if( rowBegin == rowEnd )
 		return;
 
@@ -59,7 +59,7 @@ void NoteData::ClearRangeForTrack( int rowBegin, int rowEnd, int iTrack )
 	if( lBegin != lEnd && lBegin->first < rowBegin && lBegin->first + lBegin->second.iDuration > rowEnd )
 	{
 		/* A hold note overlaps the whole range. Truncate it, and add the
-		* remainder to the end. */
+		 * remainder to the end. */
 		TapNote tn1 = lBegin->second;
 		TapNote tn2 = tn1;
 
@@ -123,7 +123,7 @@ void NoteData::ClearAll()
 }
 
 /* Copy [rowFromBegin,rowFromEnd) from pFrom to this. (Note that this does
-* *not* overlay; all data in the range is overwritten.) */
+ * *not* overlay; all data in the range is overwritten.) */
 void NoteData::CopyRange( const NoteData& from, int rowFromBegin, int rowFromEnd, int rowToBegin )
 {
 	ASSERT( from.GetNumTracks() == GetNumTracks() );
@@ -337,7 +337,7 @@ void NoteData::AddHoldNote( int iTrack, int iStartRow, int iEndRow, TapNote tn )
 	}
 
 	/* Additionally, if there's a tap note lying at the end of our range,
-	* remove it too. */
+	 * remove it too. */
 	SetTapNote( iTrack, iEndRow, TAP_EMPTY );
 
 	// add a tap note at the start of this hold
@@ -345,7 +345,7 @@ void NoteData::AddHoldNote( int iTrack, int iStartRow, int iEndRow, TapNote tn )
 }
 
 /* Determine if a hold note lies on the given spot.  Return true if so.  If
-* pHeadRow is non-NULL, return the row of the head. */
+ * pHeadRow is non-NULL, return the row of the head. */
 bool NoteData::IsHoldHeadOrBodyAtRow( int iTrack, int iRow, int *pHeadRow ) const
 {
 	const TapNote &tn = GetTapNote( iTrack, iRow );
@@ -360,8 +360,8 @@ bool NoteData::IsHoldHeadOrBodyAtRow( int iTrack, int iRow, int *pHeadRow ) cons
 }
 
 /* Determine if a hold note lies on the given spot. Return true if so.  If
-* pHeadRow is non-NULL, return the row of the head. (Note that this returns
-* false if a hold head lies on iRow itself.) */
+ * pHeadRow is non-NULL, return the row of the head. (Note that this returns
+ * false if a hold head lies on iRow itself.) */
 /* XXX: rename this to IsHoldBodyAtRow */
 bool NoteData::IsHoldNoteAtRow( int iTrack, int iRow, int *pHeadRow ) const
 {
@@ -370,30 +370,30 @@ bool NoteData::IsHoldNoteAtRow( int iTrack, int iRow, int *pHeadRow ) const
 		pHeadRow = &iDummy;
 
 	/* Starting at iRow, search upwards. If we find a TapNote::hold_head, we're within
-	* a hold. If we find a tap, mine or attack, we're not--those never lie
-	* within hold notes. Ignore autoKeysound. */
+	 * a hold. If we find a tap, mine or attack, we're not--those never lie
+	 * within hold notes. Ignore autoKeysound. */
 	FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE_REVERSE( *this, iTrack, r, 0, iRow )
 	{
 		const TapNote &tn = GetTapNote( iTrack, r );
 		switch( tn.type )
 		{
-			case TapNote::hold_head:
-				if( tn.iDuration + r < iRow )
-					return false;
-				*pHeadRow = r;
-				return true;
-			case TapNote::hold_tail:	// xMAx - no estoy seguro si se usa en sm-pump
-			case TapNote::tap:
-			case TapNote::mine:
-			case TapNote::attack:
-			case TapNote::lift:
-				//case TapNote::fake:
+		case TapNote::hold_head:
+			if( tn.iDuration + r < iRow )
 				return false;
-			case TapNote::empty:
-			case TapNote::autoKeysound:
-				// ignore
-				continue;
-				DEFAULT_FAIL( tn.type );
+			*pHeadRow = r;
+			return true;
+		case TapNote::hold_tail:	// xMAx - no estoy seguro si se usa en sm-pump
+		case TapNote::tap:
+		case TapNote::mine:
+		case TapNote::attack:
+		case TapNote::lift:
+		//case TapNote::fake:
+			return false;
+		case TapNote::empty:
+		case TapNote::autoKeysound:
+			// ignore
+			continue;
+		DEFAULT_FAIL( tn.type );
 		}
 	}
 
@@ -447,7 +447,7 @@ int NoteData::GetLastRow() const
 			continue;
 
 		/* XXX: We might have a hold note near the end with autoplay sounds
-		* after it.  Do something else with autoplay sounds ... */
+		 * after it.  Do something else with autoplay sounds ... */
 		const TapNote &tn = GetTapNote( t, iRow );
 		if( tn.type == TapNote::hold_head )
 			iRow += tn.iDuration;
@@ -460,35 +460,35 @@ int NoteData::GetLastRow() const
 
 bool NoteData::IsTap(const TapNote &tn, const int row) const
 {
-	/*
+/*
 	return (tn.type != TapNote::empty && tn.type != TapNote::mine
-	&& tn.type != TapNote::lift && tn.type != TapNote::fake
-	&& tn.type != TapNote::autoKeysound
-	&& GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
-	*/		
+			&& tn.type != TapNote::lift && tn.type != TapNote::fake
+			&& tn.type != TapNote::autoKeysound
+			&& GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
+*/		
 	return (tn.type != TapNote::empty && tn.type != TapNote::mine
-		 && tn.type != TapNote::lift
-		 && tn.type != TapNote::autoKeysound
-		 && !IsFake(tn,row) );
+			&& tn.type != TapNote::lift
+			&& tn.type != TapNote::autoKeysound
+			&& !IsFake(tn,row) );
 }
 
 bool NoteData::IsMine(const TapNote &tn, const int row) const
 {
 	return (tn.type == TapNote::mine
-		 && GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
+			&& GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
 }
 
 bool NoteData::IsLift(const TapNote &tn, const int row) const
 {
 	return (tn.type == TapNote::lift
-		 && GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
+			&& GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
 }
 
 bool NoteData::IsFake(const TapNote &tn, const int row) const
 {
 	/*
 	return (tn.type == TapNote::fake
-	|| !GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
+			|| !GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
 	*/
 	return ( (tn.judge == TapNote::fake) || !GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(row));
 }
@@ -507,7 +507,6 @@ int NoteData::GetNumTapNotes( int iStartIndex, int iEndIndex ) const
 
 	return iNumNotes;
 }
-
 int NoteData::GetNumTapNotesInRow( int iRow ) const
 {
 	int iNumNotes = 0;
@@ -559,15 +558,15 @@ bool NoteData::RowNeedsAtLeastSimultaneousPresses( int iMinSimultaneousPresses, 
 	for( int t=0; t<GetNumTracks(); t++ )
 	{
 		const TapNote &tn = GetTapNote(t, row);
-
+		
 		if( tn.judge == TapNote::fake )
 			continue;
-
+			
 		switch( tn.type )
 		{
 			case TapNote::mine:
 			case TapNote::empty:
-				//case TapNote::fake:
+			//case TapNote::fake:
 			case TapNote::lift: // you don't "press" on a lift.
 			case TapNote::autoKeysound:
 				continue;	// skip these types - they don't count
@@ -596,10 +595,10 @@ bool NoteData::RowNeedsAtLeastSimultaneousPresses( int iMinSimultaneousPresses, 
 int NoteData::GetNumRowsWithSimultaneousPresses( int iMinSimultaneousPresses, int iStartIndex, int iEndIndex ) const
 {
 	/* Count the number of times you have to use your hands.  This includes
-	* three taps at the same time, a tap while two hold notes are being held,
-	* etc.  Only count rows that have at least one tap note (hold heads count).
-	* Otherwise, every row of hold notes counts, so three simultaneous hold
-	* notes will count as hundreds of "hands". */
+	 * three taps at the same time, a tap while two hold notes are being held,
+	 * etc.  Only count rows that have at least one tap note (hold heads count).
+	 * Otherwise, every row of hold notes counts, so three simultaneous hold
+	 * notes will count as hundreds of "hands". */
 	int iNum = 0;
 	FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( *this, r, iStartIndex, iEndIndex )
 	{
@@ -626,13 +625,13 @@ int NoteData::GetNumRowsWithSimultaneousTaps( int iMinTaps, int iStartIndex, int
 			const TapNote &tn = GetTapNote(t, r);
 			/*
 			if (tn.type != TapNote::mine &&     // mines don't count.
-			tn.type != TapNote::empty &&
-			tn.type != TapNote::fake &&
-			tn.type != TapNote::autoKeysound)
+				tn.type != TapNote::empty &&
+				tn.type != TapNote::fake &&
+				tn.type != TapNote::autoKeysound)
 			*/
 			if ( (tn.type != TapNote::mine &&     // mines don't count.
-			     tn.type != TapNote::empty &&
-			     tn.type != TapNote::autoKeysound) && !(tn.judge == TapNote::fake) )
+				tn.type != TapNote::empty &&
+				tn.type != TapNote::autoKeysound) && !(tn.judge == TapNote::fake) )
 				iNumNotesThisIndex++;
 		}
 		if( iNumNotesThisIndex >= iMinTaps )
@@ -652,7 +651,7 @@ int NoteData::GetNumHoldNotes( int iStartIndex, int iEndIndex ) const
 		for( ; lBegin != lEnd; ++lBegin )
 		{
 			if( lBegin->second.type != TapNote::hold_head ||
-			    lBegin->second.subType != TapNote::hold_head_hold )
+				lBegin->second.subType != TapNote::hold_head_hold )
 				continue;
 			if (!GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(lBegin->first))
 				continue;
@@ -671,7 +670,7 @@ int NoteData::GetNumRolls( int iStartIndex, int iEndIndex ) const
 		for( ; lBegin != lEnd; ++lBegin )
 		{
 			if( lBegin->second.type != TapNote::hold_head ||
-			    lBegin->second.subType != TapNote::hold_head_roll )
+				lBegin->second.subType != TapNote::hold_head_roll )
 				continue;
 			if (!GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(lBegin->first))
 				continue;
@@ -698,14 +697,14 @@ int NoteData::GetNumLifts( int iStartIndex, int iEndIndex ) const
 int NoteData::GetNumFakes( int iStartIndex, int iEndIndex ) const
 {
 	int iNumFakes = 0;
-
+	
 	for( int t=0; t<GetNumTracks(); t++ )
 	{
 		FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE( *this, t, r, iStartIndex, iEndIndex )
 			if( this->IsFake(GetTapNote(t, r), r))
 				iNumFakes++;
 	}
-
+	
 	return iNumFakes;
 }
 
@@ -739,8 +738,8 @@ pair<int, int> NoteData::GetNumTapNotesTwoPlayer( int iStartIndex, int iEndIndex
 }
 
 pair<int, int> NoteData::GetNumRowsWithSimultaneousTapsTwoPlayer(int minTaps,
-								  int startRow,
-								  int endRow) const
+																 int startRow,
+																 int endRow) const
 {
 	pair<int, int> num(0, 0);
 	FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( *this, r, startRow, endRow )
@@ -790,7 +789,7 @@ pair<int, int> NoteData::GetNumHoldNotesTwoPlayer( int iStartIndex, int iEndInde
 		for( ; lBegin != lEnd; ++lBegin )
 		{
 			if( lBegin->second.type != TapNote::hold_head ||
-			    lBegin->second.subType != TapNote::hold_head_hold )
+			   lBegin->second.subType != TapNote::hold_head_hold )
 				continue;
 			if (!GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(lBegin->first))
 				continue;
@@ -833,7 +832,7 @@ pair<int, int> NoteData::GetNumRollsTwoPlayer( int iStartIndex, int iEndIndex ) 
 		for( ; lBegin != lEnd; ++lBegin )
 		{
 			if( lBegin->second.type != TapNote::hold_head ||
-			    lBegin->second.subType != TapNote::hold_head_roll )
+			   lBegin->second.subType != TapNote::hold_head_roll )
 				continue;
 			if (!GAMESTATE->GetProcessedTimingData()->IsJudgableAtRow(lBegin->first))
 				continue;
@@ -889,20 +888,20 @@ pair<int, int> NoteData::GetNumFakesTwoPlayer( int iStartIndex, int iEndIndex ) 
 /*
 int NoteData::GetNumMinefields( int iStartIndex, int iEndIndex ) const
 {
-int iNumMinefields = 0;
-for( int t=0; t<GetNumTracks(); ++t )
-{
-NoteData::TrackMap::const_iterator begin, end;
-GetTapNoteRangeExclusive( t, iStartIndex, iEndIndex, begin, end );
-for( ; begin != end; ++begin )
-{
-if( begin->second.type != TapNote::hold_head ||
-begin->second.subType != TapNote::hold_head_mine )
-continue;
-iNumMinefields++;
-}
-}
-return iNumMinefields;
+	int iNumMinefields = 0;
+	for( int t=0; t<GetNumTracks(); ++t )
+	{
+		NoteData::TrackMap::const_iterator begin, end;
+		GetTapNoteRangeExclusive( t, iStartIndex, iEndIndex, begin, end );
+		for( ; begin != end; ++begin )
+		{
+			if( begin->second.type != TapNote::hold_head ||
+				begin->second.subType != TapNote::hold_head_mine )
+				continue;
+			iNumMinefields++;
+		}
+	}
+	return iNumMinefields;
 }
 */
 
@@ -919,7 +918,7 @@ void NoteData::LoadTransformed( const NoteData& in, int iNewNumTracks, const int
 	{
 		const int iOriginalTrack = iOriginalTrackToTakeFrom[t];
 		ASSERT_M( iOriginalTrack < in.GetNumTracks(), ssprintf("from OriginalTrack %i >= %i (#tracks) (taking from %i)", 
-			  iOriginalTrack, in.GetNumTracks(), iOriginalTrackToTakeFrom[t]));
+			iOriginalTrack, in.GetNumTracks(), iOriginalTrackToTakeFrom[t]));
 
 		if( iOriginalTrack == -1 )
 			continue;
@@ -1038,8 +1037,8 @@ void NoteData::GetTapNoteRange( int iTrack, int iStartRow, int iEndRow, TrackMap
 
 
 /* Include hold notes that overlap the edges.  If a hold note completely surrounds the given
-* range, included it, too.  If bIncludeAdjacent is true, also include hold notes adjacent to,
-* but not overlapping, the edge. */
+ * range, included it, too.  If bIncludeAdjacent is true, also include hold notes adjacent to,
+ * but not overlapping, the edge. */
 void NoteData::GetTapNoteRangeInclusive( int iTrack, int iStartRow, int iEndRow, TrackMap::iterator &lBegin, TrackMap::iterator &lEnd, bool bIncludeAdjacent )
 {
 	GetTapNoteRange( iTrack, iStartRow, iEndRow, lBegin, lEnd );
@@ -1051,7 +1050,7 @@ void NoteData::GetTapNoteRangeInclusive( int iTrack, int iStartRow, int iEndRow,
 		// xMAx
 		if( prev->second.type == TapNote::hold_tail )
 			--prev;
-
+		
 		const TapNote &tn = prev->second;
 		if( tn.type == TapNote::hold_head )
 		{
@@ -1086,11 +1085,11 @@ void NoteData::GetTapNoteRangeExclusive( int iTrack, int iStartRow, int iEndRow,
 	{
 		iterator prev = lEnd;
 		--prev;
-
+		
 		// xMAx
 		if( prev->second.type == TapNote::hold_tail )
 			--prev;
-
+		
 		if( prev->second.type == TapNote::hold_head )
 		{
 			int localStartRow = prev->first;
@@ -1360,26 +1359,26 @@ template class NoteData::_all_tracks_iterator<NoteData, NoteData::iterator, TapN
 template class NoteData::_all_tracks_iterator<const NoteData, NoteData::const_iterator, const TapNote>;
 
 /*
-* (c) 2001-2004 Chris Danford, Glenn Maynard
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * (c) 2001-2004 Chris Danford, Glenn Maynard
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

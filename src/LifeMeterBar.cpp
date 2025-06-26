@@ -61,34 +61,44 @@ LifeMeterBar::LifeMeterBar()
 	// set up combotoregainlife
 	m_iComboToRegainLife = 0;
 
-	bool bExtra = GAMESTATE->IsAnExtraStage();
-	RString sExtra = bExtra ? "extra " : "";
 
-	m_sprUnder.Load( THEME->GetPathG(sType,sExtra+"Under") );
-	m_sprUnder->SetName( "Under" );
-	ActorUtil::LoadAllCommandsAndSetXY( m_sprUnder, sType );
-	this->AddChild( m_sprUnder );
+	// --- StepP1 Revival - bSilver
+	RString sFolder = "LifeMeterBar";
+	RString sOver = "Over/";
+	RString sPrefix = GAMESTATE->IsDouble() ? "double_" : "";
 
-	m_sprDanger.Load( THEME->GetPathG(sType,sExtra+"Danger") );
-	m_sprDanger->SetName( "Danger" );
-	ActorUtil::LoadAllCommandsAndSetXY( m_sprDanger, sType );
-	this->AddChild( m_sprDanger );
+	
+	// Load sprites directly based on file names 
+	m_sprFallback		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "fallback.png"));
+	m_sprFallbackRed	.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "fallback_red.png"));
+	m_sprBarBlue		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "bar_blue.png"));
+	m_sprBarGrey		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "bar_grey.png"));
+	m_sprGlowColor		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "glow_color.png"));
+	m_sprGlowRed		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "glow_red.png"));
+	m_sprFrame		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "frame.png"));
+	m_sprTipBlue		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "tip_blue.png"));
+	m_sprTipRed		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "tip_red.png"));
 
-	m_pStream = new StreamDisplay;
-	m_pStream->Load( bExtra ? "StreamDisplayExtra" : "StreamDisplay" );
-	m_pStream->SetName( "Stream" );
-	ActorUtil::LoadAllCommandsAndSetXY( m_pStream, sType );
-	this->AddChild( m_pStream );
 
-	m_sprOver.Load( THEME->GetPathG(sType,sExtra+"Over") );
-	m_sprOver->SetName( "Over" );
-	ActorUtil::LoadAllCommandsAndSetXY( m_sprOver, sType );
-	this->AddChild( m_sprOver );
+	this->AddChild( m_sprFallback );
+	this->AddChild( m_sprFallbackRed);
+	this->AddChild( m_sprBarBlue );
+	this->AddChild( m_sprBarGrey );
+	this->AddChild( m_sprGlowColor );
+	this->AddChild( m_sprGlowRed );
+	this->AddChild( m_sprFrame );
+	this->AddChild( m_sprTipBlue );
+	this->AddChild( m_sprTipRed );
+
+	// --------------------------------------
+
+
+
+
 }
 
 LifeMeterBar::~LifeMeterBar()
 {
-	SAFE_DELETE( m_pStream );
 }
 
 void LifeMeterBar::Load( const PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats )
@@ -243,7 +253,7 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 
 void LifeMeterBar::AfterLifeChanged()
 {
-	m_pStream->SetPercent( m_fLifePercentage );
+	//m_sprTipBlue->SetPercent( m_fLifePercentage );
 
 	Message msg( "LifeChanged" );
 	msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
@@ -277,13 +287,13 @@ void LifeMeterBar::Update( float fDeltaTime )
 	m_fHotAlpha  += IsHot() ? + fDeltaTime*2 : -fDeltaTime*2;
 	CLAMP( m_fHotAlpha, 0, 1 );
 
-	m_pStream->SetPassingAlpha( m_fPassingAlpha );
-	m_pStream->SetHotAlpha( m_fHotAlpha );
+	//m_pStream->SetPassingAlpha( m_fPassingAlpha );
+	//m_pStream->SetHotAlpha( m_fHotAlpha );
 
 	if( m_pPlayerState->m_HealthState == HealthState_Danger )
-		m_sprDanger->SetVisible( true );
+		m_sprFallbackRed->SetVisible( true );
 	else
-		m_sprDanger->SetVisible( false );
+		m_sprFallbackRed->SetVisible( false );
 }
 
 

@@ -66,10 +66,10 @@ public:
 	void AddStageToPlayer( PlayerNumber pn );
 	void LoadCurrentSettingsFromProfile( PlayerNumber pn );
 	/**
-	* @brief Save the specified player's settings to his/her profile.
-	*
-	* This is called at the beginning of each stage.
-	* @param pn the PlayerNumber to save the stats to. */
+	 * @brief Save the specified player's settings to his/her profile.
+	 *
+	 * This is called at the beginning of each stage.
+	 * @param pn the PlayerNumber to save the stats to. */
 	void SaveCurrentSettingsToProfile( PlayerNumber pn );
 	Song* GetDefaultSong() const;
 
@@ -78,26 +78,26 @@ public:
 	// Main state info
 
 	/**
-	* @brief State what the current game is.
-	*
-	* Call this instead of m_pCurGame.Set to make sure that
-	* PREFSMAN->m_sCurrentGame stays in sync.
-	* @param pGame the game to start using. */
+	 * @brief State what the current game is.
+	 *
+	 * Call this instead of m_pCurGame.Set to make sure that
+	 * PREFSMAN->m_sCurrentGame stays in sync.
+	 * @param pGame the game to start using. */
 	void SetCurGame( const Game *pGame );
 	BroadcastOnChangePtr<const Game>	m_pCurGame;
 	BroadcastOnChangePtr<const Style>	m_pCurStyle;
 	/** @brief Determine which side is joined.
-	*
-	* The left side is player 1, and the right side is player 2. */
+	 *
+	 * The left side is player 1, and the right side is player 2. */
 	bool					m_bSideIsJoined[NUM_PLAYERS];	// left side, right side
 	MultiPlayerStatus			m_MultiPlayerStatus[NUM_MultiPlayer];
 	BroadcastOnChange<PlayMode>		m_PlayMode;			// many screens display different info depending on this value
 	/**
-	* @brief The number of coins presently in the machine.
-	*
-	* Note that coins are not "credits". One may have to put in two coins 
-	* to get one credit, only to have to put in another four coins to get
-	* the three credits needed to begin the game. */
+	 * @brief The number of coins presently in the machine.
+	 *
+	 * Note that coins are not "credits". One may have to put in two coins 
+	 * to get one credit, only to have to put in another four coins to get
+	 * the three credits needed to begin the game. */
 	BroadcastOnChange<int>			m_iCoins;
 	bool			m_bMultiplayer;
 	int				m_iNumMultiplayerNoteFields;
@@ -118,8 +118,8 @@ public:
 	RString		m_sStageGUID;
 
 	/**
-	* @brief Determine if a second player can join in at this time.
-	* @return true if a player can still enter the game, false otherwise. */
+	 * @brief Determine if a second player can join in at this time.
+	 * @return true if a player can still enter the game, false otherwise. */
 	bool	PlayersCanJoin() const;
 	int 	GetCoinsNeededToJoin() const;
 	bool	EnoughCreditsToJoin() const { return m_iCoins >= GetCoinsNeededToJoin(); }
@@ -137,9 +137,9 @@ public:
 	int	GetNumPlayersEnabled() const;
 
 	/**
-	* @brief Is the specified Player a human Player?
-	* @param pn the numbered Player to check.
-	* @return true if it's a human Player, or false otherwise. */
+	 * @brief Is the specified Player a human Player?
+	 * @param pn the numbered Player to check.
+	 * @return true if it's a human Player, or false otherwise. */
 	bool IsHumanPlayer( PlayerNumber pn ) const;
 	int GetNumHumanPlayers() const;
 	PlayerNumber GetFirstHumanPlayer() const;
@@ -148,31 +148,31 @@ public:
 	bool AnyPlayersAreCpu() const;
 
 	/**
-	* @brief Retrieve the present master player number.
-	* @return The master player number. */
+	 * @brief Retrieve the present master player number.
+	 * @return The master player number. */
 	PlayerNumber GetMasterPlayerNumber() const;
 
 	/**
-	* @brief Set the master player number.
-	* @param p the master player number. */
+	 * @brief Set the master player number.
+	 * @param p the master player number. */
 	void SetMasterPlayerNumber(const PlayerNumber p);
 
 	/**
-	* @brief Retrieve the present timing data being processed.
-	* @return the timing data pointer. */
+	 * @brief Retrieve the present timing data being processed.
+	 * @return the timing data pointer. */
 	TimingData * GetProcessedTimingData() const;
 
 	/**
-	* @brief Set the timing data to be used with processing.
-	* @param t the timing data. */
+	 * @brief Set the timing data to be used with processing.
+	 * @param t the timing data. */
 	void SetProcessedTimingData(TimingData * t);
 
 	bool IsCourseMode() const;
 	bool IsBattleMode() const; // not Rave
 
 	/**
-	* @brief Do we show the W1 timing judgment?
-	* @return true if we do, or false otherwise. */
+	 * @brief Do we show the W1 timing judgment?
+	 * @return true if we do, or false otherwise. */
 	bool ShowW1() const;
 
 	BroadcastOnChange<RString>	m_sPreferredSongGroup;		// GROUP_ALL denotes no preferred group
@@ -186,21 +186,21 @@ public:
 	EditMode	m_EditMode;
 	bool		IsEditing() const { return m_EditMode != EditMode_Invalid; }
 	/**
-	* @brief Are we in the demonstration or jukebox mode?
-	*
-	* ScreenGameplay often does special things when this is set to true. */
+	 * @brief Are we in the demonstration or jukebox mode?
+	 *
+	 * ScreenGameplay often does special things when this is set to true. */
 	bool		m_bDemonstrationOrJukebox;
 	bool		m_bJukeboxUsesModifiers;
 	int			m_iNumStagesOfThisSong;
 	/**
-	* @brief Increase this every stage while not resetting on a continue.
-	*
-	* This is cosmetic: it's not use for Stage or Screen branching logic. */
+	 * @brief Increase this every stage while not resetting on a continue.
+	 *
+	 * This is cosmetic: it's not use for Stage or Screen branching logic. */
 	int				m_iCurrentStageIndex;
 	/**
-	* @brief The number of stages available for the players.
-	*
-	* This resets whenever a player joins or continues. */
+	 * @brief The number of stages available for the players.
+	 *
+	 * This resets whenever a player joins or continues. */
 	int				m_iPlayerStageTokens[NUM_PLAYERS];
 
 	RString sExpandedSectionName;
@@ -290,10 +290,10 @@ public:
 	ModsGroup<SongOptions>	m_SongOptions;
 
 	/**
-	* @brief Did the current game mode change the default Noteskin?
-	*
-	* This is true if it has: see Edit/Sync Songs for a common example.
-	* Note: any mode that wants to use this must set it explicitly. */
+	 * @brief Did the current game mode change the default Noteskin?
+	 *
+	 * This is true if it has: see Edit/Sync Songs for a common example.
+	 * Note: any mode that wants to use this must set it explicitly. */
 	bool m_bDidModeChangeNoteSkin;
 
 	void GetDefaultPlayerOptions( PlayerOptions &po );
@@ -361,16 +361,16 @@ public:
 	Premium		GetPremium() const;
 
 	// Edit stuff
-
+	
 	/**
-	* @brief Is the game right now using Song timing or Steps timing?
-	*
-	* Different options are available depending on this setting. */
+	 * @brief Is the game right now using Song timing or Steps timing?
+	 *
+	 * Different options are available depending on this setting. */
 	bool m_bIsUsingStepTiming;
 	/**
-	* @brief Are we presently in the Step Editor, where some rules apply differently?
-	*
-	* TODO: Find a better way to implement this. */
+	 * @brief Are we presently in the Step Editor, where some rules apply differently?
+	 *
+	 * TODO: Find a better way to implement this. */
 	bool m_bInStepEditor;
 	BroadcastOnChange<StepsType> m_stEdit;
 	BroadcastOnChange<CourseDifficulty> m_cdEdit;
@@ -390,35 +390,35 @@ public:
 	void PushSelf( lua_State *L );
 
 	// xMAx ------------------------------------------------------------------------------------------
-	bool		m_bHasProfile[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionï¿½ un local profile*/
-	int			m_iProfileIndex[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionï¿½ un local profile*/
-	int			m_iProfileIndexRandom[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionï¿½ un local profile*/
+	bool		m_bHasProfile[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionó un local profile*/
+	int			m_iProfileIndex[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionó un local profile*/
+	int			m_iProfileIndexRandom[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionó un local profile*/
 	RString 	GetAvatarURLFromPlayerNumber( PlayerNumber pn );
 	bool 		m_bBasicMode;
 	bool		m_bNoteSkin1Unlocked;
 	bool		m_bNoteSkin2Unlocked;
 	RString		m_sCurrentGroupName;	/* Se utiliza en el ScreenSelectMusic.cpp */
 	RString		m_sBasicModeGroupName;
-
+	
 	int			GetHighestNumStagesLeftForAnyHumanPlayer() const;
 	inline bool IsBasicMode() { return m_bBasicMode; };
 	inline void SetBasicMode( bool b ) { m_bBasicMode = b; };
-
+	
 	BroadcastOnChange<BattleMode>		m_BattleMode;			// Tipo de batalla
 	int									m_iNumBattleStagesWon[NUM_PLAYERS];
 	PlayerNumber						m_PlayerWonBattleMode;
 	int									m_iNumBattleStages;		// General for both players
 	void 		ResetBattleVars();
-
+	
 	int		m_bPlayerChartIndex[NUM_PLAYERS];
 	bool 	IsDouble(void) const;
-	/*	
+/*	
 	int		m_iNumPlayedStages[NUM_PLAYERS];
 	bool	m_bBlockBonusHeartsForPlayer[NUM_PLAYERS];
-	*/
+*/
 	// ----------------------------------------------------------------------------------------------
-
-
+	
+	
 	// Keep extra stage logic internal to GameState.
 private:
 	EarnedExtraStage	CalculateEarnedExtraStage() const;
@@ -458,28 +458,28 @@ extern GameState*	GAMESTATE;	// global and accessible from anywhere in our progr
 #endif
 
 /**
-* @file
-* @author Chris Danford, Glenn Maynard, Chris Gomez (c) 2001-2004
-* @section LICENSE
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * @file
+ * @author Chris Danford, Glenn Maynard, Chris Gomez (c) 2001-2004
+ * @section LICENSE
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */

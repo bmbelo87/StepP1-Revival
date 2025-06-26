@@ -44,10 +44,22 @@ private:
 
 	ThemeMetric1D<float> m_fLifePercentChange;
 
-	AutoActor		m_sprUnder;
-	AutoActor		m_sprDanger;
-	StreamDisplay*	m_pStream;
-	AutoActor		m_sprOver;
+	//AutoActor		m_sprUnder;
+	//AutoActor		m_sprDanger;
+	//StreamDisplay*	m_pStream;
+	/*AutoActor		m_sprOver;*/
+
+	// -------- StepP1 Revival - bSilver
+	AutoActor m_sprBarBlue;
+	AutoActor m_sprBarGrey;
+	AutoActor m_sprFallback;
+	AutoActor m_sprFallbackRed;
+	AutoActor m_sprFrame;
+	AutoActor m_sprGlowColor;
+	AutoActor m_sprGlowRed;
+	AutoActor m_sprTipBlue;
+	AutoActor m_sprTipRed;
+	// ---------------------------------
 
 	float		m_fLifePercentage;
 

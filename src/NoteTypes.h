@@ -18,11 +18,11 @@ struct TapNoteResult
 	TapNoteScore	tns;
 
 	/**
-	* @brief Offset, in seconds, for a tap grade.
-	*
-	* Negative numbers mean the note was hit early; positive numbers mean 
-	* it was hit late. These values are only meaningful for graded taps
-	* (tns >= TNS_W5). */
+	 * @brief Offset, in seconds, for a tap grade.
+	 *
+	 * Negative numbers mean the note was hit early; positive numbers mean 
+	 * it was hit late. These values are only meaningful for graded taps
+	 * (tns >= TNS_W5). */
 	float		fTapNoteOffset;
 
 	/** @brief If the whole row has been judged, all taps on the row will be set to hidden. */
@@ -42,23 +42,23 @@ struct HoldNoteResult
 	HoldNoteScore	hns;
 
 	/**
-	* @brief the current life of the hold.
-	* 
-	* 1.0 means this HoldNote has full life.
-	* 
-	* 0.0 means this HoldNote is dead.
-	* 
-	* When this value hits 0.0 for the first time, m_HoldScore becomes HNS_LetGo.
-	* If the life is > 0.0 when the HoldNote ends, then m_HoldScore becomes HNS_Held. */
+	 * @brief the current life of the hold.
+	 * 
+	 * 1.0 means this HoldNote has full life.
+	 * 
+	 * 0.0 means this HoldNote is dead.
+	 * 
+	 * When this value hits 0.0 for the first time, m_HoldScore becomes HNS_LetGo.
+	 * If the life is > 0.0 when the HoldNote ends, then m_HoldScore becomes HNS_Held. */
 	float	fLife;
 
 	/** @brief The number of seconds the hold note has overlapped the current beat.
-	*
-	* This value is 0 if it doesn't overlap. */
+	 *
+	 * This value is 0 if it doesn't overlap. */
 	float	fOverlappedTime;
 
 	/** @brief Last index where fLife was greater than 0. If the tap was missed, this
-	* will be the first index of the hold. */
+	 * will be the first index of the hold. */
 	int		iLastHeldRow;
 
 	/** @brief If checkpoint holds are enabled, the number of checkpoints hit. */
@@ -74,7 +74,7 @@ struct HoldNoteResult
 	// xMAx 
 	/** xMAx - Counts the checkpoints not judged (after the hold passed the receptor). Use this value when hold is judged as perfect or miss */
 	vector<int>	viCheckpointsNotJudged;
-
+	
 	// XML
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
@@ -95,7 +95,7 @@ struct TapNote
 		attack,		/**< Hitting this note causes an attack to take place. */
 		autoKeysound,	/**< A special sound is played when this note crosses the target area. */
 		//fake,		/**< This arrow can't be scored for or against the player. */
-	};
+ 	};
 	/** @brief The list of a TapNote's sub types. */
 	enum SubType
 	{
@@ -105,7 +105,7 @@ struct TapNote
 		NUM_SubType,
 		SubType_Invalid
 	};
-
+	
 	enum Appearance
 	{
 		normal,
@@ -115,7 +115,7 @@ struct TapNote
 		NUM_Appearance,
 		Appearance_Invalid
 	};
-
+	
 	enum Judge
 	{
 		normal_judge,
@@ -124,14 +124,14 @@ struct TapNote
 		NUM_Judge,
 		Judge_Invalid
 	};
-
+	
 	/** @brief The different places a TapNote could come from. */
 	enum Source
 	{
 		original,	/**< This note is part of the original NoteData. */
 		addition,	/**< This note is additional note added by a transform. */
 	};
-
+	
 	/** @brief Para distinguir entre los distintos tipos de tap notes. xMAx */
 	enum NoteSkinPlayer
 	{
@@ -139,12 +139,10 @@ struct TapNote
 		p1_nsp,
 		p2_nsp,
 		p3_nsp,
-
-
 		NUM_NoteSkinPlayer,
 		NoteSkinPlayer_Invalid
 	};
-
+	
 	/** @brief The core note type that is about to cross the target area. */
 	Type		type;
 	/** @brief The sub type of the note. This is only used if the type is hold_head. */
@@ -160,7 +158,7 @@ struct TapNote
 	Appearance	appearance;
 	Judge		judge;
 	bool 	bIsFake;
-
+	
 	// used only if Type == attack:
 	RString		sAttackModifiers;
 	float		fAttackDurationSeconds;
@@ -170,7 +168,7 @@ struct TapNote
 
 	//	xMAx
 	int		iSkin;
-
+	
 	// also used for hold_head only:
 	int		iDuration;
 	HoldNoteResult	HoldResult;
@@ -220,9 +218,9 @@ struct TapNote
 	}
 
 	/**
-	* @brief Determine if the two TapNotes are equal to each other.
-	* @param other the other TapNote we're checking.
-	* @return true if the two TapNotes are equal, or false otherwise. */
+	 * @brief Determine if the two TapNotes are equal to each other.
+	 * @param other the other TapNote we're checking.
+	 * @return true if the two TapNotes are equal, or false otherwise. */
 	bool operator==( const TapNote &other ) const
 	{
 #define COMPARE(x)	if(x!=other.x) return false
@@ -242,9 +240,9 @@ struct TapNote
 		return true;
 	}
 	/**
-	* @brief Determine if the two TapNotes are not equal to each other.
-	* @param other the other TapNote we're checking.
-	* @return true if the two TapNotes are not equal, or false otherwise. */
+	 * @brief Determine if the two TapNotes are not equal to each other.
+	 * @param other the other TapNote we're checking.
+	 * @return true if the two TapNotes are not equal, or false otherwise. */
 	bool operator!=( const TapNote &other ) const { return !operator==( other ); }
 };
 
@@ -268,11 +266,11 @@ extern TapNote TAP_ADDITION_TAP;
 extern TapNote TAP_ADDITION_MINE;
 
 /**
-* @brief Retrieve the string representing the TapNote Type.
-*
-* TODO: Find a way to standardize this with the other enum string calls.
-* @param tn the TapNote's type.
-* @return the intended string. */
+ * @brief Retrieve the string representing the TapNote Type.
+ *
+ * TODO: Find a way to standardize this with the other enum string calls.
+ * @param tn the TapNote's type.
+ * @return the intended string. */
 inline const RString TapNoteTypeToString( TapNote::Type tn )
 {
 	switch( tn )
@@ -293,7 +291,7 @@ inline const RString TapNoteTypeToString( TapNote::Type tn )
 			return RString("attack");
 		case TapNote::autoKeysound:
 			return RString("autoKeysound");
-			/*case TapNote::fake:
+		/*case TapNote::fake:
 			return RString("fake");*/
 		default:
 			return RString("");
@@ -301,7 +299,7 @@ inline const RString TapNoteTypeToString( TapNote::Type tn )
 }
 
 /**
-* @brief Regresa el string que repesenta al TapNote NoteSkinPlayer. - xMAx */
+ * @brief Regresa el string que repesenta al TapNote NoteSkinPlayer. - xMAx */
 inline const RString NoteSkinPlayerToString( TapNote::NoteSkinPlayer nsp )
 {
 	switch( nsp )
@@ -314,17 +312,13 @@ inline const RString NoteSkinPlayerToString( TapNote::NoteSkinPlayer nsp )
 			return RString("Player2 NS");
 		case TapNote::p3_nsp:
 			return RString("Player3 NS");
-
-
-
-
 		default:
 			return RString("");
 	}
 }
 
 /**
-* @brief Regresa el string que repesenta al TapNote Appearance. - xMAx */
+ * @brief Regresa el string que repesenta al TapNote Appearance. - xMAx */
 inline const RString AppearanceToString( TapNote::Appearance appearance )
 {
 	switch( appearance )
@@ -343,20 +337,20 @@ inline const RString AppearanceToString( TapNote::Appearance appearance )
 }
 
 /**
-* @brief The number of tracks allowed.
-*
-* TODO: Don't have a hard-coded track limit.
-*/
+ * @brief The number of tracks allowed.
+ *
+ * TODO: Don't have a hard-coded track limit.
+ */
 const int MAX_NOTE_TRACKS = 16;
 
 /**
-* @brief The number of rows per beat.
-*
-* This is a divisor for our "fixed-point" time/beat representation. It must be
-* evenly divisible by 2, 3, and 4, to exactly represent 8th, 12th and 16th notes.
-*
-* XXX: Some other forks try to keep this flexible by putting this in the simfile.
-* Is this a recommended course of action? -Wolfman2000 */
+ * @brief The number of rows per beat.
+ *
+ * This is a divisor for our "fixed-point" time/beat representation. It must be
+ * evenly divisible by 2, 3, and 4, to exactly represent 8th, 12th and 16th notes.
+ *
+ * XXX: Some other forks try to keep this flexible by putting this in the simfile.
+ * Is this a recommended course of action? -Wolfman2000 */
 const int ROWS_PER_BEAT	= 48;
 
 /** @brief The max number of rows allowed for a Steps pattern. */
@@ -387,67 +381,67 @@ NoteType BeatToNoteType( float fBeat );
 bool IsNoteOfType( int row, NoteType t );
 
 /* This is more accurate: by computing the integer and fractional parts separately, we
-* can avoid storing very large numbers in a float and possibly losing precision.  It's
-* slower; use this once less stuff uses BeatToNoteRow. */
+ * can avoid storing very large numbers in a float and possibly losing precision.  It's
+ * slower; use this once less stuff uses BeatToNoteRow. */
 /*
 inline int   BeatToNoteRow( float fBeatNum )
 {
-float fraction = fBeatNum - truncf(fBeatNum);
-int integer = int(fBeatNum) * ROWS_PER_BEAT;
-return integer + lrintf(fraction * ROWS_PER_BEAT);
+	float fraction = fBeatNum - truncf(fBeatNum);
+	int integer = int(fBeatNum) * ROWS_PER_BEAT;
+	return integer + lrintf(fraction * ROWS_PER_BEAT);
 }
 */
 /**
-* @brief Convert the beat into a note row.
-* @param fBeatNum the beat to convert.
-* @return the note row. */
+ * @brief Convert the beat into a note row.
+ * @param fBeatNum the beat to convert.
+ * @return the note row. */
 inline int   BeatToNoteRow( float fBeatNum )		{ return lrintf( fBeatNum * ROWS_PER_BEAT ); }	// round
 /**
-* @brief Convert the beat into a note row without rounding.
-* @param fBeatNum the beat to convert.
-* @return the note row. */
+ * @brief Convert the beat into a note row without rounding.
+ * @param fBeatNum the beat to convert.
+ * @return the note row. */
 inline int   BeatToNoteRowNotRounded( float fBeatNum )	{ return (int)( fBeatNum * ROWS_PER_BEAT ); }
 /**
-* @brief Convert the note row to a beat.
-* @param iRow the row to convert.
-* @return the beat. */
+ * @brief Convert the note row to a beat.
+ * @param iRow the row to convert.
+ * @return the beat. */
 inline float NoteRowToBeat( int iRow )			{ return iRow / (float)ROWS_PER_BEAT; }
 
 // These functions can be useful for function templates,
 // where both rows and beats can be specified.
 
 /**
-* @brief Convert the note row to note row (returns itself).
-* @param row the row to convert.
-*/
+ * @brief Convert the note row to note row (returns itself).
+ * @param row the row to convert.
+ */
 static inline int ToNoteRow(int row)    { return row; }
 
 /**
-* @brief Convert the beat to note row.
-* @param beat the beat to convert.
-*/
+ * @brief Convert the beat to note row.
+ * @param beat the beat to convert.
+ */
 static inline int ToNoteRow(float beat) { return BeatToNoteRow(beat); }
 
 /**
-* @brief Convert the note row to beat.
-* @param row the row to convert.
-*/
+ * @brief Convert the note row to beat.
+ * @param row the row to convert.
+ */
 static inline float ToBeat(int row)    { return NoteRowToBeat(row); }
 
 /**
-* @brief Convert the beat row to beat (return itself).
-* @param beat the beat to convert.
-*/
+ * @brief Convert the beat row to beat (return itself).
+ * @param beat the beat to convert.
+ */
 static inline float ToBeat(float beat) { return beat; }
 
 /**
-* @brief Scales the position.
-* @param T start - the starting row of the scaling region
-* @param T length - the length of the scaling region
-* @param T newLength - the new length of the scaling region
-* @param T position - the position to scale
-* @return T the scaled position
-*/
+ * @brief Scales the position.
+ * @param T start - the starting row of the scaling region
+ * @param T length - the length of the scaling region
+ * @param T newLength - the new length of the scaling region
+ * @param T position - the position to scale
+ * @return T the scaled position
+ */
 template<typename T>
 inline T ScalePosition( T start, T length, T newLength, T position )
 {
@@ -461,28 +455,28 @@ inline T ScalePosition( T start, T length, T newLength, T position )
 #endif
 
 /**
-* @file
-* @author Chris Danford, Glenn Maynard (c) 2001-2004
-* @section LICENSE
-* All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, and/or sell copies of the Software, and to permit persons to
-* whom the Software is furnished to do so, provided that the above
-* copyright notice(s) and this permission notice appear in all copies of
-* the Software and that both the above copyright notice(s) and this
-* permission notice appear in supporting documentation.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
-* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
-* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
-* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
+ * @file
+ * @author Chris Danford, Glenn Maynard (c) 2001-2004
+ * @section LICENSE
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
