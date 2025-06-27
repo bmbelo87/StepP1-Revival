@@ -59,9 +59,16 @@ private:
 	AutoActor m_sprGlowRed;
 	AutoActor m_sprTipBlue;
 	AutoActor m_sprTipRed;
-	// ---------------------------------
 
-	float		m_fLifePercentage;
+	float m_fLifePercentage;
+	float m_fTipPosition; // posição alto de TipBlue (0.0 - 1.0)
+	float m_fBarBlueProgress; // posição animada de bar_blue
+	bool m_bGlowColorVisible;
+	bool m_bGlowRedVisible;
+	bool m_bUsingTipRed;
+
+
+	// ---------------------------------
 
 	float		m_fPassingAlpha;
 	float		m_fHotAlpha;

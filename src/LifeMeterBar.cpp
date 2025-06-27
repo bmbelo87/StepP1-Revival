@@ -67,7 +67,6 @@ LifeMeterBar::LifeMeterBar()
 	RString sOver = "Over/";
 	RString sPrefix = GAMESTATE->IsDouble() ? "double_" : "";
 
-	
 	// Load sprites directly based on file names 
 	m_sprFallback		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "fallback.png"));
 	m_sprFallbackRed	.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "fallback_red.png"));
@@ -76,9 +75,8 @@ LifeMeterBar::LifeMeterBar()
 	m_sprGlowColor		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "glow_color.png"));
 	m_sprGlowRed		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "glow_red.png"));
 	m_sprFrame		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "frame.png"));
-	m_sprTipBlue		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "tip_blue.png"));
-	m_sprTipRed		.Load(THEME->GetPathG(sFolder, sOver + sPrefix + "tip_red.png"));
-
+	m_sprTipBlue		.Load(THEME->GetPathG(sFolder, sOver + "tip_blue.png"));
+	m_sprTipRed		.Load(THEME->GetPathG(sFolder, sOver + "tip_red.png"));
 
 	this->AddChild( m_sprFallback );
 	this->AddChild( m_sprFallbackRed);
@@ -90,11 +88,13 @@ LifeMeterBar::LifeMeterBar()
 	this->AddChild( m_sprTipBlue );
 	this->AddChild( m_sprTipRed );
 
+	m_sprFallbackRed->SetVisible(false);
+	m_sprGlowRed->SetVisible(false);
+	m_sprGlowColor->SetVisible(false);
+	m_sprTipRed->SetVisible(false);
+
+
 	// --------------------------------------
-
-
-
-
 }
 
 LifeMeterBar::~LifeMeterBar()
@@ -113,6 +113,17 @@ void LifeMeterBar::Load( const PlayerState *pPlayerState, PlayerStageStats *pPla
 		GAMESTATE->IsPlayerEnabled( pPlayerState )  &&
 		GAMESTATE->m_pCurSteps[pn]->GetDifficulty() == Difficulty_Beginner  &&
 		PREFSMAN->m_bMercifulBeginner;
+
+
+
+	// ---- StepP1 Revival - bSilver -----------
+	m_fLifePercentage = 0.5f;
+	m_fTipPosition = 0.5f;
+	m_fBarBlueProgress = m_fTipPosition - 0.075f; // começa atrás do tip
+	m_bGlowColorVisible = false;
+	m_bGlowRedVisible = false;
+	m_bUsingTipRed = false;
+	// ------------------------------------------
 
 	AfterLifeChanged();
 }
@@ -281,19 +292,75 @@ void LifeMeterBar::Update( float fDeltaTime )
 {
 	LifeMeter::Update( fDeltaTime );
 
-	m_fPassingAlpha += !IsFailing() ? +fDeltaTime*2 : -fDeltaTime*2;
-	CLAMP( m_fPassingAlpha, 0, 1 );
+	//m_fPassingAlpha += !IsFailing() ? +fDeltaTime*2 : -fDeltaTime*2;
+	//CLAMP( m_fPassingAlpha, 0, 1 );
 
-	m_fHotAlpha  += IsHot() ? + fDeltaTime*2 : -fDeltaTime*2;
-	CLAMP( m_fHotAlpha, 0, 1 );
+	//m_fHotAlpha  += IsHot() ? + fDeltaTime*2 : -fDeltaTime*2;
+	//CLAMP( m_fHotAlpha, 0, 1 );
 
-	//m_pStream->SetPassingAlpha( m_fPassingAlpha );
-	//m_pStream->SetHotAlpha( m_fHotAlpha );
+	////m_pStream->SetPassingAlpha( m_fPassingAlpha );
+	////m_pStream->SetHotAlpha( m_fHotAlpha );
 
-	if( m_pPlayerState->m_HealthState == HealthState_Danger )
-		m_sprFallbackRed->SetVisible( true );
-	else
-		m_sprFallbackRed->SetVisible( false );
+	//if( m_pPlayerState->m_HealthState == HealthState_Danger )
+	//	m_sprFallbackRed->SetVisible( true );
+	//else
+	//	m_sprFallbackRed->SetVisible( false );
+
+	// ------ StepP1 Revival - bSilver ------
+	// Atualiza a posição do tip com base na vida atual
+	m_fTipPosition = m_fLifePercentage;
+	CLAMP(m_fTipPosition, 0.0f, 1.0f);
+
+	// --- GLOW COLOR visível apenas se a vida for 100%
+	bool bGlowColor = (m_fLifePercentage >= 1.0f);
+	if( bGlowColor != m_bGlowColorVisible )
+	{
+		m_bGlowColorVisible = bGlowColor;
+		m_sprGlowColor->SetVisible(bGlowColor);
+	}
+
+	// --- GLOW RED visível apenas se a vida for <= 30%
+	bool bGlowRed = (m_fLifePercentage <= 0.3f);
+	if( bGlowRed != m_bGlowRedVisible )
+	{
+		m_bGlowRedVisible = bGlowRed;
+		m_sprGlowRed->SetVisible(bGlowRed);
+	}
+
+	// --- Troca entre Tip Blue e Red
+	bool bUseRedTip = (m_fLifePercentage <= 0.3f);
+	if( bUseRedTip != m_bUsingTipRed )
+	{
+		m_bUsingTipRed = bUseRedTip;
+		m_sprFallback->SetVisible(bUseRedTip);
+		m_sprTipBlue->SetVisible(!bUseRedTip);
+		m_sprTipRed->SetVisible(bUseRedTip);
+	}
+
+	// --- Atualiza posição dos elementos visuais
+	const float fTipX = SCALE(m_fTipPosition, 0.0f, 1.0f, -160.0f, +160.0f);
+
+	m_sprTipBlue->SetX(fTipX);
+	m_sprTipRed->SetX(fTipX);
+
+	// --- BarGrey = 15% atrás do tip
+	float fGreyPercent = m_fTipPosition - 0.15f;
+	CLAMP(fGreyPercent, 0.0, 1.0f);
+	m_sprBarGrey->SetCropRight(1.0f - fGreyPercent);
+
+	// --- BarBlue anima entre Tip-7.5% e Tip com BPM
+	float fTargetBlue = m_fTipPosition - 0.075f;
+	CLAMP(fTargetBlue, 0.0f, 1.0f);
+
+	// Simulação simples de batida: oscilar com sin(BPM * time)
+	float fBeat = GAMESTATE->m_Position.m_fSongBeat;
+	float fOsc = (sinf(fBeat * PI) + 1.0f) / 2.0f; // de 0.0 a 1.0
+	m_fBarBlueProgress = fTargetBlue + fOsc * 0.075f;
+
+	CLAMP(m_fBarBlueProgress, 0.0f, 1.0f);
+	m_sprBarBlue->SetCropRight(1.0f - m_fBarBlueProgress);
+
+
 }
 
 
