@@ -771,7 +771,7 @@ void NoteDisplay::DrawTap(const TapNote& tn, int iCol, float fBeat,
 	*/
 	if( tn.type == TapNote::hold_tail)
 	{
-		pActor = GetHoldActor(m_HoldTail, NotePart_HoldTail, fBeat, false, true);
+		pActor = GetHoldActor(m_HoldTail, NotePart_HoldTail, fBeat, false, true); // Ajusta a animação do Hold continuar fazendo explosion. // StepP1 Revival - bSilver
 		part = NotePart_HoldTail;
 	}
 	

@@ -25,9 +25,13 @@ const float LESSON_PASS_THRESHOLD = 0.8f;
 
 Grade GetGradeFromPercent( float fPercent );
 
-void PlayerStageStats::Init()
+void PlayerStageStats::InternalInit()
 {
-  m_bPlayerCanAchieveFullCombo = true;
+	m_for_multiplayer = false;
+	m_player_number = PLAYER_1;
+	m_multiplayer_number = MultiPlayer_P1;
+
+m_bPlayerCanAchieveFullCombo = true;
 	m_bJoined = false;
 	m_vpPossibleSteps.clear();
 	m_iStepsPlayed = 0;
@@ -70,6 +74,18 @@ void PlayerStageStats::Init()
 
 }
 
+void PlayerStageStats::Init(PlayerNumber pn)
+{
+	m_for_multiplayer = false;
+	m_player_number = pn;
+}
+
+void PlayerStageStats::Init(MultiPlayer pn)
+{
+	m_for_multiplayer = true;
+	m_multiplayer_number = pn;
+}
+
 void PlayerStageStats::AddStats( const PlayerStageStats& other )
 {
 	m_bJoined = other.m_bJoined;
@@ -102,8 +118,12 @@ void PlayerStageStats::AddStats( const PlayerStageStats& other )
 	m_fLifeRemainingSeconds = other.m_fLifeRemainingSeconds;	// don't accumulate
 	m_bDisqualified |= other.m_bDisqualified;
 
-	const float fOtherFirstSecond = other.m_fFirstSecond + m_fLastSecond;
-	const float fOtherLastSecond = other.m_fLastSecond + m_fLastSecond;
+	// FirstSecond is always 0, and last second is the time of the last step,
+	// so add 1 second between the stages so that the last element of this
+	// stage's record isn't overwritten by the first element of the other
+	// stage's record. -Kyz
+	const float fOtherFirstSecond = other.m_fFirstSecond + m_fLastSecond + 1.0f;
+	const float fOtherLastSecond = other.m_fLastSecond + m_fLastSecond + 1.0f;
 	m_fLastSecond = fOtherLastSecond;
 
 	map<float,float>::const_iterator it;
@@ -319,7 +339,9 @@ int PlayerStageStats::GetLessonScoreNeeded() const
 	float fScore = 0;
 
 	FOREACH_CONST( Steps*, m_vpPossibleSteps, steps )
-		fScore += (*steps)->GetRadarValues( PLAYER_1 ).m_Values.v.fNumTapsAndHolds;
+	{
+		fScore += ( *steps )->GetRadarValues(PLAYER_1)[RadarCategory_TapsAndHolds];
+	}
 
 	return lrintf( fScore * LESSON_PASS_THRESHOLD );
 }
@@ -362,7 +384,10 @@ void PlayerStageStats::SetLifeRecordAt( float fLife, float fStepsSecond )
 	// fSecond will always be greater than any value already in the map.
 	m_fLifeRecord[fStepsSecond] = fLife;
 
-	MESSAGEMAN->Broadcast( Message_LifeMeterChangedP1 );
+	Message msg(static_cast<MessageID>(Message_LifeMeterChangedP1+m_player_number));
+	msg.SetParam("Life", fLife);
+	msg.SetParam("StepsSecond", fStepsSecond);
+	MESSAGEMAN->Broadcast(msg);
 
 	// Memory optimization:
 	// If we have three consecutive records A, B, and C all with the same fLife,
@@ -471,7 +496,7 @@ void PlayerStageStats::UpdateComboList( float fSecond, bool bRollover )
 	if( !cnt )
 		return; // no combo
 
-	if( m_ComboList.size() == 0 || m_ComboList.back().m_cnt >= cnt )
+	if( m_ComboList.size() == 0 || m_ComboList.back().m_cnt < cnt )
 	{
 		/* If the previous combo (if any) starts on -9999, then we rolled over
 		 * some combo, but missed the first step. Remove it. */
@@ -497,6 +522,10 @@ void PlayerStageStats::UpdateComboList( float fSecond, bool bRollover )
 
 	combo.m_fSizeSeconds = fSecond - combo.m_fStartSecond;
 	combo.m_cnt = cnt;
+
+	//// StepP1 revival - bSilver
+	//if (!bRollover && cnt >= 1 )
+	//m_iCurMissCombo = 0;
 
 	if( bRollover )
 		combo.m_rollover = cnt;
@@ -736,6 +765,12 @@ public:
 	DEFINE_METHOD( GetSongsPassed, 					m_iSongsPassed )
 	DEFINE_METHOD( GetSongsPlayed, 					m_iSongsPlayed )
 
+	static int GetHighScore(T *p, lua_State *L)
+	{
+		p->m_HighScore.PushSelf(L);
+		return 1;
+	}
+
 	static int GetPlayedSteps( T* p, lua_State *L )
 	{
 		lua_newtable(L);
@@ -854,6 +889,7 @@ public:
 		ADD_METHOD( MaxCombo );
 		ADD_METHOD( GetCurrentLife );
 		ADD_METHOD( GetGrade );
+		ADD_METHOD( GetHighScore );
 		ADD_METHOD( GetActualDancePoints );
 		ADD_METHOD( GetPossibleDancePoints );
 		ADD_METHOD( GetCurrentPossibleDancePoints );

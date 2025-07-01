@@ -50,15 +50,15 @@ public:
 	// HandleTap* is called before HandleTapRow*
 	virtual void HandleTapScore( const TapNote & ) { }
 	virtual void HandleTapRowScore( const NoteData & /* nd */, int /* iRow */, TapNoteScore, bool, int ) {}
+	virtual void HandleTapRowScore( const NoteData & /* nd */, int /* iRow */ ) {}
 	virtual void HandleTapRowScore( const NoteData & /* nd */, int /* iRow */, TapNoteScore ) {}
 	virtual void HandleHoldScore( const TapNote & ) { }
 	virtual void HandleHoldActiveSeconds( float /* fMusicSecondsHeld */ ) { }
 	virtual void HandleHoldCheckpointScore(
 		const NoteData & /*nd */,
 		int /* iRow */,
-		TapNoteScore /* iNumHoldsHeldThisRow */, 
-		bool /* iNumHoldsMissedThisRow */,
-		int) { }
+		int /* iNumHoldsHeldThisRow */, 
+		int /* iNumHoldsMissedThisRow */) { }
 	virtual void HandleTapScoreNone() { }
 
 protected:

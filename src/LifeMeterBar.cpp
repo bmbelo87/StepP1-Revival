@@ -119,7 +119,7 @@ void LifeMeterBar::Load( const PlayerState *pPlayerState, PlayerStageStats *pPla
 	// ---- StepP1 Revival - bSilver -----------
 	m_fLifePercentage = 0.5f;
 	m_fTipPosition = 0.5f;
-	m_fBarBlueProgress = m_fTipPosition - 0.075f; // começa atrás do tip
+	m_fBarBlueProgress = m_fTipPosition - 0.150f; // começa atrás do tip
 	m_bGlowColorVisible = false;
 	m_bGlowRedVisible = false;
 	m_bUsingTipRed = false;
@@ -288,25 +288,16 @@ bool LifeMeterBar::IsFailing() const
 }
 
 
+
 void LifeMeterBar::Update( float fDeltaTime )
 {
 	LifeMeter::Update( fDeltaTime );
 
-	//m_fPassingAlpha += !IsFailing() ? +fDeltaTime*2 : -fDeltaTime*2;
-	//CLAMP( m_fPassingAlpha, 0, 1 );
-
-	//m_fHotAlpha  += IsHot() ? + fDeltaTime*2 : -fDeltaTime*2;
-	//CLAMP( m_fHotAlpha, 0, 1 );
-
-	////m_pStream->SetPassingAlpha( m_fPassingAlpha );
-	////m_pStream->SetHotAlpha( m_fHotAlpha );
-
-	//if( m_pPlayerState->m_HealthState == HealthState_Danger )
-	//	m_sprFallbackRed->SetVisible( true );
-	//else
-	//	m_sprFallbackRed->SetVisible( false );
-
 	// ------ StepP1 Revival - bSilver ------
+
+	// Iniciar fBeat antes de tudo:
+	float fBeat = GAMESTATE->m_Position.m_fSongBeat;	
+	
 	// Atualiza a posição do tip com base na vida atual
 	m_fTipPosition = m_fLifePercentage;
 	CLAMP(m_fTipPosition, 0.0f, 1.0f);
@@ -332,13 +323,47 @@ void LifeMeterBar::Update( float fDeltaTime )
 	if( bUseRedTip != m_bUsingTipRed )
 	{
 		m_bUsingTipRed = bUseRedTip;
-		m_sprFallback->SetVisible(bUseRedTip);
+		m_sprFallbackRed->SetVisible(bUseRedTip);
 		m_sprTipBlue->SetVisible(!bUseRedTip);
 		m_sprTipRed->SetVisible(bUseRedTip);
 	}
 
+	// --- Efeito de ficar piscando o Tip Blue/Red
+	static float fTipBlinkTimer = 0.0f;
+	static bool bFlashToggle = false;
+
+	fTipBlinkTimer += fDeltaTime;
+
+	if (fTipBlinkTimer >= 0.017f)
+	{
+		bFlashToggle = !bFlashToggle;
+		fTipBlinkTimer = 0.0f;
+	}
+
+	float fAlpha = bFlashToggle ? 1.0f : 0.0f;
+
+	if( m_bUsingTipRed )
+	{
+		m_sprTipRed->SetDiffuseAlpha(fAlpha);
+	}
+	else
+	{
+		m_sprTipBlue->SetDiffuseAlpha(fAlpha);
+	}
+
+	if( m_bGlowRedVisible )
+	{
+		m_sprGlowRed->SetDiffuseAlpha(fAlpha);
+	}
+
+	if( m_bGlowColorVisible )
+	{
+		m_sprGlowColor->SetDiffuseAlpha(fAlpha);
+	}
+	
+
 	// --- Atualiza posição dos elementos visuais
-	const float fTipX = SCALE(m_fTipPosition, 0.0f, 1.0f, -160.0f, +160.0f);
+	const float fTipX = SCALE(m_fTipPosition, 0.0f, 1.0f, -185.0f, +185.0f);
 
 	m_sprTipBlue->SetX(fTipX);
 	m_sprTipRed->SetX(fTipX);
@@ -348,19 +373,23 @@ void LifeMeterBar::Update( float fDeltaTime )
 	CLAMP(fGreyPercent, 0.0, 1.0f);
 	m_sprBarGrey->SetCropRight(1.0f - fGreyPercent);
 
-	// --- BarBlue anima entre Tip-7.5% e Tip com BPM
-	float fTargetBlue = m_fTipPosition - 0.075f;
-	CLAMP(fTargetBlue, 0.0f, 1.0f);
+	// --- BarBlue pulsando no BPM entre [start] e [tip]
+	// float fBeat = GAMESTATE->m_Position.m_fSongBeat;
+	float fTip = m_fTipPosition;
+	float fStart = fTip - 0.150f;
+	CLAMP(fStart, 0.0f, 1.0f);
 
-	// Simulação simples de batida: oscilar com sin(BPM * time)
-	float fBeat = GAMESTATE->m_Position.m_fSongBeat;
-	float fOsc = (sinf(fBeat * PI) + 1.0f) / 2.0f; // de 0.0 a 1.0
-	m_fBarBlueProgress = fTargetBlue + fOsc * 0.075f;
+	// Oscilação entre 0 e 1 no tempo do BPM
+	float fPhase = fmodf(fBeat, 1.0f); // 0.0 -> 1.0 a cada batida
+	float fPulse = (fPhase < 0.5f ) ? (fPhase * 2.0f) : (2.0f - fPhase * 2.0f);
+	// fPulse: 0 -> 1 -> 0
 
+	// Interpolação da barra
+	m_fBarBlueProgress = fStart + fPulse * (fTip - fStart); 
 	CLAMP(m_fBarBlueProgress, 0.0f, 1.0f);
 	m_sprBarBlue->SetCropRight(1.0f - m_fBarBlueProgress);
 
-
+	// ------------------------------
 }
 
 

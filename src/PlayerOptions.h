@@ -236,15 +236,15 @@ public:
 	bool IsEasierForCourseAndTrail( Course* pCourse, Trail* pTrail ) const;
 
 	// StepP1 Revival -- bSilver
-	bool		m_bJudgeByNote;
-	bool		m_bNX;
-	Judgment	m_iJudgment;
-	bool		m_bFreePerformance;
-	bool		m_bJudgmentReverse;
-	bool		m_bEW;
-	bool		m_bAutoNoteskin;
-	bool		m_bRouletteNoteskin;
-	bool		m_bRandomSkin;
+	bool		m_bJudgeByNote = false; 
+	bool		m_bNX; // NXMode
+	Judgment	m_iJudgment; // Judges
+	bool		m_bFreePerformance; // Play double in one side
+	bool		m_bJudgmentReverse; // Judgment Reverse
+	bool		m_bEW; // Earthworm
+	bool		m_bAutoNoteskin; // Auto NoteSkin (Based on Songs Folder)
+	bool		m_bRouletteNoteskin; // Select ONE Skin random
+	bool		m_bRandomSkin; // Change skins in the gameplay.
 };
 
 #endif

@@ -13,8 +13,10 @@ class PlayerStageStats
 {
 public:
 	/** @brief Set up the PlayerStageStats with default values. */
-	PlayerStageStats() { Init(); }
-	void Init();
+	PlayerStageStats() { InternalInit(); }
+	void InternalInit();
+	void Init(PlayerNumber pn);
+	void Init(MultiPlayer pn);
 
 	/**
 	 * @brief Add stats from one PlayerStageStats to another.
@@ -31,8 +33,12 @@ public:
 	int GetLessonScoreNeeded() const;
 	void ResetScoreForLesson();
 
+	bool m_for_multiplayer;
+	PlayerNumber m_player_number;
+	MultiPlayer m_multiplayer_number;
+
 	bool		m_bJoined;
-	bool    m_bPlayerCanAchieveFullCombo;
+	bool		m_bPlayerCanAchieveFullCombo;
 	vector<Steps*>  m_vpPossibleSteps;
 	int		m_iStepsPlayed; // how many of m_vpPossibleStepshow many of m_vpPossibleSteps were played
 	/**
@@ -50,7 +56,7 @@ public:
 	 * this is only set if both players were failing at the same time. */
 	bool		m_bFailed;
 	bool		m_bReachedLifeZero;		// StepP1 Revival --bSilver
-	bool		m_bStageIsDoublePerformance;	// StepP1 Revival --bSilver
+	bool		m_bStageIsDoublePerformance = false;	// StepP1 Revival --bSilver
 	int		m_iPossibleDancePoints;
 	int		m_iCurPossibleDancePoints;
 	int		m_iActualDancePoints;

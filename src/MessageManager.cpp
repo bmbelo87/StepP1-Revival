@@ -87,7 +87,6 @@ static const char *MessageIDNames[] = {
 	"MiddleClick",
 	"MouseWheelUp",
 	"MouseWheelDown",
-	"PlayerStartedSelectProfile",
 };
 XToString( MessageID );
 
@@ -99,6 +98,13 @@ static map<RString,SubscribersSet> g_MessageToSubscribers;
 Message::Message( const RString &s )
 {
 	m_sName = s;
+	m_pParams = new LuaTable;
+	m_bBroadcast = false;
+}
+
+Message::Message(const MessageID id)
+{
+	m_sName= MessageIDToString(id);
 	m_pParams = new LuaTable;
 	m_bBroadcast = false;
 }

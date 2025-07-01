@@ -70,7 +70,7 @@ public:
 	/**
 	 * @brief Determine if the player information is enabled.
 	 * @return its success or failure. */
-	bool IsEnabled();
+	bool IsEnabled() const;
 	/**
 	 * @brief Determine if we're in MultiPlayer.
 	 * @return true if it is MultiPlayer, false otherwise. */
@@ -183,7 +183,7 @@ public:
 	PlayerInfo *GetDummyPlayerInfo( int iDummyIndex );
 	void Pause(bool bPause) { PauseGame(bPause); }
 	bool IsPaused() const { return m_bPaused; }
-	float GetHasteRate();
+	float GetHasteRate() const;
 
 	vector<float> m_HasteTurningPoints; // Values at which the meaning of GAMESTATE->m_fHasteRate changes.
 	vector<float> m_HasteAddAmounts; // Amounts that are added to speed depending on what turning point has been passed.
@@ -236,7 +236,7 @@ protected:
 	void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic );
 	void LoadLights();
 	void PauseGame( bool bPause, GameController gc = GameController_Invalid );
-	void PlayAnnouncer( const RString &type, float fSeconds, float *fDeltaSeconds );
+	void PlayAnnouncer( const RString &type, float fSeconds, float *fDeltaSeconds ) const;
 	void PlayAnnouncer( const RString &type, float fSeconds ) { PlayAnnouncer(type, fSeconds, &m_fTimeSinceLastDancingComment); }
 	void UpdateLights();
 	void SendCrossedMessages();

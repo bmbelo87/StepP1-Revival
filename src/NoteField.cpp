@@ -106,15 +106,15 @@ void NoteField::CacheNoteSkin( const RString &sNoteSkin_ )
 	RString sNoteSkinLower = sNoteSkin_;
 	sNoteSkinLower.MakeLower();
 
-	if( m_NoteDisplays.find(sNoteSkinLower) != m_NoteDisplays.end() )
-	{
-		LOG->Trace("NoteField::NoteSkin %s is already loaded", sNoteSkinLower.c_str() );
-		return;
-	}
+	//if( m_NoteDisplays.find(sNoteSkinLower) != m_NoteDisplays.end() )
+	//{
+	//	LOG->Trace("NoteField::NoteSkin %s is already loaded", sNoteSkinLower.c_str() );
+	//	return;
+	//}
 	
 	LockNoteSkin l( sNoteSkinLower );
 
-	LOG->Trace("NoteField::CacheNoteSkin: cache %s", sNoteSkinLower.c_str() );
+	//LOG->Trace("NoteField::CacheNoteSkin: cache %s", sNoteSkinLower.c_str() );
 	NoteDisplayCols *nd = new NoteDisplayCols( GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer );
 
 	for( int c=0; c<GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer; c++ )
@@ -133,7 +133,7 @@ void NoteField::UncacheNoteSkin( const RString &sNoteSkin_ )
 	RString sNoteSkinLower = sNoteSkin_;
 	sNoteSkinLower.MakeLower();
 
-	LOG->Trace("NoteField::UncacheNoteSkin: release %s", sNoteSkinLower.c_str() );
+	//LOG->Trace("NoteField::UncacheNoteSkin: release %s", sNoteSkinLower.c_str() );
 	ASSERT_M( m_NoteDisplays.find(sNoteSkinLower) != m_NoteDisplays.end(), sNoteSkinLower );
 	delete m_NoteDisplays[sNoteSkinLower];
 	m_NoteDisplays.erase( sNoteSkinLower );
@@ -265,10 +265,7 @@ void NoteField::CacheAllUsedNoteSkins()
 	{
 		RString sCurrentNoteSkinLower;
 		
-		if( GAMESTATE->IsBasicMode() && !(GAMESTATE->IsEditing()) )
-			sCurrentNoteSkinLower = "basic_mode";
-		else
-			sCurrentNoteSkinLower = m_pPlayerState->m_PlayerOptions.GetCurrent().m_sNoteSkin;
+		sCurrentNoteSkinLower = m_pPlayerState->m_PlayerOptions.GetCurrent().m_sNoteSkin;
 
 		CacheNoteSkin( sCurrentNoteSkinLower.MakeLower() );
 
@@ -363,7 +360,7 @@ void NoteField::Load(
 	
 	//LOG->Trace("NoteField::Chart uses players noteskins (Load): %s", m_bIsRoutine? "Yes":"No" );
 	
-	 // La cache de noteskins se realiza antes de la funciÛn "Load"
+	 // La cache de noteskins se realiza antes de la funci√≥n "Load"
 	//
 	
 	/* XXX: Combination of good idea and bad idea to ensure courses load
@@ -1501,7 +1498,7 @@ void NoteField::DrawPrimitives()
 				float fStartYOffset	= ArrowEffects::GetYOffset( m_pPlayerState, c, NoteRowToBeat(iStartRow), fThrowAway, bStartIsPastPeak );
 				float fEndYOffset	= ArrowEffects::GetYOffset( m_pPlayerState, c, NoteRowToBeat(iEndRow), fThrowAway, bEndIsPastPeak );
 
-				if( fStartYOffset > (float) iDrawDistanceBeforeTargetsPixels )	// off screen - el hold head est· por debajo del limite.. no hay que dibujar mas - xMAx
+				if( fStartYOffset > (float) iDrawDistanceBeforeTargetsPixels )	// off screen - el hold head est√° por debajo del limite.. no hay que dibujar mas - xMAx
 					break;
 					
 				bool bTailIsOnVisible = iDrawDistanceAfterTargetsPixels <= fEndYOffset && fEndYOffset <= iDrawDistanceBeforeTargetsPixels;

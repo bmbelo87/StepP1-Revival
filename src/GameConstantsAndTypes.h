@@ -250,18 +250,18 @@ inline bool IsSongSort( SortOrder so ) { return so >= SORT_PREFERRED && so <= SO
 
 /** @brief The list of tap note scores available during play. */
 enum TapNoteScore { 
-	TNS_None, /**< There is no score involved with this one. */
-	TNS_HitMine, /**< A mine was hit successfully. */
-	TNS_AvoidMine, /**< A mine was avoided successfully. */
-	TNS_CheckpointMiss, /**< A checkpoint was missed during a hold. */
-	TNS_Miss, /**< A note was missed entirely. */
-	TNS_W5, /**< A note was almost missed, but not quite. */
-	TNS_W4, /**< A note was hit either a bit early or a bit late. */
-	TNS_W3, /**< A note was hit with decent accuracy, but not the best. */
-	TNS_W2, /**< A note was hit off by just a miniscule amount. This used to be the best rating. */
-	TNS_W1, /**< A note was hit perfectly. */
-	TNS_CheckpointHit, /**< A checkpoint was held during a hold. */
-	NUM_TapNoteScore, /**< The number of Tap Note Scores available. */
+	TNS_None, /* There is no score involved with this one. */
+	TNS_HitMine, /* Catch Mine */
+	TNS_AvoidMine, /* Missed Mine */
+	TNS_CheckpointMiss, /* CheckpointMiss = HoldMissCombo (Only Miss) */
+	TNS_Miss, /* MISS */
+	TNS_W5, /* BAD */
+	TNS_W4, /* GOOD */
+	TNS_W3, /* GREAT */
+	TNS_W2, /* PERFECT */
+	TNS_W1, /* Disabled (RainbowPerfect in future? */
+	TNS_CheckpointHit, /* CheckpointHit = HoldCombo (Only Perfect) */
+	NUM_TapNoteScore, /* The number of Tap Note Scores available. */
 	TapNoteScore_Invalid,
 };
 /**

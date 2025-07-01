@@ -83,7 +83,6 @@ enum MessageID
 	Message_MiddleClick,
 	Message_MouseWheelUp,
 	Message_MouseWheelDown,
-	Message_PlayerStartedSelectProfile,
 	NUM_MessageID,	// leave this at the end
 	MessageID_Invalid
 };
@@ -92,6 +91,7 @@ const RString& MessageIDToString( MessageID m );
 struct Message
 {
 	explicit Message( const RString &s );
+	explicit Message(const MessageID id);
 	Message( const RString &s, const LuaReference &params );
 	~Message();
 
@@ -124,6 +124,15 @@ struct Message
 		Lua *L = LUA->Get();
 		LuaHelpers::Push( L, val );
 		SetParamFromStack( L, sName );
+		LUA->Release( L );
+	}
+
+	template<typename T>
+	void SetParam( const RString &sName, const vector<T> &val )
+	{
+		Lua *L = LUA->Get();
+		LuaHelpers::CreateTableFromArray( val, L );
+		SetParamFromStack( L , sName );
 		LUA->Release( L );
 	}
 
@@ -190,6 +199,9 @@ public:
 	void Broadcast( MessageID m ) const;
 	bool IsSubscribedToMessage( IMessageSubscriber* pSubscriber, const RString &sMessage ) const;
 	inline bool IsSubscribedToMessage( IMessageSubscriber* pSubscriber, MessageID message ) const { return IsSubscribedToMessage( pSubscriber, MessageIDToString(message) ); }
+
+	void SetLogging(bool set) { m_Logging = set;}
+	bool m_Logging;
 
 	// Lua
 	void PushSelf( lua_State *L );

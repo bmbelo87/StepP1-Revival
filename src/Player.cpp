@@ -326,7 +326,7 @@ void Player::Init(
 	m_fActiveRandomAttackStart = -1.0f;
 	
 	// xMAx ------------------------------------------------------------------------------
-	JudgeData JD;
+	JudgeData JD {};
 	
 	if( GAMESTATE->IsBasicMode() )
 	{
@@ -499,7 +499,7 @@ void Player::Load()
 		m_sprJudgment->PlayCommand("Reset");
 */
 	
-/*		
+/*
 	if( m_pPlayerStageStats )
 	{
 		SetCombo( m_pPlayerStageStats->m_iCurCombo, m_pPlayerStageStats->m_iCurMissCombo );	// combo can persist between songs and games
@@ -532,7 +532,7 @@ void Player::Load()
 		m_pNoteField->SetY( 70 );
 		m_pNoteField->Load( &m_NoteData, iDrawDistanceAfterTargetsPixels, iDrawDistanceBeforeTargetsPixels, STATSMAN->m_CurStageStats.m_player[pn].m_bStageIsDoublePerformance );
 		
-		// xMAx - Establece la posici�n del NoteField de acuerdo
+		// xMAx - Establece la posición del NoteField de acuerdo
 		bool bUnderAttack = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fScrolls[PlayerOptions::SCROLL_UNDER_ATTACK] > 0.5f;	// xMAx
 		bool bDrop = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fScrolls[PlayerOptions::SCROLL_DROP] > 0.5f;	// xMAx
 		bool bNX = m_pPlayerState->m_PlayerOptions.GetCurrent().m_bNX;	// xMAx
@@ -1502,32 +1502,32 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bRelease )
 				{	
 					if( fNoteOffset < 0 )
 					{
-						if(	PERF_U <= fNoteOffset ) score = TNS_W2;
+						if( PERF_U <= fNoteOffset ) score = TNS_W2;
 						else 
 						{
-							if( GREAT_U <= fNoteOffset )	score = TNS_W3;
+							if( GREAT_U <= fNoteOffset ) score = TNS_W3;
 							else
 							{
-								if( GOOD_U <= fNoteOffset ) 	score = TNS_W4;
+								if( GOOD_U <= fNoteOffset ) score = TNS_W4;
 								else 
 								{ 
-									if( BAD_U <= fNoteOffset )		score = TNS_W5;
+									if( BAD_U <= fNoteOffset ) score = TNS_W5;
 								}
 							}
 						}
 					}
 					else
 					{
-						if(	fNoteOffset <= PERF_D ) 		score = TNS_W2; 
+						if( fNoteOffset <= PERF_D ) score = TNS_W2; 
 						else 
 						{
-							if( fNoteOffset <= GREAT_D )	score = TNS_W3;
+							if( fNoteOffset <= GREAT_D ) score = TNS_W3;
 							else 
 							{
-								if( fNoteOffset <= GOOD_D ) 	score = TNS_W4;
+								if( fNoteOffset <= GOOD_D ) score = TNS_W4;
 								else 
 								{
-									if( fNoteOffset <= BAD_D )		score = TNS_W5;
+									if( fNoteOffset <= BAD_D ) score = TNS_W5;
 								}
 							}
 						}
@@ -1535,6 +1535,8 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bRelease )
 				}
 				break;
 			};
+			if (m_pPrimaryScoreKeeper)
+				m_pPrimaryScoreKeeper->HandleTapScore(*pTN);
 			break;
 		case PC_CPU:
 		case PC_AUTOPLAY:
@@ -1562,6 +1564,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bRelease )
 			FAIL_M(ssprintf("Invalid player controller type: %i", m_pPlayerState->m_PlayerController));
 		}
 
+
 		// Do game-specific and mode-specific score mapping.
 		score = GAMESTATE->GetCurrentGame()->MapTapNoteScore( score );
 		if( score == TNS_W1 && !GAMESTATE->ShowW1() )
@@ -1572,7 +1575,12 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bRelease )
 		{
 			pTN->result.tns = score;
 			pTN->result.fTapNoteOffset = -fNoteOffset;
+			//TapNoteScore groupScore = EvaluateRowAsGroup(iRowOfOverlappingNoteOrRow);
+			//HandleTapRowScore(iRowOfOverlappingNoteOrRow, groupScore);
+
+			m_pPrimaryScoreKeeper->HandleTapScore(*pTN); // StepP1 Revival - bSilver
 		}
+
 		
 		// Handle attack notes
 		if( pTN->type == TapNote::attack && score >= TNS_W2 )
@@ -1627,7 +1635,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bRelease )
 				m_pPrimaryScoreKeeper->HandleTapScore( *pTN );
 		}
 	}
-	
+
 	// We steped an arrow
 	if( !bRelease && m_pNoteField )
 	{
@@ -2142,7 +2150,6 @@ void Player::HandleTapRowScore( unsigned row, TapNoteScore tns )
 	ChangeLife( tns );
 }
 
-
 void Player::HandleHoldCheckpoint(int iRow, 
 				  int iNumHoldsHeldThisRow, 
 				  int iNumHoldsMissedThisRow, 
@@ -2194,8 +2201,8 @@ void Player::HandleHoldCheckpoint(int iRow,
 
 	if( bHoldsAreBeingPressed || iNumHoldsMissedThisRow )
 		SetJudgment( HoldNoteScore );
+	
 }
-
 
 float Player::GetMaxStepDistanceSeconds()
 {
@@ -2221,83 +2228,95 @@ void Player::CacheAllUsedNoteSkins()
 		m_pNoteField->CacheAllUsedNoteSkins();
 }
 
-void Player::SetJudgment( TapNoteScore tns )
+void Player::SetJudgment(TapNoteScore tns)
 {
-	if( m_bSendJudgmentAndComboMessages )
-	{
-		Message msg("Judgment");
-		msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
-		/*msg.SetParam( "MultiPlayer", m_pPlayerState->m_mp );
-		msg.SetParam( "FirstTrack", iTrack );
-		msg.SetParam( "Early", fTapNoteOffset < 0.0f );
-		msg.SetParam( "TapNoteOffset", fTapNoteOffset );
-		msg.SetParam( "Tracks" , viCols );*/
-		
-		if( m_pPlayerStageStats )
-		{
-			int iCombo = m_pPlayerStageStats->m_iCurCombo;
-			int iMisses = m_pPlayerStageStats->m_iCurMissCombo;
+	if (!m_bSendJudgmentAndComboMessages)
+		return;
 
-			if( GAMESTATE->IsEditing() || (iCombo >= 4 && tns >= TNS_W4 )  || iMisses >= 4 )
-			{
-				//Message msg("Combo");
-				msg.SetParam( "HasComboData", true );
-				
-				if( iCombo > 0 )
-					msg.SetParam( "Combo", iCombo );
-					
-				if( iMisses > 0 )
-					msg.SetParam( "Misses", iMisses );
-				
-				if( iMisses > 0 ) //player is missing steps
-				{
-					if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )			 
-						msg.SetParam( "IsFailing", false );
-					else
-						msg.SetParam( "IsFailing", true );
-				}
-				else
-				{
-					if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )			 
-						msg.SetParam( "IsFailing", true );
-					else
-						msg.SetParam( "IsFailing", false );
-				}
-			}
-			else
-			{
-				msg.SetParam( "HasComboData", false );
-			}
+	Message msg("Judgment");
+	msg.SetParam("Player", m_pPlayerState->m_PlayerNumber);
+
+	if (m_pPlayerStageStats)
+	{
+		// --- StepP1 Revival - bSilver
+		// Update combo and Reset Miss Combo
+		if (tns == TNS_W2 || tns == TNS_W3 || tns == TNS_CheckpointHit) // Perfect or Great
+		{ 
+			m_pPlayerStageStats->m_iCurCombo++;
+			m_pPlayerStageStats->m_iCurMissCombo = 0;
 			
+		}
+		// Freeze combo and Reset Miss Combo
+		else if (tns == TNS_W4 ) // Good
+		{
+			m_pPlayerStageStats->m_iCurCombo = m_pPlayerStageStats->m_iCurCombo;
+			m_pPlayerStageStats->m_iCurMissCombo = 0;
+		}
+		// Break all combos (Reset all combos)
+		else if (tns == TNS_W5 ) // bad
+		{
+			m_pPlayerStageStats->m_iCurCombo = 0;
+			m_pPlayerStageStats->m_iCurMissCombo = 0;
+
+		}
+		// Update Miss combo and reset max combo
+		else if (tns == TNS_Miss || tns == TNS_CheckpointMiss)
+		{
+			m_pPlayerStageStats->m_iCurCombo = 0;
+			m_pPlayerStageStats->m_iCurMissCombo++;
+		}
+		// --------------------------------------------------------
+
+		bool isEditing = (GAMESTATE->m_bInStepEditor); // DAT_008f1608 + 0x16c
+
+		if (isEditing || (m_pPlayerStageStats->m_iCurCombo < 4 && m_pPlayerStageStats->m_iCurMissCombo < 4))
+		{
+			// Caso especial: não há dados suficientes para mostrar combo
+			msg.SetParam("HasComboData", false);
 		}
 		else
 		{
-			msg.SetParam( "HasComboData", false );
-		}
-		
-		if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )
-		{
-			TapNoteScore TNS_Reversed = TNS_None;
-			switch( tns )
-			{
-				case TNS_W1:
-				case TNS_W2:	TNS_Reversed = TNS_Miss; break;	// miss
-				case TNS_W3:	TNS_Reversed = TNS_W5; break;	// bad	
-				case TNS_W4:	TNS_Reversed = TNS_W4; break;	// good
-				case TNS_W5:	TNS_Reversed = TNS_W3; break;	// great	
-				case TNS_Miss:	TNS_Reversed = TNS_W2; break;	// perfect	
-				case TNS_CheckpointHit:		TNS_Reversed = TNS_CheckpointMiss; break;	// miss	
-				case TNS_CheckpointMiss:	TNS_Reversed = TNS_CheckpointHit; break;	// perfect	
-			}
-			
-			tns = TNS_Reversed;
-		}
-		
-		msg.SetParam( "TapNoteScore", tns );
-		MESSAGEMAN->Broadcast( msg );
-	}
-}
+			msg.SetParam("HasComboData", true);
 
+			if (m_pPlayerStageStats->m_iCurCombo > 0)
+				msg.SetParam("Combo", m_pPlayerStageStats->m_iCurCombo);
+
+			if (m_pPlayerStageStats->m_iCurMissCombo > 0)
+				msg.SetParam("Misses", m_pPlayerStageStats->m_iCurMissCombo);
+
+			bool isFailing = true;
+
+			if (m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse)
+				isFailing = (m_pPlayerStageStats->m_iCurMissCombo <= 0);
+			else
+				isFailing = (m_pPlayerStageStats->m_iCurMissCombo > 0);
+
+			msg.SetParam("IsFailing", isFailing);
+		}
+	}
+
+	// JR - Judgment Reverse (Pump code)
+	if (m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse)
+	{
+		TapNoteScore TNS_Reversed = TNS_None;
+		switch( tns )
+		{
+			case TNS_W1:
+			case TNS_W2:	TNS_Reversed = TNS_Miss; break;	// miss
+			case TNS_W3:	TNS_Reversed = TNS_W5; break;	// bad	
+			case TNS_W4:	TNS_Reversed = TNS_W4; break;	// good
+			case TNS_W5:	TNS_Reversed = TNS_W3; break;	// great	
+			case TNS_Miss:	TNS_Reversed = TNS_W2; break;	// perfect	
+			case TNS_CheckpointHit:		TNS_Reversed = TNS_CheckpointMiss; break;	// miss	
+			case TNS_CheckpointMiss:	TNS_Reversed = TNS_CheckpointHit; break;	// perfect	
+		}
+
+		tns = TNS_Reversed;
+	}
+
+	msg.SetParam("TapNoteScore", tns);
+	MESSAGEMAN->Broadcast(msg);
+}
 
 void Player::SetCombo( int iCombo, int iMisses )
 {
@@ -2312,20 +2331,11 @@ void Player::SetCombo( int iCombo, int iMisses )
 			if( iMisses )
 				msg.SetParam( "Misses", iMisses );
 			
-			if( iMisses > 0 ) //player is missing steps
-			{
-				if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )			 
-					msg.SetParam( "IsFailing", false );
-				else
-					msg.SetParam( "IsFailing", true );
+			bool IsFailing = (iMisses > 0);
+			if (m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse) {
+				IsFailing = !IsFailing;
 			}
-			else
-			{
-				if( m_pPlayerState->m_PlayerOptions.GetCurrent().m_bJudgmentReverse )			 
-					msg.SetParam( "IsFailing", true );
-				else
-					msg.SetParam( "IsFailing", false );
-			}
+			msg.SetParam("IsFailing", IsFailing);
 			
 			msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
 			MESSAGEMAN->Broadcast( msg );

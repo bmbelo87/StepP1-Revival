@@ -68,6 +68,9 @@ private:
 	bool m_bUsingTipRed;
 
 
+	int m_iLastBeat = -1;
+
+
 	// ---------------------------------
 
 	float		m_fPassingAlpha;

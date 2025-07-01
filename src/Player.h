@@ -134,7 +134,6 @@ public:
 		JudgeData &operator=( const JudgeData &judgeData );
 	};
 	
-	
 	float HOLD_TIMING;
 	float PERF_U, PERF_D;
 	float GREAT_U, GREAT_D;
@@ -142,11 +141,13 @@ public:
 	float BAD_U, BAD_D;
 	
 	bool m_bCountNotesSeparately;
+
 	/** xMAx: use this when using Record mode in the steps editor */
 	/** Else, the game will send Combo/Judging messages when the "Player" were updated in the Update() function in the Editor */
 	/** That will happen only after one Player load (which happens when play in the editor) */
 	inline void Unload() { m_bLoaded = false; };
-	
+
+	//TapNoteScore Player::EvaluateRowAsGroup(int iRow);	
 	// ------------------------------------------------------------
 protected:
 	void UpdateTapNotesMissedOlderThan( float fMissIfOlderThanThisBeat );
@@ -214,6 +215,10 @@ protected:
 	ThemeMetric<int>		DRAW_DISTANCE_AFTER_TARGET_PIXELS;
 	ThemeMetric<int>		DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
 
+	// StepP1 Revival - bSilver
+	int iCombo = 0;
+	int iMisses = 0;
+
 #define NUM_REVERSE 2
 #define NUM_CENTERED 2
 	TweenState		m_tsJudgment[NUM_REVERSE][NUM_CENTERED];
@@ -221,6 +226,10 @@ protected:
 
 	bool m_bSendJudgmentAndComboMessages;
 	bool m_bTickHolds;
+
+private:
+	TapNoteScore JudgeRow(int row);
+
 };
 
 class PlayerPlus

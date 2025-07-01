@@ -353,6 +353,9 @@ void ScoreKeeperNormal::HandleTapScore( const TapNote &tn )
 		MESSAGEMAN->Broadcast( msg );
 	}
 
+	if (tn.result.tns >= 0 && tn.result.tns < NUM_TapNoteScore)
+		m_pPlayerStageStats->m_iTapNoteScores[tn.result.tns]++;
+
 	AddTapScore( tns );
 }
 
@@ -451,12 +454,19 @@ void ScoreKeeperNormal::GetRowCounts( const NoteData &nd, int iRow,
 	{
 		const TapNote &tn = nd.GetTapNote( track, iRow );
 
-		if( tn.type != TapNote::tap && tn.type != TapNote::hold_head && tn.type != TapNote::lift )
+		//if( tn.type != TapNote::tap && tn.type != TapNote::hold_head && tn.type != TapNote::lift )
+		//	continue;
+		//TapNoteScore tns = tn.result.tns;
+
+		if (tn.type == TapNote::empty)
 			continue;
-		TapNoteScore tns = tn.result.tns;
-		if( tns >= m_MinScoreToContinueCombo )
+
+		if (tn.result.tns == TNS_None)
+			continue;
+
+		if( tn.result.tns >= m_MinScoreToContinueCombo )
 			++iNumHitContinueCombo;
-		else if( tns >= m_MinScoreToMaintainCombo )
+		else if( tn.result.tns >= m_MinScoreToMaintainCombo )
 			++iNumHitMaintainCombo;
 		else
 			++iNumBreakCombo;
@@ -465,6 +475,7 @@ void ScoreKeeperNormal::GetRowCounts( const NoteData &nd, int iRow,
 
 void ScoreKeeperNormal::HandleTapRowScore( const NoteData &nd, int iRow )
 {
+
 	int iNumHitContinueCombo, iNumHitMaintainCombo, iNumBreakCombo;
 	GetRowCounts( nd, iRow, iNumHitContinueCombo, iNumHitMaintainCombo, iNumBreakCombo );
 
@@ -566,6 +577,96 @@ void ScoreKeeperNormal::HandleTapRowScore( const NoteData &nd, int iRow )
 	MESSAGEMAN->Broadcast( msg );
 }
 
+void ScoreKeeperNormal::HandleTapRowScore(const NoteData &nd, int iRow, TapNoteScore tnsRow)
+{
+
+	int iNumHitContinueCombo = 0, iNumHitMaintainCombo = 0, iNumBreakCombo = 0;
+	// Analisa todas as colunas para computar o resultado da linha
+	for (int t = 0; t < nd.GetNumTracks(); ++t)
+	{
+		const TapNote &tn = nd.GetTapNote(t, iRow);
+
+		if (tn.type == TapNote::empty || tn.type == TapNote::mine || tn.type == TapNote::fake)
+			continue;
+
+		const TapNoteScore tns = tn.result.tns;
+		if (tns == TNS_None || tns == TNS_HitMine)
+			continue;
+
+		if (tns >= m_MinScoreToContinueCombo)
+			iNumHitContinueCombo++;
+		else if (tns >= m_MinScoreToContinueCombo)
+			iNumHitMaintainCombo++;
+		else
+			iNumBreakCombo++;
+	}
+
+	int iNumTapsInRow = iNumHitContinueCombo + iNumHitMaintainCombo + iNumBreakCombo;
+	if (iNumTapsInRow <= 0)
+		return;
+
+	m_iNumNotesHitThisRow = iNumTapsInRow;
+
+	// Obtem o "pior TapNoteScore" da linha para decidir o que fazer
+	TapNoteScore scoreOfLastTap = NoteDataWithScoring::LastTapNoteWithResult(nd, iRow).result.tns;
+	HandleTapNoteScoreInternal(scoreOfLastTap, TNS_W1, iRow);
+
+	// AQUI: comportamento à la PIU: combo por linha inteira
+	if (GAMESTATE->GetCurrentGame()->m_bCountNotesSeparately)
+	{
+		HandleComboInternal(iNumHitContinueCombo, iNumHitMaintainCombo, iNumBreakCombo, iRow);
+	}
+	else
+	{
+		// Se TODAS foram boas (nenhum Break), ganha combo
+		if (iNumBreakCombo == 0 && iNumHitContinueCombo > 0)
+		{
+			m_pPlayerStageStats->m_iCurCombo++;
+			m_pPlayerStageStats->m_iCurMissCombo = 0;
+		}
+		else if (iNumBreakCombo == 0)
+		{
+			// W4 em todas por ex.
+			// Mantém combo como está
+		}
+		else
+		{
+			// Alguma foi W5 ou Miss
+			m_pPlayerStageStats->m_iCurCombo = 0;
+			m_pPlayerStageStats->m_iCurMissCombo++;
+		}
+	}
+
+	if (m_pPlayerState->m_PlayerNumber != PLAYER_INVALID)
+		MESSAGEMAN->Broadcast(enum_add2(Message_CurrentComboChangedP1, m_pPlayerState->m_PlayerNumber));
+
+	AddTapRowScore(scoreOfLastTap, nd, iRow);
+
+	// Reportar pontuação e combo
+	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+	float offset = NoteDataWithScoring::LastTapNoteWithResult(nd, iRow).result.fTapNoteOffset;
+
+	NSMAN->ReportScore(pn, scoreOfLastTap,
+			   m_pPlayerStageStats->m_iScore,
+			   m_pPlayerStageStats->m_iCurCombo, offset);
+
+	Message msg("ScoreChanged");
+	msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
+	msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
+	msg.SetParam("ToastyCombo", m_iCurToastyCombo);
+	MESSAGEMAN->Broadcast(msg);
+
+	LOG->Trace(
+		"SCORE SUMMARY: Combo=%d, MissCombo=%d, W1=%d, W2=%d, W3=%d, W4=%d, W5=%d, Miss=%d",
+		m_pPlayerStageStats->m_iCurCombo,
+		m_pPlayerStageStats->m_iCurMissCombo,
+		m_pPlayerStageStats->m_iTapNoteScores[TNS_W1],
+		m_pPlayerStageStats->m_iTapNoteScores[TNS_W2],
+		m_pPlayerStageStats->m_iTapNoteScores[TNS_W3],
+		m_pPlayerStageStats->m_iTapNoteScores[TNS_W4],
+		m_pPlayerStageStats->m_iTapNoteScores[TNS_W5],
+		m_pPlayerStageStats->m_iTapNoteScores[TNS_Miss]);
+}
 
 void ScoreKeeperNormal::HandleHoldScore( const TapNote &tn )
 {
@@ -593,6 +694,7 @@ void ScoreKeeperNormal::HandleHoldScore( const TapNote &tn )
 	msg.SetParam( "MultiPlayer", m_pPlayerState->m_mp );
 	MESSAGEMAN->Broadcast( msg );
 }
+
 
 
 int ScoreKeeperNormal::GetPossibleDancePoints( NoteData* nd, const TimingData* td, float fSongSeconds )

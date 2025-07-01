@@ -303,6 +303,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 		if( *s == "no" )
 		{
 			level = 0;
+			
 		}
 		else if( isdigit((*s)[0]) || (*s)[0] == '-' )
 		{
@@ -346,7 +347,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sscanf( sBit, "c%f", &level ) == 1 )
 	{
 		if( !isfinite(level) || level <= 0.0f )
-			level = 200.0f; // Just pick some value.
+			level = 100.0f; // Just pick some value. // Reverse Engenier says: = 100.0f
 		SET_FLOAT( fScrollBPM )
 		SET_FLOAT( fTimeSpacing )
 		m_fTimeSpacing = 1;
