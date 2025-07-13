@@ -94,7 +94,7 @@ void ScreenEvaluation::Init()
 		GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
 		GAMESTATE->SetCurrentStyle( GAMEMAN->GameAndStringToStyle(GAMEMAN->GetDefaultGame(),"versus") );
 		ss.m_playMode = GAMESTATE->m_PlayMode;
-		ss.m_pStyle = GAMESTATE->GetCurrentStyle();
+		ss.m_pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 		ss.m_Stage = Stage_1st;
 		enum_add( ss.m_Stage, rand()%3 );
 		ss.m_EarnedExtraStage = (EarnedExtraStage)(rand() % NUM_EarnedExtraStage);

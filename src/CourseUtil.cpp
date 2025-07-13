@@ -95,14 +95,14 @@ void CourseUtil::SortCoursePointerArrayByDifficulty( vector<Course*> &vpCoursesI
 void CourseUtil::SortCoursePointerArrayByRanking( vector<Course*> &vpCoursesInOut )
 {
 	for( unsigned i=0; i<vpCoursesInOut.size(); i++ )
-		vpCoursesInOut[i]->UpdateCourseStats( GAMESTATE->GetCurrentStyle()->m_StepsType );
+		vpCoursesInOut[i]->UpdateCourseStats( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType );
 	sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareCoursePointersByRanking );
 }
 
 void CourseUtil::SortCoursePointerArrayByTotalDifficulty( vector<Course*> &vpCoursesInOut )
 {
 	for( unsigned i=0; i<vpCoursesInOut.size(); i++ )
-		vpCoursesInOut[i]->UpdateCourseStats( GAMESTATE->GetCurrentStyle()->m_StepsType );
+		vpCoursesInOut[i]->UpdateCourseStats( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType );
 	sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareCoursePointersByTotalDifficulty );
 }
 
@@ -176,7 +176,7 @@ void CourseUtil::SortCoursePointerArrayByAvgDifficulty( vector<Course*> &vpCours
 	course_sort_val.clear();
 	for( unsigned i = 0; i < vpCoursesInOut.size(); ++i )
 	{
-		int iMeter = vpCoursesInOut[i]->GetMeter( GAMESTATE->GetCurrentStyle()->m_StepsType, Difficulty_Medium );
+		int iMeter = vpCoursesInOut[i]->GetMeter( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType, Difficulty_Medium );
 		course_sort_val[vpCoursesInOut[i]] = ssprintf( "%06i", iMeter );
 	}
 	sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareCoursePointersByTitle );

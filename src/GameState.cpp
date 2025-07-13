@@ -1318,7 +1318,7 @@ RString GameState::GetPlayerDisplayName( PlayerNumber pn ) const
 
 bool GameState::PlayersCanJoin() const
 {
-	bool b = GetNumSidesJoined() == 0 || GetCurrentStyle() == NULL;	// selecting a style finalizes the players
+	bool b = GetNumSidesJoined() == 0 || GetCurrentStyle(NUM_PlayerNumber) == NULL;	// selecting a style finalizes the players
 	if( ALLOW_LATE_JOIN.IsLoaded()  &&  ALLOW_LATE_JOIN )
 	{
 		Screen *pScreen = SCREENMAN->GetTopScreen();
@@ -1343,7 +1343,7 @@ const Game* GameState::GetCurrentGame()
 	return m_pCurGame;
 }
 
-const Style* GameState::GetCurrentStyle() const
+const Style* GameState::GetCurrentStyle(PlayerNumber pn) const
 {
 	return m_pCurStyle;
 }
@@ -1353,7 +1353,7 @@ void GameState::SetCurrentStyle( const Style *pStyle )
 	m_pCurStyle.Set( pStyle );
 	if( INPUTMAPPER )
 	{
-		if( GetCurrentStyle() && GetCurrentStyle()->m_StyleType == StyleType_OnePlayerTwoSides )
+		if( GetCurrentStyle(NUM_PlayerNumber) && GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_OnePlayerTwoSides )
 			INPUTMAPPER->SetJoinControllers( this->GetMasterPlayerNumber() );
 		else
 			INPUTMAPPER->SetJoinControllers( PLAYER_INVALID );
@@ -1424,7 +1424,7 @@ bool GameState::IsHumanPlayer( PlayerNumber pn ) const
 	if( pn == PLAYER_INVALID )
 		return false;
 
-	if( GetCurrentStyle() == NULL )	// no style chosen
+	if( GetCurrentStyle(NUM_PlayerNumber) == NULL )	// no style chosen
 	{
 		if( PlayersCanJoin() )
 			return m_bSideIsJoined[pn];	// only allow input from sides that have already joined
@@ -1432,7 +1432,7 @@ bool GameState::IsHumanPlayer( PlayerNumber pn ) const
 			return true;	// if we can't join, then we're on a screen like MusicScroll or GameOver
 	}
 
-	StyleType type = GetCurrentStyle()->m_StyleType;
+	StyleType type = GetCurrentStyle(NUM_PlayerNumber)->m_StyleType;
 	switch( type )
 	{
 	case StyleType_TwoPlayersTwoSides:
@@ -1565,7 +1565,7 @@ PlayerNumber GameState::GetBestPlayer() const
 
 StageResult GameState::GetStageResult( PlayerNumber pn ) const
 {
-	/* xMAx - Si el tipo de Batalla es "invalid" entonces no se seteó y se juega normal (esto está medio mal, tendria que usar algo para sacar el USE_COMBINED_LIFE del ScreenGamePlay ). */
+	/* xMAx - Si el tipo de Batalla es "invalid" entonces no se seteÃ³ y se juega normal (esto estÃ¡ medio mal, tendria que usar algo para sacar el USE_COMBINED_LIFE del ScreenGamePlay ). */
 	if ( m_PlayMode == PLAY_MODE_BATTLE && m_BattleMode != BattleMode_Invalid )
 	{
 		FOREACH_PlayerNumber( p )
@@ -1618,7 +1618,7 @@ StageResult GameState::GetStageResult( PlayerNumber pn ) const
 
 	/* xMAx
 	   Si no hay BATTLE_MODE y se quiere un resultado, se califica por DancePoints
-	   Lo mismo si está en BATTLE_MODE y no se seteó ningún BattleMode.
+	   Lo mismo si estÃ¡ en BATTLE_MODE y no se seteÃ³ ningÃºn BattleMode.
 	*/
 	StageResult win = RESULT_WIN;
 	FOREACH_PlayerNumber( p )
@@ -1808,7 +1808,7 @@ FailType GameState::GetPlayerFailType( const PlayerState *pPlayerState ) const
 
 bool GameState::IsDouble() const
 {
-	if( GetCurrentStyle() && (GetCurrentStyle()->m_StyleType == StyleType_OnePlayerTwoSides || GetCurrentStyle()->m_StyleType == StyleType_TwoPlayersSharedSides ) )
+	if( GetCurrentStyle(NUM_PlayerNumber) && (GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_OnePlayerTwoSides || GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_TwoPlayersSharedSides ) )
 		return true;
 	
 	return false;
@@ -1848,7 +1848,7 @@ void GameState::GetRankingFeats( PlayerNumber pn, vector<RankingFeat> &asFeatsOu
 		{
 			CHECKPOINT;
 
-			StepsType st = GetCurrentStyle()->m_StepsType;
+			StepsType st = GetCurrentStyle(NUM_PlayerNumber)->m_StepsType;
 
 			// Find unique Song and Steps combinations that were played.
 			// We must keep only the unique combination or else we'll double-count
@@ -2191,7 +2191,7 @@ bool GameState::DifficultiesLocked() const
 		return true;
 	if( IsCourseMode() )
 		return PREFSMAN->m_bLockCourseDifficulties;
-	if( GetCurrentStyle()->m_bLockDifficulties )
+	if( GetCurrentStyle(NUM_PlayerNumber)->m_bLockDifficulties )
 		return true;
 	return false;
 }
@@ -2278,7 +2278,7 @@ bool GameState::ChangePreferredCourseDifficulty( PlayerNumber pn, int dir )
 			return false;
 		if( find(v.begin(),v.end(),cd) == v.end() )
 			continue; /* not available */
-		if( !pCourse || pCourse->GetTrail( GetCurrentStyle()->m_StepsType, cd ) )
+		if( !pCourse || pCourse->GetTrail( GetCurrentStyle(NUM_PlayerNumber)->m_StepsType, cd ) )
 			break;
 	}
 
@@ -2770,7 +2770,7 @@ public:
 	}  
 	static int GetCurrentStyle( T* p, lua_State *L )
 	{
-		Style *pStyle = const_cast<Style *> (p->GetCurrentStyle());
+		Style *pStyle = const_cast<Style *> (p->GetCurrentStyle(NUM_PlayerNumber));
 		LuaHelpers::Push( L, pStyle );
 		return 1;
 	}

@@ -218,7 +218,7 @@ bool BeginnerHelper::CanUse()
 		if( !DoesFileExist(GetAnimPath((Animation)i)) )
 			return false;
 
-	return GAMESTATE->GetCurrentStyle()->m_bCanUseBeginnerHelper;
+	return GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_bCanUseBeginnerHelper;
 }
 
 void BeginnerHelper::DrawPrimitives()

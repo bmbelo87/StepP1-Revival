@@ -249,11 +249,11 @@ void NoteDisplay::Load( int iColNum, const PlayerState* pPlayerState )
 	m_fYReverseOffsetPixels = 0;
 
 	const PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-	const GameInput GameI = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( iColNum, pn );
+	const GameInput GameI = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->StyleInputToGameInput( iColNum, pn );
 	NOTESKIN->SetPlayerNumber( pn );
 	NOTESKIN->SetGameController( GameI.controller );
 
-	const RString &sButton = GAMESTATE->GetCurrentStyle()->ColToButtonName( iColNum );
+	const RString &sButton = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->ColToButtonName( iColNum );
 
 	cache->Load( sButton );
 

@@ -751,7 +751,7 @@ void MusicWheel::BuildWheelItemDatas( vector<MusicWheelItemData *> &arrayWheelIt
 			{
 				Song* pSong;
 				Steps* pSteps;
-				SONGMAN->GetExtraStageInfo( GAMESTATE->IsExtraStage2(), GAMESTATE->GetCurrentStyle(), pSong, pSteps );
+				SONGMAN->GetExtraStageInfo( GAMESTATE->IsExtraStage2(), GAMESTATE->GetCurrentStyle(NUM_PlayerNumber), pSong, pSteps );
 
 				for( unsigned i=0; i<arrayWheelItemDatas.size(); i++ )
 				{
@@ -853,7 +853,7 @@ void MusicWheel::BuildWheelItemDatas( vector<MusicWheelItemData *> &arrayWheelIt
 				}
 
 				// check that this course has at least one song playable in the current style
-				if( !pCourse->IsPlayableIn(GAMESTATE->GetCurrentStyle()->m_StepsType) )
+				if( !pCourse->IsPlayableIn(GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType) )
 					continue;
 
 				if( sThisSection != sLastSection )	// new section, make a section item
@@ -879,7 +879,7 @@ void MusicWheel::BuildWheelItemDatas( vector<MusicWheelItemData *> &arrayWheelIt
 		MusicWheelItemData& WID = *arrayWheelItemDatas[i];
 		if( WID.m_pSong != NULL )
 		{
-			WID.m_Flags.bHasBeginnerOr1Meter = WID.m_pSong->IsEasy( GAMESTATE->GetCurrentStyle()->m_StepsType ) && SHOW_EASY_FLAG;
+			WID.m_Flags.bHasBeginnerOr1Meter = WID.m_pSong->IsEasy( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType ) && SHOW_EASY_FLAG;
 			WID.m_Flags.bEdits = false;
 			set<StepsType> vStepsType;
 			SongUtil::GetPlayableStepsTypes( WID.m_pSong, vStepsType );
@@ -942,7 +942,7 @@ void MusicWheel::FilterWheelItemDatas(vector<MusicWheelItemData *> &aUnFilteredD
 	if( GAMESTATE->IsAnExtraStage() )
 	{
 		Steps *pSteps;
-		SONGMAN->GetExtraStageInfo( GAMESTATE->IsExtraStage2(), GAMESTATE->GetCurrentStyle(), pExtraStageSong, pSteps );
+		SONGMAN->GetExtraStageInfo( GAMESTATE->IsExtraStage2(), GAMESTATE->GetCurrentStyle(NUM_PlayerNumber), pExtraStageSong, pSteps );
 	}
 
 	/* Mark any songs that aren't playable in aiRemove. */
@@ -1007,7 +1007,7 @@ void MusicWheel::FilterWheelItemDatas(vector<MusicWheelItemData *> &aUnFilteredD
 			}
 
 			/* If the song has no steps for the current style, remove it. */
-			if( !CommonMetrics::AUTO_SET_STYLE && !pSong->HasStepsType(GAMESTATE->GetCurrentStyle()->m_StepsType) )
+			if( !CommonMetrics::AUTO_SET_STYLE && !pSong->HasStepsType(GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType) )
 			{
 				aiRemove[i] = true;
 				continue;
@@ -1023,7 +1023,7 @@ void MusicWheel::FilterWheelItemDatas(vector<MusicWheelItemData *> &aUnFilteredD
 
 		if( WID.m_Type == WheelItemDataType_Course )
 		{
-			if( !WID.m_pCourse->IsPlayableIn(GAMESTATE->GetCurrentStyle()->m_StepsType) )
+			if( !WID.m_pCourse->IsPlayableIn(GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType) )
 				aiRemove[i] = true;
 		}
 	}
@@ -1612,7 +1612,7 @@ Song *MusicWheel::GetPreferredSelectionForRandomOrPortal()
 	RString sPreferredGroup = m_sExpandedSectionName;
 	vector<MusicWheelItemData *> &wid = getWheelItemsData(GAMESTATE->m_SortOrder);
 
-	StepsType st = GAMESTATE->GetCurrentStyle()->m_StepsType;
+	StepsType st = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType;
 
 #define NUM_PROBES 1000
 	for( int i=0; i<NUM_PROBES; i++ )

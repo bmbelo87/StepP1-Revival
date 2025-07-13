@@ -405,7 +405,7 @@ void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
 			loaded++;
 			songIndex++;
 			
-			// xMAx - Carga los canales por niveles, excepto para el canal del modo b·sico
+			// xMAx - Carga los canales por niveles, excepto para el canal del modo b√°sico
 			if( sGroupDirName != GAMESTATE->m_sBasicModeGroupName )
 				LoadLevelChannelsForSong( pNewSong );
 		}
@@ -415,7 +415,7 @@ void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
 		
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
 		
-		// xMAx - ordena las canciones (previamente a cargar alg˙n item)
+		// xMAx - ordena las canciones (previamente a cargar alg√∫n item)
 		SongUtil::SortSongPointerArrayByGroupAndSongFolder( m_mapSongGroupIndex[sGroupDirName] );
 		SongUtil::SortSongPointerArrayByCategory( m_mapSongGroupIndex[sGroupDirName] );
 
@@ -740,7 +740,7 @@ RageColor SongManager::GetSongColor( const Song* pSong ) const
 		 *
 		 * XXX: Ack. This means this function can only be called when we have
 		 * a style set up, which is too restrictive. How to handle this? */
-		//const StepsType st = GAMESTATE->GetCurrentStyle()->m_StepsType;
+		//const StepsType st = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType;
 		const vector<Steps*>& vpSteps = pSong->GetAllSteps();
 		for( unsigned i=0; i<vpSteps.size(); i++ )
 		{
@@ -1401,7 +1401,7 @@ bool SongManager::GetExtraStageInfoFromCourse( bool bExtra2, RString sPreferredG
 	CourseLoaderCRS::LoadFromCRSFile( sCoursePath, course );
 	if( course.GetEstimatedNumStages() <= 0 ) return false;
 
-	Trail *pTrail = course.GetTrail( GAMESTATE->GetCurrentStyle()->m_StepsType );
+	Trail *pTrail = course.GetTrail( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType );
 	if( pTrail->m_vEntries.empty() )
 		return false;
 
@@ -1668,7 +1668,7 @@ void SongManager::UpdatePopular()
 			bFiltered = true;
 			
 		if( apBestSongs[j]->m_sGroupName == GAMESTATE->m_sBasicModeGroupName )
-			bFiltered = true;	// xMAx - para no incluir canciones del modo b·sico
+			bFiltered = true;	// xMAx - para no incluir canciones del modo b√°sico
 			
 		if( !bFiltered )
 			continue;
@@ -2115,7 +2115,7 @@ int FindCourseIndexOfSameMode( T begin, T end, const Course *p )
 
 		/* If it's not playable in this mode, don't increment. It might result in 
 		 * different output in different modes, but that's better than having holes. */
-		if( !(*it)->IsPlayableIn( GAMESTATE->GetCurrentStyle()->m_StepsType ) )
+		if( !(*it)->IsPlayableIn( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType ) )
 			continue;
 		if( (*it)->GetPlayMode() != pm )
 			continue;
@@ -2136,12 +2136,12 @@ int SongManager::GetSongRank(Song* pSong)
 // xMAx ------------------------------------------------------------------------------------------------------------------------------------
 // Regresa un vector con el nombre de los grupos disponibles
 // Revisar GameConstantsAndTypes.cpp para ver los nombres de los "SortOrders", que tienen que corresponder con la lista
-// TODO: Cambiar el nombre de Èsta funciÛn!!
+// TODO: Cambiar el nombre de √©sta funci√≥n!!
 void SongManager::GetSongGroupNamesAvailables( vector<RString> &AddTo )
 {
 	AddTo.clear();
 	
-	// Se obtienen los canales NO autom·ticos, dependiendo si poseen o no canciones para jugar
+	// Se obtienen los canales NO autom√°ticos, dependiendo si poseen o no canciones para jugar
 	vector<RString> v_sTemp;
 	this->GetAvailableGroupNames( v_sTemp );
 	
@@ -2262,7 +2262,7 @@ void SongManager::GetSongGroupNamesAvailables( vector<RString> &AddTo )
 		}
 	}
 	
-	// Solo se agregÛ solo el canal "SHORT CUT" si  este canal estaba disponible - no se deben agregar m·s canales
+	// Solo se agreg√≥ solo el canal "SHORT CUT" si  este canal estaba disponible - no se deben agregar m√°s canales
 	if ( GAMESTATE->GetHighestNumStagesLeftForAnyHumanPlayer() == 1)
 		return;
 	
@@ -2298,7 +2298,7 @@ void SongManager::GetAvailableGroupNames( vector<RString> &arrayGroupNames )
 			arrayGroupNames.push_back( v_sAllGroupNames[i] );
 }
 
-// Pregunta si el grupo est· disponible
+// Pregunta si el grupo est√° disponible
 bool SongManager::IsGroupAvailable( RString &sGroupName )
 {
 	if( !DoesSongGroupExist( sGroupName ) )
@@ -2429,7 +2429,7 @@ void SongManager::CleanUpSortArrays(void)
 	m_pShuffledSongs.clear();
 }
 
-// Funciones de actualizaciÛn de los grupos ------------------------------------------
+// Funciones de actualizaci√≥n de los grupos ------------------------------------------
 void SongManager::UpdateSongSortByType( SongType m_SongTypeToSort, vector<Song*> &arraySongType )
 {
 	vector<Song*> aTemp;

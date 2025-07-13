@@ -158,7 +158,7 @@ bool RageSound::Load( RString sSoundFilePath )
 
 bool RageSound::Load( RString sSoundFilePath, bool bPrecache, const RageSoundLoadParams *pParams )
 {
-	LOG->Trace( "RageSound: Load \"%s\" (precache: %i)", sSoundFilePath.c_str(), bPrecache );
+	//LOG->Trace( "RageSound: Load \"%s\" (precache: %i)", sSoundFilePath.c_str(), bPrecache );
 
 	if( pParams == NULL )
 	{

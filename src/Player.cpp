@@ -515,7 +515,7 @@ void Player::Load()
 //		m_pScore->Init( pn );
 
 	/* Apply transforms. */
-	NoteDataUtil::TransformNoteData( m_NoteData, m_pPlayerState->m_PlayerOptions.GetStage(), GAMESTATE->GetCurrentStyle()->m_StepsType );
+	NoteDataUtil::TransformNoteData( m_NoteData, m_pPlayerState->m_PlayerOptions.GetStage(), GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType );
 
 	const Song* pSong = GAMESTATE->m_pCurSong;
 
@@ -571,7 +571,7 @@ void Player::Load()
 			m_pNoteField->SetY(70 ); 
 	}
 /*
-	bool bPlayerUsingBothSides = GAMESTATE->GetCurrentStyle()->GetUsesCenteredArrows();
+	bool bPlayerUsingBothSides = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->GetUsesCenteredArrows();
 	if( m_pAttackDisplay )
 		m_pAttackDisplay->SetX( ATTACK_DISPLAY_X.GetValue(pn, bPlayerUsingBothSides) - 40 );
 	// set this in Update //m_pAttackDisplay->SetY( bReverse ? ATTACK_DISPLAY_Y_REVERSE : ATTACK_DISPLAY_Y );
@@ -685,7 +685,7 @@ void Player::Update( float fDeltaTime )
 		// Update Y positions
 		/*
 		{
-			for( int c=0; c<GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer; c++ )
+			for( int c=0; c<GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer; c++ )
 			{
 				float fPercentReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(c);
 				float fHoldJudgeYPos = SCALE( fPercentReverse, 0.f, 1.f, HOLD_JUDGMENT_Y_STANDARD, HOLD_JUDGMENT_Y_REVERSE );
@@ -739,14 +739,14 @@ void Player::Update( float fDeltaTime )
 		return;
 
 	// update pressed flag
-	const int iNumCols = GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer;
+	const int iNumCols = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer;
 	ASSERT_M( iNumCols <= MAX_COLS_PER_PLAYER, ssprintf("%i > %i", iNumCols, MAX_COLS_PER_PLAYER) );
 	for( int col=0; col < iNumCols; ++col )
 	{
 		ASSERT( m_pPlayerState != NULL );
 
 		// TODO: Remove use of PlayerNumber.
-		GameInput GameI = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( col, m_pPlayerState->m_PlayerNumber );
+		GameInput GameI = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->StyleInputToGameInput( col, m_pPlayerState->m_PlayerNumber );
 
 		bool bIsHoldingButton = INPUTMAPPER->IsBeingPressed( GameI );
 
@@ -877,36 +877,36 @@ void Player::UpdateHoldNote( int iSongRow, float fDeltaTime, TrackRowTapNote &tr
 	else
 	{		
 		PlayerNumber pn = 	m_pPlayerState->m_PlayerNumber;
-		GameInput GameI = 	GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( iTrack, pn );
+		GameInput GameI = 	GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->StyleInputToGameInput( iTrack, pn );
 		
 		bIsHoldingButton |= 	INPUTMAPPER->IsBeingPressed( GameI, m_pPlayerState->m_mp );
 
 		// m_bFreePerformance
-		if( GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_bFreePerformance && (GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer > 5) )
+		if( GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_bFreePerformance && (GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer > 5) )
 		{
-			if( GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer == 10 )	//piu double
+			if( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer == 10 )	//piu double
 			{
 				if( iTrack > 4 )	// player 2 side
 				{
-					GameInput GameI_tmp = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( iTrack-5 , pn );
+					GameInput GameI_tmp = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->StyleInputToGameInput( iTrack-5 , pn );
 					bIsHoldingButton |= INPUTMAPPER->IsBeingPressed( GameI_tmp, m_pPlayerState->m_mp );
 				}
 				else // player 1 side
 				{
-					GameInput GameI_tmp = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( iTrack+5 , pn );
+					GameInput GameI_tmp = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->StyleInputToGameInput( iTrack+5 , pn );
 					bIsHoldingButton |= INPUTMAPPER->IsBeingPressed( GameI_tmp, m_pPlayerState->m_mp );
 				}
 			}
-			else if( GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer == 6 ) //piu half double
+			else if( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer == 6 ) //piu half double
 			{
 				if( iTrack == 0 ) // Only the center is available
 				{
-					GameInput GameI_tmp = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( 5 , pn );
+					GameInput GameI_tmp = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->StyleInputToGameInput( 5 , pn );
 					bIsHoldingButton |= INPUTMAPPER->IsBeingPressed( GameI_tmp, m_pPlayerState->m_mp );
 				}
 				else if( iTrack == 5 ) // Only the center is available
 				{
-					GameInput GameI_tmp = GAMESTATE->GetCurrentStyle()->StyleInputToGameInput( 0 , pn );
+					GameInput GameI_tmp = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->StyleInputToGameInput( 0 , pn );
 					bIsHoldingButton |= INPUTMAPPER->IsBeingPressed( GameI_tmp, m_pPlayerState->m_mp );
 				}
 			}
@@ -1052,7 +1052,7 @@ void Player::ApplyWaitingTransforms()
 			GAMESTATE->m_pCurSong->GetTranslitMainTitle().c_str() );*/
 
 		// if re-adding noteskin changes, this is one place to edit -aj
-		NoteDataUtil::TransformNoteData( m_NoteData, po, GAMESTATE->GetCurrentStyle()->m_StepsType, BeatToNoteRow(fStartBeat), BeatToNoteRow(fEndBeat) );
+		NoteDataUtil::TransformNoteData( m_NoteData, po, GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType, BeatToNoteRow(fStartBeat), BeatToNoteRow(fEndBeat) );
 	}
 	m_pPlayerState->m_ModsToApply.clear();
 }
@@ -1063,7 +1063,7 @@ void Player::DrawPrimitives()
 	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
 	// May have both players in doubles (for battle play); only draw primary player.
-	if( GAMESTATE->GetCurrentStyle()->m_StyleType == StyleType_OnePlayerTwoSides  && pn != GAMESTATE->GetMasterPlayerNumber() )
+	if( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_OnePlayerTwoSides  && pn != GAMESTATE->GetMasterPlayerNumber() )
 		return;
 	
 	if( m_pNoteField ) //&& !IsOniDead() //xMAx - removed
@@ -1353,7 +1353,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bRelease )
 		//const int iMaxRowsAhead = 	BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds + abs(BAD_D)*factor ) ) + ROWS_PER_BEAT;
 		const int iMaxRowsAhead = 	BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds + abs(BAD_D) ) ) + ROWS_PER_BEAT;
 		//const int iMaxRowsBehind =  BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds - abs(BAD_U)*factor ) ) - ROWS_PER_BEAT;
-		const int iMaxRowsBehind =  BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds - abs(BAD_U) ) ) - ROWS_PER_BEAT;
+		const int iMaxRowsBehind =	BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds - abs(BAD_U) ) ) - ROWS_PER_BEAT;
 		
 		iRowOfOverlappingNoteOrRow = GetClosestNote( col, iSongRow, iMaxRowsAhead, iMaxRowsBehind, false, true );
 	}
@@ -1464,7 +1464,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bRelease )
 						if( iRowOfTapInsideHoldWindow != -1 && (iRowOfTapInsideHoldWindow < iRowOfOverlappingNoteOrRow) )
 						{
 							TapNote *pTNN = NULL;
-							NoteData::iterator iter = m_NoteData.FindTapNote( col, iRowOfTapInsideHoldWindow );
+							NoteData::iterator iter = m_NoteData.FindTapNote( col, fSecondsFromExact );
 							DEBUG_ASSERT( iter!= m_NoteData.end(col) );
 							pTNN = &iter->second;
 							

@@ -347,7 +347,7 @@ bool ScreenNetSelectMusic::MenuDown( const InputEventPlus &input )
 
 	if( GAMESTATE->m_pCurSong == NULL )
 		return false;
-	StepsType st = GAMESTATE->GetCurrentStyle()->m_StepsType;
+	StepsType st = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType;
 	vector <Steps *> MultiSteps;
 	MultiSteps = GAMESTATE->m_pCurSong->GetStepsByStepsType( st );
 	if(MultiSteps.size() == 0)
@@ -452,7 +452,7 @@ void ScreenNetSelectMusic::StartSelectedSong()
 {
 	Song * pSong = m_MusicWheel.GetSelectedSong();
 	GAMESTATE->m_pCurSong.Set( pSong );
-	StepsType st = GAMESTATE->GetCurrentStyle()->m_StepsType; //StepsType_dance_single;
+	StepsType st = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType; //StepsType_dance_single;
 	FOREACH_EnabledPlayer (pn)
 	{
 		GAMESTATE->m_PreferredDifficulty[pn].Set( m_DC[pn] );
@@ -479,7 +479,7 @@ void ScreenNetSelectMusic::UpdateDifficulties( PlayerNumber pn )
 		return;
 	}
 
-	StepsType st = GAMESTATE->GetCurrentStyle()->m_StepsType;
+	StepsType st = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType;
 
 	Steps * pSteps = SongUtil::GetStepsByDifficulty( GAMESTATE->m_pCurSong, st, m_DC[pn] );
 	GAMESTATE->m_pCurSteps[pn].Set( pSteps );
@@ -506,7 +506,7 @@ void ScreenNetSelectMusic::MusicChanged()
 	FOREACH_EnabledPlayer (pn)
 	{
 		m_DC[pn] = GAMESTATE->m_PreferredDifficulty[pn];
-		StepsType st = GAMESTATE->GetCurrentStyle()->m_StepsType;
+		StepsType st = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType;
 		vector <Steps *> MultiSteps;
 		MultiSteps = GAMESTATE->m_pCurSong->GetStepsByStepsType( st );
 		if(MultiSteps.size() == 0)

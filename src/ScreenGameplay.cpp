@@ -587,7 +587,7 @@ void ScreenGameplay::Init()
 	STATSMAN->m_CurStageStats.m_Stage = GAMESTATE->GetCurrentStage();
 	STATSMAN->m_CurStageStats.m_iStageIndex = GAMESTATE->m_iCurrentStageIndex;
 	STATSMAN->m_CurStageStats.m_playMode = GAMESTATE->m_PlayMode;
-	STATSMAN->m_CurStageStats.m_pStyle = GAMESTATE->GetCurrentStyle();
+	STATSMAN->m_CurStageStats.m_pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 
 	/* Record combo rollover. */
 	FOREACH_EnabledPlayerInfoNotDummy( m_vPlayerInfo, pi )
@@ -648,7 +648,7 @@ void ScreenGameplay::Init()
 		}
 		else
 		{
-			fPlayerX = PLAYER_X( pi->GetName(), GAMESTATE->GetCurrentStyle()->m_StyleType );
+			fPlayerX = PLAYER_X( pi->GetName(), GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType );
 
 			if( Center1Player() )
 				fPlayerX = SCREEN_CENTER_X;
@@ -701,7 +701,7 @@ void ScreenGameplay::Init()
 	m_bShowScoreboard = false;
 #if !defined(WITHOUT_NETWORKING)
 	// Only used in SMLAN/SMOnline:
-	if( !m_bForceNoNetwork && NSMAN->useSMserver && GAMESTATE->GetCurrentStyle()->m_StyleType != StyleType_OnePlayerTwoSides )
+	if( !m_bForceNoNetwork && NSMAN->useSMserver && GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType != StyleType_OnePlayerTwoSides )
 	{
 		//m_bShowScoreboard = PREFSMAN->m_bEnableScoreboard.Get();	//xMAx
 		m_bShowScoreboard = false;
@@ -823,7 +823,7 @@ bool ScreenGameplay::Center1Player() const
 		(bool)ALLOW_CENTER_1_PLAYER &&
 		GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
 		GAMESTATE->m_PlayMode != PLAY_MODE_RAVE &&
-		GAMESTATE->GetCurrentStyle()->m_StyleType == StyleType_OnePlayerOneSide;
+		GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_OnePlayerOneSide;
 }
 
 // fill in m_apSongsQueue, m_vpStepsQueue, m_asModifiersQueue
@@ -993,7 +993,7 @@ void ScreenGameplay::SetupSong( int iSongIndex )
 		NoteData originalNoteData;
 		pSteps->GetNoteData( originalNoteData );
 
-		const Style* pStyle = GAMESTATE->GetCurrentStyle();
+		const Style* pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 		NoteData ndTransformed;
 		pStyle->GetTransformedNoteDataForStyle( pi->GetStepsAndTrailIndex(), originalNoteData, ndTransformed );
 
@@ -2141,7 +2141,7 @@ void ScreenGameplay::UpdateLights()
 	if( m_CabinetLightsNoteData.GetNumTracks() == 0 )	// light data wasn't loaded
 		return;
 
-	const Style* pStyle = GAMESTATE->GetCurrentStyle();
+	const Style* pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 	bool bBlinkCabinetLight[NUM_CabinetLight];
 	bool bBlinkGameButton[NUM_GameController][NUM_GameButton];
 	ZERO( bBlinkCabinetLight );
@@ -2279,7 +2279,7 @@ void ScreenGameplay::SendCrossedMessages()
 					iNumTracksWithTapOrHoldHead++;
 
 					// send crossed message
-					const Style *pStyle = GAMESTATE->GetCurrentStyle();
+					const Style *pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 					RString sButton = pStyle->ColToButtonName( t );
 					Message msg( i == 0 ? "NoteCrossed" : "NoteWillCross" );
 					msg.SetParam( "ButtonName", sButton );
@@ -2377,7 +2377,7 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 		* If this is also a style button, don't do this; pump center is start.
 		*/
 		bool bHoldingGiveUp = false;
-		if( GAMESTATE->GetCurrentStyle()->GameInputToColumn(input.GameI) == Column_Invalid )
+		if( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->GameInputToColumn(input.GameI) == Column_Invalid )
 		{
 			bHoldingGiveUp |= ( START_GIVES_UP && input.MenuI == GAME_BUTTON_START );
 			bHoldingGiveUp |= ( BACK_GIVES_UP && input.MenuI == GAME_BUTTON_BACK );
@@ -2403,7 +2403,7 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 		/* Only handle GAME_BUTTON_BACK as a regular BACK button if BACK_GIVES_UP is
 		* disabled. */
 		bool bHoldingBack = false;
-		if( GAMESTATE->GetCurrentStyle()->GameInputToColumn(input.GameI) == Column_Invalid )
+		if( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->GameInputToColumn(input.GameI) == Column_Invalid )
 		{
 			bHoldingBack |= input.MenuI == GAME_BUTTON_BACK && !BACK_GIVES_UP;
 		}
@@ -2435,7 +2435,7 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 	if( !input.GameI.IsValid() )
 		return false;
 
-	int iCol = GAMESTATE->GetCurrentStyle()->GameInputToColumn( input.GameI );
+	int iCol = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->GameInputToColumn( input.GameI );
 
 	// Don't pass on any inputs to Player that aren't a press or a release.
 	switch( input.type )
@@ -2487,19 +2487,19 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 						if( iCol != -1 )
 							pi.m_pPlayer->Step( iCol, -1, input.DeviceI.ts, bRelease );
 
-						if( GAMESTATE->m_pPlayerState[input.pn]->m_PlayerOptions.GetCurrent().m_bFreePerformance && GAMESTATE->GetCurrentStyle()->m_StyleType != StyleType_OnePlayerOneSide )
+						if( GAMESTATE->m_pPlayerState[input.pn]->m_PlayerOptions.GetCurrent().m_bFreePerformance && GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType != StyleType_OnePlayerOneSide )
 						{
 							InputEventPlus input_tmp = input;
 							input_tmp.GameI.controller = input_tmp.GameI.controller == GameController_1? GameController_2 : GameController_1;
 
-							int iCol = GAMESTATE->GetCurrentStyle()->GameInputToColumn( input_tmp.GameI );
+							int iCol = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->GameInputToColumn( input_tmp.GameI );
 
-							if( GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer == 10 )
+							if( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer == 10 )
 							{
 								if( iCol != -1 )
 									pi.m_pPlayer->Step( iCol, -1, input.DeviceI.ts, bRelease );
 							}
-							else if( GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer == 6 && iCol != -1 )
+							else if( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer == 6 && iCol != -1 )
 							{
 								if( iCol == 0 )
 									pi.m_pPlayer->Step( 5, -1, input.DeviceI.ts, bRelease );
@@ -2897,7 +2897,7 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 	else if( SM == SM_Player1HitMine || SM == SM_Player2HitMine )
 	{
 		// Mines flash - xMAx
-		if( (GAMESTATE->GetCurrentStyle()->m_StyleType == StyleType_OnePlayerOneSide || GAMESTATE->GetCurrentStyle()->m_StyleType == StyleType_TwoPlayersTwoSides) && !Center1Player() )
+		if( (GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_OnePlayerOneSide || GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_TwoPlayersTwoSides) && !Center1Player() )
 		{
 			if( SM == SM_Player1HitMine )
 				m_WhiteFlashForMineExplosion.SetXY( SCREEN_WIDTH/4, SCREEN_CENTER_Y );

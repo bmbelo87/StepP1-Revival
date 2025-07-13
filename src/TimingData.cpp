@@ -324,7 +324,7 @@ TimingSegment* TimingData::GetSegmentAtRow( int iNoteRow, TimingSegmentType tst 
 static void EraseSegment( vector<TimingSegment*> &vSegs, int index, TimingSegment *cur )
 {
 #ifdef DEBUG
-	LOG->Trace( "EraseSegment(%d, %p)", index, cur );
+	//LOG->Trace( "EraseSegment(%d, %p)", index, cur );
 	cur->DebugPrint();
 #endif
 
@@ -337,7 +337,7 @@ static void EraseSegment( vector<TimingSegment*> &vSegs, int index, TimingSegmen
 void TimingData::AddSegment( const TimingSegment *seg )
 {
 #ifdef DEBUG
-	LOG->Trace( "AddSegment( %s )", TimingSegmentTypeToString(seg->GetType()).c_str() );
+	//LOG->Trace( "AddSegment( %s )", TimingSegmentTypeToString(seg->GetType()).c_str() );
 	seg->DebugPrint();
 #endif
 
@@ -402,7 +402,7 @@ void TimingData::AddSegment( const TimingSegment *seg )
 	if( bOnSameRow && (*cur) == (*seg) )
 	{
 #if defined(DEBUG)
-		LOG->Trace( "equals previous segment, ignoring" );
+		//LOG->Trace( "equals previous segment, ignoring" );
 #endif
 		return;
 	}
@@ -829,7 +829,7 @@ float TimingData::GetDisplayedSpeedPercent( float fSongBeat, float fMusicSeconds
 	if( speeds.size() == 0 )
 	{
 #ifdef DEBUG
-		LOG->Trace("No speed segments");
+		//LOG->Trace("No speed segments");
 #endif
 		return 1.0f;
 	}

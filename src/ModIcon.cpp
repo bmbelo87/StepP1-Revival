@@ -24,6 +24,12 @@ ModIcon::ModIcon( const ModIcon &cpy ):
 	this->AddChild( &m_text );
 }
 
+void ModIcon::Init()
+{
+	m_icons.Load(THEME->GetPathG("", "OptionList/icons 11x11.png"));
+	this->AddChild(m_icons);
+}
+
 void ModIcon::Load( RString sMetricsGroup )
 {
 	m_sprFilled.Load( THEME->GetPathG(sMetricsGroup,"Filled") );

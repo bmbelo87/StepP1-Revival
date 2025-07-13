@@ -15,12 +15,18 @@
 #include "TimingData.h"
 #include "GameInput.h"
 #include "OptionsList.h"
+#include "ModIcon.h"
+
 
 enum SelectionState
 {
+	SelectionState_SelectingSubGroup, //
+	SelectionState_SelectingGroup, // StepP1 Revival - bsilver
 	SelectionState_SelectingSong,
 	SelectionState_SelectingSteps,
-	SelectionState_Finalized,
+	SelectionState_IsPlayerReady, //
+	SelectionState_Finalized, 
+
 	NUM_SelectionState,
 };
 const RString& SelectionStateToString( SelectionState ss );
@@ -56,6 +62,10 @@ public:
 	bool	b_PlayerIsReady[NUM_PLAYERS];
 	//const	MusicWheel* GetMusicWheel() const { return &m_MusicWheel; }
 	int	m_iSelection[NUM_PLAYERS];
+	bool	m_bInOptionList;
+
+
+	virtual void CodeMessageReceived( const Message &msg );
 
 	// --------------------------
 
@@ -104,37 +114,42 @@ protected:
 	ThemeMetric<bool>		WRAP_CHANGE_STEPS;
 	ThemeMetric<bool>		CHANGE_STEPS_WITH_GAME_BUTTONS;
 	ThemeMetric<bool>		CHANGE_GROUPS_WITH_GAME_BUTTONS;
-	ThemeMetric<RString>	NULL_SCORE_STRING;
+	ThemeMetric<RString>		NULL_SCORE_STRING;
 	ThemeMetric<bool>		PLAY_SOUND_ON_ENTERING_OPTIONS_MENU;
 
 	bool CanChangeSong() const { return m_SelectionState == SelectionState_SelectingSong; }
-	bool CanChangeSteps() const { return TWO_PART_SELECTION ? m_SelectionState == SelectionState_SelectingSteps : m_SelectionState == SelectionState_SelectingSong; }
+	bool CanChangeSteps() const { return m_SelectionState == SelectionState_SelectingSteps; }
+	bool CanChangeGroup() const { return m_SelectionState == SelectionState_SelectingGroup; } // StepP1 Revival - bsilver
 	SelectionState GetNextSelectionState() const
 	{
 		switch( m_SelectionState )
 		{
-		case SelectionState_SelectingSong:
-			return TWO_PART_SELECTION ? SelectionState_SelectingSteps : SelectionState_Finalized;
-		case SelectionState_SelectingSteps:
-			return SelectionState_Finalized;
-		DEFAULT_FAIL( m_SelectionState );
+			case SelectionState_SelectingGroup:
+				return SelectionState_SelectingSong;
+			case SelectionState_SelectingSong:
+				return SelectionState_SelectingSteps;
+			case SelectionState_SelectingSteps:
+				return SelectionState_IsPlayerReady; // StepP1 Revival - bsilver
+			case SelectionState_IsPlayerReady:
+				return SelectionState_Finalized;
+				DEFAULT_FAIL( m_SelectionState );
 		}
 	}
 
-	GameButton m_GameButtonPreviousSong;
-	GameButton m_GameButtonNextSong;
-	GameButton m_GameButtonPreviousDifficulty;
-	GameButton m_GameButtonNextDifficulty;
-	GameButton m_GameButtonPreviousGroup;
-	GameButton m_GameButtonNextGroup;
+	GameButton		m_GameButtonPreviousSong;
+	GameButton		m_GameButtonNextSong;
+	GameButton		m_GameButtonPreviousDifficulty;
+	GameButton		m_GameButtonNextDifficulty;
+	GameButton		m_GameButtonPreviousGroup;
+	GameButton		m_GameButtonNextGroup;
 
-	RString m_sSectionMusicPath;
-	RString m_sSortMusicPath;
-	RString m_sRouletteMusicPath;
-	RString m_sRandomMusicPath;
-	RString m_sCourseMusicPath;
-	RString m_sLoopMusicPath;
-	RString m_sFallbackCDTitlePath;
+	RString			m_sSectionMusicPath;
+	RString			m_sSortMusicPath;
+	RString			m_sRouletteMusicPath;
+	RString			m_sRandomMusicPath;
+	RString			m_sCourseMusicPath;
+	RString			m_sLoopMusicPath;
+	RString			m_sFallbackCDTitlePath;
 
 	FadingBanner		m_Banner;
 	Sprite			m_sprCDTitleFront, m_sprCDTitleBack;
@@ -153,11 +168,30 @@ protected:
 	bool			m_bSelectIsDown[NUM_PLAYERS];
 	bool			m_bAcceptSelectRelease[NUM_PLAYERS];
 
+	// StepP1 Revival -- bSilver ---------------------------
+	RageSound		m_soundEndSelect; 	/* Sounds/OUT */
+	RageSound		m_soundSongMoving;	/* Sounds/MOVE */
+	RageSound		m_soundUnlockCommand;	/* Sounds/N_TO_M */
+	RageSound		m_soundNewPlayer;	/* Sounds/JOIN */
+	RageSound		m_commandWindowInOut;	/* CW/S_CMD_INOUT */
+	RageSound		m_commandWindowBack;	/* CW/S_CMD_CHG */
+	RageSound		m_commandWindowMove;	/* CW/S_CMD_MOVE */
+	RageSound		m_commandWindowSet;	/* CW/S_CMD_SET */
+	RageSound		m_soundOldCodeEntered;	/* Sounds/CHEAT */
+	RageSound		m_soundGroupMoving;	/* Sounds/MOVE */
+	RageSound		m_soundEnterGroupSelect;/* Sounds/S_BACK */
+	RageSound		m_soundStepsMoving;	/* Sounds/D_MOVE */
+	RageSound		m_soundLockedAction;	/* Sounds/BAD */
 	RageSound		m_soundStart;
-	RageSound		m_soundDifficultyEasier;
-	RageSound		m_soundDifficultyHarder;
-	RageSound		m_soundOptionsChange;
-	RageSound		m_soundLocked;
+	RageSound		m_soundBackFromSteps;
+
+	// OptionList Things
+	AutoActor		m_OptionList;
+	AutoActor		m_OptionListMenu;
+	AutoActor		m_OptionListTexts;
+	ModIcon			m_OptionListIcons;
+
+	// ---------------------------------------------------------
 
 	BackgroundLoader	m_BackgroundLoader;
 	RageTexturePreloader	m_TexturePreload;
@@ -166,26 +200,26 @@ protected:
 #endif
 
 /*
- * (c) 2001-2004 Chris Danford
- * All rights reserved.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, and/or sell copies of the Software, and to permit persons to
- * whom the Software is furnished to do so, provided that the above
- * copyright notice(s) and this permission notice appear in all copies of
- * the Software and that both the above copyright notice(s) and this
- * permission notice appear in supporting documentation.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
- * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
- * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
+* (c) 2001-2004 Chris Danford
+* All rights reserved.
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, and/or sell copies of the Software, and to permit persons to
+* whom the Software is furnished to do so, provided that the above
+* copyright notice(s) and this permission notice appear in all copies of
+* the Software and that both the above copyright notice(s) and this
+* permission notice appear in supporting documentation.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+* THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+* INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+* OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+* OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+* PERFORMANCE OF THIS SOFTWARE.
+*/

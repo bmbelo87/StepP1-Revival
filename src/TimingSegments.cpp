@@ -28,95 +28,95 @@ void TimingSegment::Scale( int start, int length, int newLength )
 
 void TimingSegment::DebugPrint() const
 {
-	LOG->Trace( "\tTimingSegment(%d [%f])", GetRow(), GetBeat() );
+	//LOG->Trace( "\tTimingSegment(%d [%f])", GetRow(), GetBeat() );
 }
 
 void BPMSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %f)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetBPM()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %f)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetBPM()
+	//);
 }
 
 void StopSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %f)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetPause()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %f)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetPause()
+	//);
 }
 
 void DelaySegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %f)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetPause()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %f)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetPause()
+	//);
 }
 
 void TimeSignatureSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %d/%d)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetNum(), GetDen()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %d/%d)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetNum(), GetDen()
+	//);
 }
 
 void WarpSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %d [%f])",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetLengthRows(), GetLengthBeats()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %d [%f])",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetLengthRows(), GetLengthBeats()
+	//);
 }
 
 void LabelSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %s)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetLabel().c_str()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %s)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetLabel().c_str()
+	//);
 }
 
 void TickcountSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %d)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetTicks()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %d)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetTicks()
+	//);
 }
 
 void ComboSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %d, %d)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetCombo(), GetMissCombo()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %d, %d)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetCombo(), GetMissCombo()
+	//);
 }
 
 void SpeedSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %f, %f, %d)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetRatio(), GetDelay(), GetUnit()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %f, %f, %d)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetRatio(), GetDelay(), GetUnit()
+	//);
 }
 
 void ScrollSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %f)",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetRatio()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %f)",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetRatio()
+	//);
 }
 
 void FakeSegment::DebugPrint() const
 {
-	LOG->Trace( "\t%s(%d [%f], %d [%f])",
-		TimingSegmentTypeToString(GetType()).c_str(),
-		GetRow(), GetBeat(), GetLengthRows(), GetLengthBeats()
-	);
+	//LOG->Trace( "\t%s(%d [%f], %d [%f])",
+	//	TimingSegmentTypeToString(GetType()).c_str(),
+	//	GetRow(), GetBeat(), GetLengthRows(), GetLengthBeats()
+	//);
 }
 
 RString FakeSegment::ToString(int dec) const

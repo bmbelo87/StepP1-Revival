@@ -245,6 +245,8 @@ public:
 	bool		m_bAutoNoteskin; // Auto NoteSkin (Based on Songs Folder)
 	bool		m_bRouletteNoteskin; // Select ONE Skin random
 	bool		m_bRandomSkin; // Change skins in the gameplay.
+	int		m_iAutoVelocity;
+	bool		m_bMinis;
 };
 
 #endif

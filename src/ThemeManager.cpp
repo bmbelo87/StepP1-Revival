@@ -496,7 +496,7 @@ void ThemeManager::RunLuaScripts( const RString &sMask, bool bUseThemeDir )
 		for( unsigned i = 0; i < asElementPaths.size(); ++i )
 		{
 			const RString &sPath = asElementPaths[i];
-			LOG->Trace( "Loading \"%s\" ...", sPath.c_str() );
+			//LOG->Trace( "Loading \"%s\" ...", sPath.c_str() );
 			LuaHelpers::RunScriptFile( sPath );
 		}
 	}

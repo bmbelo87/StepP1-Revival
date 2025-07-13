@@ -31,10 +31,10 @@ void ScreenNameEntryTraditional::Init()
 			const vector<Song*> &apSongs = SONGMAN->GetAllSongs();
 			ss.m_vpPlayedSongs.push_back( apSongs[rand()%apSongs.size()] );
 			ss.m_vpPossibleSongs = ss.m_vpPlayedSongs;
-			ss.m_pStyle = GAMESTATE->GetCurrentStyle();
+			ss.m_pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 			ss.m_playMode = GAMESTATE->m_PlayMode;
 			ASSERT( ss.m_vpPlayedSongs[0]->GetAllSteps().size() != 0 );
-			StepsType st = GAMESTATE->GetCurrentStyle()->m_StepsType;
+			StepsType st = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType;
 
 			FOREACH_PlayerNumber( p )
 			{

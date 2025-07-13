@@ -342,12 +342,12 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 						//tn.pn = pn;
 						tn.nsp = static_cast<TapNote::NoteSkinPlayer>(player);
 					*/ 
-					// no hay qur forzar el nsp cuando se utiliza por ejemplo TAP_ORIGINAL_P1 en un double común. 
+					// no hay qur forzar el nsp cuando se utiliza por ejemplo TAP_ORIGINAL_P1 en un double comÃºn. 
 					// El player es siempre 1 (o sea el default, que viene a ser el 4to jugador) - xMAx
 					
 					
 					
-					// Hay notas que no tienen un jugador específico (como las minas). Hay que asignarle un jugador entonces
+					// Hay notas que no tienen un jugador especÃ­fico (como las minas). Hay que asignarle un jugador entonces
 					// Esto solo se hace cuando la nota tiene un jugador no valido y cuando se asignaron jugadores a los taps normales. 
 					// xMAx - STEP_F2
 					if( tn.pn == PLAYER_INVALID && player != 0 )
@@ -666,7 +666,7 @@ void NoteDataUtil::SplitCompositeNoteData( const NoteData &in, vector<NoteData> 
 			 occuring to begin with, but at this time, I am unsure how to deal with it.
 			 Hopefully this hack can be removed soon. -- Jason "Wolfman2000" Felds
 			 */
-			const Style *curStyle = GAMESTATE->GetCurrentStyle();
+			const Style *curStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 			if( (curStyle == NULL || curStyle->m_StyleType == StyleType_TwoPlayersSharedSides )
 				&& int( tn.pn ) > NUM_PlayerNumber )
 			{
@@ -1309,7 +1309,7 @@ void NoteDataUtil::RemoveLifts( NoteData &inout, int iStartIndex, int iEndIndex 
 void NoteDataUtil::RemoveFakes( NoteData &inout, int iStartIndex, int iEndIndex )
 {
 	//RemoveSpecificTapNotes( inout, TapNote::fake, iStartIndex, iEndIndex );
-	//Código copiado de la función "RemoveSpecificTapNotes"
+	//CÃ³digo copiado de la funciÃ³n "RemoveSpecificTapNotes"
 	for( int t=0; t<inout.GetNumTracks(); t++ )
 		FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE( inout, t, r, iStartIndex, iEndIndex ) 
 			if( inout.GetTapNote(t,r).judge == TapNote::fake )

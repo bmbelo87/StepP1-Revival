@@ -88,7 +88,7 @@ namespace
 
 void ArrowEffects::Update()
 {
-	const Style* pStyle = GAMESTATE->GetCurrentStyle();
+	const Style* pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 
 	static float fLastTime = 0;
 	float fTime = RageTimer::GetTimeSinceStartFast();
@@ -524,7 +524,7 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 {
 	float fPixelOffsetFromCenter = 0; // fill this in below
 
-	const Style* pStyle = GAMESTATE->GetCurrentStyle();
+	const Style* pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 	const float* fEffects = curr_options->m_fEffects;
 
 	// TODO: Don't index by PlayerNumber.
@@ -871,7 +871,7 @@ float ArrowEffects::GetZoom( const PlayerState* pPlayerState )
 {
 	float fZoom = 1.0f;
 	// FIXME: Move the zoom values into Style
-	if( GAMESTATE->GetCurrentStyle()->m_bNeedsZoomOutWith2Players &&
+	if( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_bNeedsZoomOutWith2Players &&
 		(GAMESTATE->GetNumSidesJoined()==2 || GAMESTATE->AnyPlayersAreCpu()) )
 		fZoom *= 0.6f;
 

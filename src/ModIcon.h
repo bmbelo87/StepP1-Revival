@@ -10,10 +10,13 @@
 class ModIcon : public ActorFrame
 {
 public:
+	virtual void Init();
 	ModIcon();
 	ModIcon( const ModIcon &cpy );
 	void Load( RString sMetricsGroup );
 	void Set( const RString &sText );
+
+	AutoActor	m_icons;
 
 protected:
 	BitmapText	m_text;

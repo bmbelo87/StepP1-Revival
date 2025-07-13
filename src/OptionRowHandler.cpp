@@ -427,7 +427,7 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 			m_Def.m_layoutType = StringToLayoutType( STEPS_ROW_LAYOUT_TYPE );
 
 			vector<Trail*> vTrails;
-			GAMESTATE->m_pCurCourse->GetTrails( vTrails, GAMESTATE->GetCurrentStyle()->m_StepsType );
+			GAMESTATE->m_pCurCourse->GetTrails( vTrails, GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType );
 			for( unsigned i=0; i<vTrails.size(); i++ )
 			{
 				Trail* pTrail = vTrails[i];
@@ -446,7 +446,7 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 
 			vector<Steps*> vpSteps;
 			Song *pSong = GAMESTATE->m_pCurSong;
-			SongUtil::GetSteps( pSong, vpSteps, GAMESTATE->GetCurrentStyle()->m_StepsType );
+			SongUtil::GetSteps( pSong, vpSteps, GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType );
 			StepsUtil::RemoveLockedSteps( pSong, vpSteps );
 			StepsUtil::SortNotesArrayByDifficulty( vpSteps );
 			for( unsigned i=0; i<vpSteps.size(); i++ )

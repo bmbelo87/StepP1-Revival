@@ -115,9 +115,9 @@ void NoteField::CacheNoteSkin( const RString &sNoteSkin_ )
 	LockNoteSkin l( sNoteSkinLower );
 
 	//LOG->Trace("NoteField::CacheNoteSkin: cache %s", sNoteSkinLower.c_str() );
-	NoteDisplayCols *nd = new NoteDisplayCols( GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer );
+	NoteDisplayCols *nd = new NoteDisplayCols( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer );
 
-	for( int c=0; c<GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer; c++ )
+	for( int c=0; c<GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer; c++ )
 	{
 		nd->display[c].Load( c, m_pPlayerState );
 	}
@@ -278,8 +278,8 @@ void NoteField::Init( const PlayerState* pPlayerState, float fYReverseOffsetPixe
 {
 	m_pPlayerState = pPlayerState;
 	m_fYReverseOffsetPixels = fYReverseOffsetPixels;
-	//m_bIsRoutine = GAMESTATE->GetCurrentStyle()->m_StyleType == StyleType_TwoPlayersSharedSides;
-	//m_bIsRoutine = GAMESTATE->GetCurrentStyle()->m_StyleType == StyleType_OnePlayerTwoSides; //was using this - xMAx
+	//m_bIsRoutine = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_TwoPlayersSharedSides;
+	//m_bIsRoutine = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StyleType == StyleType_OnePlayerTwoSides; //was using this - xMAx
 	
 	//m_bIsRoutine = false;
 	
@@ -332,10 +332,10 @@ void NoteField::Load(
 	m_fPercentFadeToFail = -1;
 
 	//int i1 = m_pNoteData->GetNumTracks();
-	//int i2 = GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer;
-	ASSERT_M(m_pNoteData->GetNumTracks() == GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer, 
+	//int i2 = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer;
+	ASSERT_M(m_pNoteData->GetNumTracks() == GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer, 
 		 ssprintf("NumTracks %d = ColsPerPlayer %d",m_pNoteData->GetNumTracks(), 
-			  GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer));
+			  GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer));
 	
 	// The NoteSkin may have changed at the beginning of a new course song.
 	//RString sNoteSkinLower = m_pPlayerState->m_PlayerOptions.GetCurrent().m_sNoteSkin;
@@ -470,7 +470,7 @@ void NoteField::Update( float fDeltaTime )
 
 float NoteField::GetWidth() const
 {
-	const Style* pStyle = GAMESTATE->GetCurrentStyle();
+	const Style* pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 	float fMinX, fMaxX;
 	// TODO: Remove use of PlayerNumber.
 	pStyle->GetMinAndMaxColX( m_pPlayerState->m_PlayerNumber, fMinX, fMaxX );
@@ -1420,10 +1420,10 @@ void NoteField::DrawPrimitives()
 
 //	float fSelectedRangeGlow = SCALE( RageFastCos(RageTimer::GetTimeSinceStartFast()*2), -1, 1, 0.1f, 0.3f );	//xMAx
 
-	const Style* pStyle = GAMESTATE->GetCurrentStyle();
-	ASSERT_M(m_pNoteData->GetNumTracks() == GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer, 
+	const Style* pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
+	ASSERT_M(m_pNoteData->GetNumTracks() == GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer, 
 		 ssprintf("NumTracks %d != ColsPerPlayer %d",m_pNoteData->GetNumTracks(), 
-			  GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer));
+			  GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer));
 			
 	//DISPLAY->ClearAllTextures();	//xMAx
 	m_NoteDrawData.clear();

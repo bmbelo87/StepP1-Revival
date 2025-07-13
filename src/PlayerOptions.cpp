@@ -45,7 +45,7 @@ void PlayerOptions::Init()
 	m_fSkew = 0;			m_SpeedfSkew = 1.0f;
 	m_fPassmark = 0;		m_SpeedfPassmark = 1.0f;
 	m_fRandomSpeed = 0;		m_SpeedfRandomSpeed = 1.0f;
-	ZERO( m_bTurns );
+	ZERO( m_bTurns );		m_bEW = false;
 	ZERO( m_bTransforms );
 	m_bMuteOnError = false;
 	m_FailType = FailType_Immediate;
@@ -237,7 +237,11 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 		FAIL_M(ssprintf("Invalid FailType: %i", m_FailType));
 	}
 
-	if( m_fSkew==0 && m_fPerspectiveTilt==0 )		{ if( m_bSetTiltOrSkew ) AddTo.push_back( "Overhead" ); }
+	if( m_fSkew==0 && m_fPerspectiveTilt==0 )
+	{
+		if( m_bSetTiltOrSkew )
+			AddTo.push_back( "Overhead" );
+	}
 	else if( m_fSkew == 0 )
 	{
 		if( m_fPerspectiveTilt > 0 )
@@ -253,6 +257,29 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 	{
 		AddPart( AddTo, m_fSkew, "Incoming" );
 	}
+
+	switch( m_iJudgment )
+	{
+		case EASY_JUDGMENT: AddTo.push_back("Easy"); break;
+		case NORMAL_JUDGMENT: AddTo.push_back("Normal"); break;
+		case HARD_JUDGMENT: AddTo.push_back("Hard"); break;
+		case VERY_HARD_JUDGMENT: AddTo.push_back("VeryHard"); break;
+		case XTRA_HARD_JUDGMENT: AddTo.push_back("ExtraHard"); break;
+		case ULTRA_HARD_JUDGMENT: AddTo.push_back("UltraHard"); break;
+	}
+
+	AddPart( AddTo, m_bRandomSkin,		"RandomNoteSkin" );
+	AddPart( AddTo, m_bJudgmentReverse,	"JudgmentReverse" );
+	AddPart( AddTo, m_bAutoNoteskin,	"AutoNoteskin" );
+	AddPart( AddTo, m_bRouletteNoteskin,	"RouletteNoteskin" );
+	AddPart( AddTo, m_bNX,			"ModNX");
+	AddPart( AddTo, m_iAutoVelocity,	"AutoVelocity%.0f");
+	AddPart( AddTo, m_bFreePerformance,	"FreePerformance");
+	AddPart( AddTo, m_bJudgeByNote,		"JudgeByNote");
+	AddPart( AddTo, m_bMinis,		"Minis");
+
+
+
 
 	// Don't display a string if using the default NoteSkin unless we force it.
 	if( bForceNoteSkin || (!m_sNoteSkin.empty() && m_sNoteSkin != CommonMetrics::DEFAULT_NOTESKIN_NAME.GetValue()) )
@@ -347,7 +374,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sscanf( sBit, "c%f", &level ) == 1 )
 	{
 		if( !isfinite(level) || level <= 0.0f )
-			level = 100.0f; // Just pick some value. // Reverse Engenier says: = 100.0f
+			level = 100.0f; // Just pick some value. // Reverse Engenier says: = 100.0f - bSilver
 		SET_FLOAT( fScrollBPM )
 		SET_FLOAT( fTimeSpacing )
 		m_fTimeSpacing = 1;
@@ -355,7 +382,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	}
 	// oITG's m-mods
 	// XXX: will not properly tween, I don't think.
-	else if( sscanf( sBit, "m%f", &level ) == 1 )
+	else if( sscanf( sBit, "autovelocity%f", &level ) == 1 )
 	{
 		// OpenITG doesn't have this block:
 		/*
@@ -651,7 +678,7 @@ void PlayerOptions::ToggleOneTurn( Turn t )
 float PlayerOptions::GetReversePercentForColumn( int iCol ) const
 {
 	float f = 0;
-	int iNumCols = GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer;
+	int iNumCols = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer;
 
 	f += m_fScrolls[SCROLL_REVERSE];
 
@@ -759,7 +786,7 @@ bool PlayerOptions::IsEasierForSongAndSteps( Song* pSong, Steps* pSteps, PlayerN
 		DisplayBpms bpms;
 		if( GAMESTATE->IsCourseMode() )
 		{
-			Trail *pTrail = GAMESTATE->m_pCurCourse->GetTrail( GAMESTATE->GetCurrentStyle()->m_StepsType );
+			Trail *pTrail = GAMESTATE->m_pCurCourse->GetTrail( GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_StepsType );
 			pTrail->GetDisplayBpms( bpms );
 		}
 		else
@@ -1047,7 +1074,7 @@ public:
 	static int GetReversePercentForColumn( T *p, lua_State *L )
 	{
 		const int colNum = IArg(1);
-		const int numColumns = GAMESTATE->GetCurrentStyle()->m_iColsPerPlayer;
+		const int numColumns = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber)->m_iColsPerPlayer;
 
 		// We don't want to go outside the bounds.
 		if(colNum < 0 || colNum > numColumns)

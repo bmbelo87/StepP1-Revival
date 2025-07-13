@@ -126,7 +126,7 @@ public:
 	int		GetNumSidesJoined() const;
 
 	const Game*	GetCurrentGame();
-	const Style*	GetCurrentStyle() const;
+	const Style*	GetCurrentStyle(PlayerNumber pn) const;
 	void	SetCurrentStyle( const Style *pStyle );
 	bool SetCompatibleStyle(StepsType stype);
 
@@ -390,9 +390,9 @@ public:
 	void PushSelf( lua_State *L );
 
 	// xMAx ------------------------------------------------------------------------------------------
-	bool		m_bHasProfile[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionó un local profile*/
-	int			m_iProfileIndex[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionó un local profile*/
-	int			m_iProfileIndexRandom[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionó un local profile*/
+	bool		m_bHasProfile[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionÃ³ un local profile*/
+	int			m_iProfileIndex[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionÃ³ un local profile*/
+	int			m_iProfileIndexRandom[NUM_PLAYERS];	/* Se utiliza en ScreenSelectProfile.cpp para indicar si el jugador seleccionÃ³ un local profile*/
 	RString 	GetAvatarURLFromPlayerNumber( PlayerNumber pn );
 	bool 		m_bBasicMode;
 	bool		m_bNoteSkin1Unlocked;

@@ -17,7 +17,7 @@ void ReceptorArrowRow::Load( const PlayerState* pPlayerState )
 {
 	m_pPlayerState = pPlayerState;
 
-	const Style* pStyle = GAMESTATE->GetCurrentStyle();
+	const Style* pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 
 	for( int c=0; c<pStyle->m_iColsPerPlayer; c++ ) 
 	{
@@ -69,7 +69,7 @@ void ReceptorArrowRow::Update( float fDeltaTime )
 
 void ReceptorArrowRow::DrawPrimitives()
 {
-	const Style* pStyle = GAMESTATE->GetCurrentStyle();
+	const Style* pStyle = GAMESTATE->GetCurrentStyle(NUM_PlayerNumber);
 	for( unsigned i=0; i<m_ReceptorArrow.size(); i++ )
 	{
 		const int c = pStyle->m_iColumnDrawOrder[i];
